@@ -640,6 +640,17 @@ class AircraftModel:
             s[STATE_H]     = self.h_min
             s[STATE_GAMMA] = max(0.0, s[STATE_GAMMA])  # yer temasında yukarı
 
+        # Angular hız sınırları — overflow koruması
+        # MAPPO eğitimi başında rastgele aksiyonlar p/q/r'yi patlatabilir
+        s[STATE_P] = np.clip(s[STATE_P], -6.0, 6.0)   # ~2π rad/s max
+        s[STATE_Q] = np.clip(s[STATE_Q], -1.0, 1.0)
+        s[STATE_R] = np.clip(s[STATE_R], -1.0, 1.0)
+
+        # NaN/Inf temizliği — son savunma hattı
+        for i in range(len(s)):
+            if not np.isfinite(s[i]):
+                s[i] = 0.0
+
         # Yakıt tükenmişse thrust yok, alive devam eder (pilotaj sona erer)
         s[STATE_FUEL] = max(0.0, s[STATE_FUEL])
 

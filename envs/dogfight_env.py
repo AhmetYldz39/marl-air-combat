@@ -45,6 +45,7 @@ from envs.weapons_model  import WeaponsModel
 from envs.reward_model   import RewardModel
 from utils.normalization  import Normalizer
 from envs.geometry_utils import deg2rad
+from envs.trim_solver import TrimSolver
 
 
 # ---------------------------------------------------------------------------
@@ -123,6 +124,14 @@ class DogfightEnv:
 
         # RNG (seed dışarıdan set edilebilir)
         self.rng = np.random.default_rng(seed=None)
+
+        # Trim çözücü + lookup tablosu (spawn başlangıç koşulu)
+        self._trim_solver = TrimSolver(self._aircraft)
+        self._trim_table  = self._trim_solver.build_lookup_table(
+            V_range=(self.spawn_V_min, self.spawn_V_max),
+            h_range=(self.spawn_h_min, self.spawn_h_max),
+            n_V=10, n_h=8,
+        )
 
     # -----------------------------------------------------------------------
     # Seed
@@ -310,15 +319,25 @@ class DogfightEnv:
                 h = float(self.rng.uniform(self.spawn_h_min, self.spawn_h_max))
                 V = float(self.rng.uniform(self.spawn_V_min, self.spawn_V_max))
 
-                # Heading: Blue → Güney'e (Red'e doğru), Red → Kuzey'e
-                psi = np.pi if team == BLUE else 0.0
+                # Heading: Blue kuzeyde → güneye (-π/2), Red güneyde → kuzeye (π/2)
+                # ENU: 0=Doğu, π/2=Kuzey, -π/2=Güney, π=Batı
+                psi = -np.pi / 2.0 if team == BLUE else np.pi / 2.0
                 psi += float(self.rng.uniform(-0.3, 0.3))  # küçük randomizasyon
 
+                # Wing-level trim
+                trim = self._trim_solver.lookup(V, h, self._trim_table)
+                if not trim.success:
+                    trim = self._trim_solver.solve(V, h)
                 init = {
                     "x": x, "y": y, "h": h, "V": V,
-                    "psi": psi, "alpha": deg2rad(3.0),
+                    "psi": psi, "alpha": trim.alpha,
                 }
                 s = self._aircraft.reset(init)
+                # İlk adım trim aksiyonu → kararlı başlangıç
+                trim_action = np.zeros(5, dtype=np.float32)
+                trim_action[1] = float(trim.de)   # elevator
+                trim_action[3] = float(trim.dt)   # throttle
+                s = self._aircraft.step(s, trim_action, self.dt)
                 states[aid] = s
 
         return states

@@ -171,7 +171,7 @@ reward:
   w_kill:      10.0    # r_kill      — düşman imhası (anlık)
   w_wez:        2.0    # r_wez       — WEZ avantajı [0,1] sürekli
   w_tracking:   1.0    # r_tracking  — radar izleme kalitesi
-  w_survival:   0.1    # r_survival  — hayatta kalma (dt başına)
+  w_survival:   2.0    # r_survival  — hayatta kalma (dt başına)
   w_coord:      0.5    # r_coord     — takım koordinasyonu
   w_resource:   0.1    # r_resource  — yakıt/ammo verimliliği
   w_penalty:   -5.0    # r_penalty   — tehlikeli davranış (negatif!)

@@ -44,7 +44,7 @@ import numpy as np
 from pathlib import Path
 from copy import deepcopy
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 try:
     import torch
@@ -59,9 +59,9 @@ except ImportError:
     nn = _Stub  # type: ignore
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from dogfight_env import DogfightEnv, BLUE, RED
-from heuristic_agent import MultiHeuristicPolicy
-from normalization import Normalizer
+from envs.dogfight_env import DogfightEnv, BLUE, RED
+from agents.heuristic_agent import MultiHeuristicPolicy
+from utils.normalization import Normalizer
 
 # ---------------------------------------------------------------------------
 # Sabitler
@@ -214,7 +214,7 @@ class MAPPOCritic(nn.Module):
         return self.net(global_obs)
 
 
-from rollout_buffer import RolloutBuffer
+from training.rollout_buffer import RolloutBuffer
 
 
 if not _TORCH_AVAILABLE:
@@ -726,6 +726,11 @@ class MAPPOTrainer:
         values_np = np.zeros(self.n_agents, dtype=np.float32)
 
         # Critic için global obs
+        # NaN/Inf guard — fizik ıraksırsa actor patlamasın
+        for aid in self.train_ids:
+            if not np.all(np.isfinite(obs_dict[aid])):
+                obs_dict[aid] = np.zeros_like(obs_dict[aid])
+
         global_obs_t = torch.FloatTensor(
             self._build_global_obs(obs_dict)
         ).unsqueeze(0).to(self.device)
