@@ -4,29 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7a9103f8-00b5-45ba-a8b7-85f53568ba1f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/marl_air_combat.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/agents/heuristic_agent.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/configs/config.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/envs/aircraft_model.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/envs/dogfight_env.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/envs/geometry_utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/envs/reward_model.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/envs/weapons_model.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_aircraft_model.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_env_step.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_geometry_utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_heuristic_agent.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_normalization.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_reward_model.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_weapons_model.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/normalization.py" afterDir="false" />
+    <list default="true" id="7a9103f8-00b5-45ba-a8b7-85f53568ba1f" name="Changes" comment="Setup for environment and heuristic agent established">
+      <change afterPath="$PROJECT_DIR$/evaluation/eval.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_eval.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_train_mappo.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/training/rollout_buffer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/training/train_mappo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,6 +20,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "AhmetYldz39"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/AhmetYldz39/marl-air-combat.git",
+    "accountId": "ec4c80d9-fbcd-4acb-ad17-d920897af377"
+  }
+}]]></component>
   <component name="ProjectColorInfo"><![CDATA[{
   "customColor": "",
   "associatedIndex": 6
@@ -50,13 +46,15 @@
   "keyToString": {
     "Python.test_aircraft_model.executor": "Run",
     "Python.test_env_step.executor": "Run",
+    "Python.test_eval.executor": "Run",
     "Python.test_geometry_utils.executor": "Run",
     "Python.test_heuristic_agent.executor": "Run",
     "Python.test_normalization.executor": "Run",
     "Python.test_reward_model.executor": "Run",
+    "Python.test_train_mappo.executor": "Run",
     "Python.test_weapons_model.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "main",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
@@ -65,7 +63,7 @@
       <recent name="C:\Users\TRON-V3\OneDrive\Masaüstü\Ders_Dosyalari\Master_Thesis\marl_air_combat\utils" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.test_heuristic_agent">
+  <component name="RunManager" selected="Python.test_train_mappo">
     <configuration name="test_env_step" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="marl_air_combat" />
       <option name="ENV_FILES" value="" />
@@ -80,6 +78,28 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/test_env_step.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test_eval" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="marl_air_combat" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/test_eval.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -132,7 +152,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="test_reward_model" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="test_train_mappo" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="marl_air_combat" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -145,29 +165,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/test_reward_model.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="test_weapons_model" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="marl_air_combat" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/test_weapons_model.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/test_train_mappo.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -178,11 +176,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.test_train_mappo" />
+        <item itemvalue="Python.test_eval" />
         <item itemvalue="Python.test_heuristic_agent" />
         <item itemvalue="Python.test_env_step" />
         <item itemvalue="Python.test_normalization" />
-        <item itemvalue="Python.test_reward_model" />
-        <item itemvalue="Python.test_weapons_model" />
       </list>
     </recent_temporary>
   </component>
@@ -202,6 +200,19 @@
       <option name="presentableId" value="Default" />
       <updated>1772885443446</updated>
     </task>
+    <task id="LOCAL-00001" summary="Setup for environment and heuristic agent established">
+      <option name="closed" value="true" />
+      <created>1772963022868</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1772963022868</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Setup for environment and heuristic agent established" />
+    <option name="LAST_COMMIT_MESSAGE" value="Setup for environment and heuristic agent established" />
   </component>
 </project>
