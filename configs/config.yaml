@@ -1,0 +1,336 @@
+# =============================================================================
+# config.yaml
+# MARL Hava Muharebe Simülasyonu — Ana Konfigürasyon
+#
+# Kullanım:
+#   import yaml
+#   with open("configs/config.yaml") as f:
+#       config = yaml.safe_load(f)
+#
+# Bölümler:
+#   aircraft        : F-16 fiziksel parametreleri
+#   aero_coeffs     : JSBSim aerodinamik katsayıları
+#   control_limits  : Kontrol yüzeyi sınırları
+#   weapons         : Silah sistemi parametreleri
+#   env             : Simülasyon ortam ayarları
+#   reward          : Reward ağırlıkları
+#   roles           : Aggression skalası lerp uç noktaları
+#   coord           : Takım koordinasyon mesafe parametreleri
+#   training        : Eğitim hiperparametreleri
+#   curriculum      : Curriculum geçiş kriterleri
+#   logging         : Logging ve checkpoint ayarları
+#   eval            : Değerlendirme ayarları
+#
+# Kaynak:
+#   JSBSim F-16 katsayıları: Stevens & Lewis "Aircraft Control and Simulation"
+#   WEZ parametreleri       : Tecrübe + literatür
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# AIRCRAFT — F-16 Fiziksel Parametreleri
+# Kaynak: JSBSim F-16 model, Stevens & Lewis
+# -----------------------------------------------------------------------------
+aircraft:
+
+  # Kütle ve geometri
+  mass:       9100.0      # kg  — yakıtsız operasyonel kütle yaklaşımı
+  wingspan:   9.45        # m
+  wing_area:  27.87       # m²
+  mean_chord: 3.45        # m   — ortalama aerodinamik kiriş
+
+  # Atalet momentleri (kg·m²)
+  # Ixz cross-inertia dahil — roll-yaw coupling F-16'da önemli
+  Ixx:  12875.0
+  Iyy:  75674.0
+  Izz:  85552.0
+  Ixz:   1331.0           # ihmal edilmez — yüksek açı performansını etkiler
+
+  # İtki sistemi (F110-GE-100)
+  max_thrust: 76300.0     # N   — deniz seviyesi afterburner
+  SFC:        0.00002     # kg/(N·s) — spesifik yakıt tüketimi
+
+  # Başlangıç kaynakları
+  initial_fuel: 3000.0    # kg
+  initial_ammo: 6         # adet (BVR füze benzeri)
+  initial_hp:   1.0       # [0, 1]
+
+  # Sensör
+  radar_range: 15000.0    # m
+
+  # Operasyonel limitler
+  V_min:     60.0         # m/s — minimum uçuş hızı (stall koruması)
+  V_max:    600.0         # m/s — maksimum hız (yapısal limit)
+  h_min:     50.0         # m   — minimum irtifa (zemin koruması)
+  alpha_max:  0.4363      # rad — 25.0° (stall sınırı)
+  alpha_min: -0.1745      # rad — -10.0°
+
+
+# -----------------------------------------------------------------------------
+# AERO_COEFFS — JSBSim F-16 Aerodinamik Katsayıları
+# Kaynak: Stevens & Lewis, Nguyen et al. (1979) NASA TP-1538
+# -----------------------------------------------------------------------------
+aero_coeffs:
+
+  # Kaldırma kuvveti
+  CL0:       0.0          # sıfır alpha kaldırması
+  CL_alpha:  5.5          # /rad
+  CL_q:      1.8          # pitch rate etkisi
+  CL_de:     0.5          # elevator etkisi
+
+  # Sürükleme kuvveti
+  CD0:       0.013        # sıfır kaldırma sürüklemesi
+  CD_alpha:  0.5          # /rad²  (indüklenmiş sürükleme yaklaşımı)
+
+  # Yan kuvvet
+  CY_beta:  -0.35         # /rad
+  CY_da:     0.0          # aileron cross-etkisi (ihmal)
+  CY_dr:     0.10         # rudder etkisi
+
+  # Roll moment
+  Cl_p:     -0.41         # roll damping /rad·s
+  Cl_r:      0.15         # yaw-to-roll coupling
+  Cl_da:     0.18         # aileron kontrol etkinliği
+  Cl_dr:     0.01         # rudder cross-etkisi
+
+  # Pitch moment
+  Cm0:       0.04         # sıfır alpha pitch moment
+  Cm_alpha: -0.65         # statik longitudinal stabilite /rad
+  Cm_q:    -12.4          # pitch damping /rad·s
+  Cm_de:    -1.1          # elevator kontrol etkinliği
+
+  # Yaw moment
+  Cn_p:     -0.05         # roll-to-yaw coupling
+  Cn_r:     -0.20         # yaw damping /rad·s
+  Cn_da:    -0.02         # adverse yaw
+  Cn_dr:     0.15         # rudder kontrol etkinliği
+
+
+# -----------------------------------------------------------------------------
+# CONTROL_LIMITS — F-16 Kontrol Yüzeyi Fiziksel Limitleri
+# -----------------------------------------------------------------------------
+control_limits:
+  aileron_max_deg:   21.5   # ±21.5°
+  elevator_max_deg:  25.0   # ±25.0°
+  rudder_max_deg:    30.0   # ±30.0°
+
+
+# -----------------------------------------------------------------------------
+# WEAPONS — Silah Sistemi
+# WEZ: Weapon Engagement Zone (BVR füze benzeri model)
+# -----------------------------------------------------------------------------
+weapons:
+  wez_range_max:   8000.0   # m   — maksimum etkili menzil
+  wez_range_min:    300.0   # m   — minimum güvenli ateş mesafesi
+  wez_angle_max:     30.0   # deg — WEZ yarı açısı (±30° boresight'tan)
+  missile_damage:     0.6   # [0,1] — tek isabet hasarı
+  fire_cooldown:      2.0   # s   — ard arda ateş arası bekleme
+  min_fire_altitude:  200.0 # m   — zemin yakını ateş yasağı
+
+
+# -----------------------------------------------------------------------------
+# ENV — Simülasyon Ortam Ayarları
+# -----------------------------------------------------------------------------
+env:
+
+  # Harita
+  map_size:   50000.0     # m   — kare harita kenar uzunluğu (±25km)
+  h_max:      15000.0     # m   — maksimum irtifa (observation normalize için)
+
+  # Fizik
+  dt:           0.05      # s   — RK4 entegrasyon adımı (6-DoF için 20 Hz)
+  max_steps:  2000        # adım — episode uzunluğu (2000 × 0.05s = 100s)
+
+  # Angular hız sınırları (normalize için kullanılır, fizik modeli kullanmaz)
+  p_max:  3.0             # rad/s
+  q_max:  3.0             # rad/s
+  r_max:  3.0             # rad/s
+
+  # Senaryo
+  n_agents_per_team:  2   # Faz 0-1: 2v2, Faz 4: 3v3
+  n_teams:            2
+
+  # Episode başlangıç spawn (random box)
+  spawn_x_range:    10000.0   # m   — ±10 km Doğu-Batı
+  spawn_y_range:    10000.0   # m   — ±10 km Kuzey-Güney
+  spawn_h_min:       3000.0   # m
+  spawn_h_max:       8000.0   # m
+  spawn_V_min:        150.0   # m/s
+  spawn_V_max:        280.0   # m/s
+  spawn_team_offset:  8000.0  # m   — iki takım arasındaki başlangıç ayrımı
+
+
+# -----------------------------------------------------------------------------
+# REWARD — Reward Ağırlıkları
+# r_total = Σ w_i × r_i
+#
+# Draw problemi geçmişte: r_wez ve r_tracking çok düşük kalmıştı.
+# Mevcut ağırlıklar bu dersten çıkarılarak revize edilmiştir.
+# -----------------------------------------------------------------------------
+reward:
+  w_kill:      10.0    # r_kill      — düşman imhası (anlık)
+  w_wez:        2.0    # r_wez       — WEZ avantajı [0,1] sürekli
+  w_tracking:   1.0    # r_tracking  — radar izleme kalitesi
+  w_survival:   0.1    # r_survival  — hayatta kalma (dt başına)
+  w_coord:      0.5    # r_coord     — takım koordinasyonu
+  w_resource:   0.1    # r_resource  — yakıt/ammo verimliliği
+  w_penalty:   -5.0    # r_penalty   — tehlikeli davranış (negatif!)
+  w_role:       1.0    # r_role      — aggression uyumu (Faz 2+)
+
+
+# -----------------------------------------------------------------------------
+# ROLES — Aggression Skalası Lerp Uç Noktaları
+#
+# aggression ∈ [0.0, 1.0]
+#   0.0 = tam defansif  →  *_at_0 değerleri
+#   1.0 = tam agresif   →  *_at_1 değerleri
+#
+# Ağırlık ölçekleri:
+#   aggression | w_kill | w_survival | w_coord
+#   -----------|--------|-----------|--------
+#        0.0   |   0.5  |    2.0    |   1.5
+#        0.25  |  0.875 |   1.625   |  1.375
+#        0.5   |  1.25  |   1.25    |  1.25
+#        0.75  |  1.625 |   0.875   |  1.125
+#        1.0   |   2.0  |    0.5    |   1.0
+#
+# Faz 0-1: dogfight_env.py aggression=None geçirir → scale=1.0 (pasif)
+# Faz 2  : aggression=0.5 ile başlanır, curriculum ile dinamik ayarlanır
+# -----------------------------------------------------------------------------
+roles:
+
+  # Ana ağırlık lerp uç noktaları
+  w_kill_at_0:      0.5    # defansif tarafta kill ağırlığı düşük
+  w_kill_at_1:      2.0    # agresif tarafta kill ağırlığı yüksek
+  w_survival_at_0:  2.0    # defansif: hayatta kalmak kritik
+  w_survival_at_1:  0.5    # agresif: risk almak kabul edilebilir
+  w_coord_at_0:     1.5    # defansif: takım koruması önemli
+  w_coord_at_1:     1.0    # agresif: koordinasyon ikincil
+
+  # r_role_bonus bileşen ağırlıkları (aggression → bonus kaynağı değişir)
+  role_kill_weight_at_0:      0.0   # defansif: kill bonusu yok
+  role_kill_weight_at_1:      1.0   # agresif: bonus tamamen kill'den
+  role_survival_weight_at_0:  0.5   # defansif: bonusun yarısı survival
+  role_survival_weight_at_1:  0.0   # agresif: survival bonusu yok
+  role_coord_weight_at_0:     0.5   # defansif: bonusun yarısı koordinasyon
+  role_coord_weight_at_1:     0.0   # agresif: koordinasyon bonusu yok
+
+  # Faz 2 başlangıç ve sınırlar (curriculum_manager kullanır)
+  aggression_default: 0.5
+  aggression_min:     0.0
+  aggression_max:     1.0
+
+
+# -----------------------------------------------------------------------------
+# COORD — Takım Koordinasyon Mesafe Parametreleri
+# r_coord Gaussian hesabı için kullanılır
+# -----------------------------------------------------------------------------
+coord:
+  dist_min:  500.0    # m   — bu altı çok yakın → ceza bölgesi
+  dist_max:  8000.0   # m   — bu üstü çok uzak → ceza bölgesi
+  dist_opt:  3000.0   # m   — optimal takım mesafesi (Gaussian tepe)
+
+
+# -----------------------------------------------------------------------------
+# TRAINING — Eğitim Hiperparametreleri
+# Faz 1: MAPPO baseline, Faz 2+: GAT ve opponent model eklenir
+# -----------------------------------------------------------------------------
+training:
+
+  # Genel
+  algorithm:          "mappo"       # mappo | qmix | maddpg
+  total_timesteps:    10_000_000    # Faz 1 bütçesi
+  seed:               42
+
+  # PPO / MAPPO
+  lr_actor:           0.0003
+  lr_critic:          0.0003
+  gamma:              0.99          # discount faktörü
+  gae_lambda:         0.95          # GAE lambda
+  clip_epsilon:       0.2           # PPO clip
+  entropy_coeff:      0.01          # keşif teşviki
+  value_loss_coeff:   0.5
+  max_grad_norm:      0.5
+
+  # Rollout ve güncelleme
+  n_steps:            128           # adım / rollout
+  n_epochs:           4             # PPO güncelleme epoch sayısı
+  batch_size:         256
+  minibatch_size:     64
+
+  # QMIX (karşılaştırma için)
+  qmix_mixing_embed:  32
+  qmix_hypernet_embed: 64
+
+  # MADDPG (karşılaştırma için)
+  maddpg_tau:         0.005         # soft update katsayısı
+  maddpg_buffer_size: 100_000
+  maddpg_warmup:      1000
+
+
+# -----------------------------------------------------------------------------
+# CURRICULUM — Faz Geçiş Kriterleri
+# curriculum_manager.py bu değerleri okur
+# -----------------------------------------------------------------------------
+curriculum:
+
+  # Faz 0 → 1: Fizik sanity check
+  phase0_to_1:
+    min_episodes:         100
+    max_crash_rate:       0.0       # sıfır crash zorunlu
+
+  # Faz 1 → 2: Temel dövüş yetkinliği
+  phase1_to_2:
+    eval_window:          200       # son N episode
+    min_win_rate:         0.40      # ≥ %40 kazanma
+    min_kill_per_ep:      0.8       # episode başı ortalama kill
+    max_oob_rate:         0.05      # ≤ %5 sınır dışı
+
+  # Faz 2 → 3: GAT iletişim katkısı
+  phase2_to_3:
+    eval_window:          200
+    gat_win_improvement:  0.05      # GAT, Faz 1 baseline'dan +5% kazanma
+
+  # Faz 3 → 4: Self-play stabilizasyonu
+  phase3_to_4:
+    elo_window:           500
+    elo_std_max:          50.0      # ELO standart sapması
+    min_opponent_variety: 3         # rakip pool boyutu
+
+  # Faz 4 → 5 (Unity): 3v3'e geçiş
+  phase4_to_5:
+    n_agents_per_team:    3
+    min_win_rate_3v3:     0.45
+
+
+# -----------------------------------------------------------------------------
+# LOGGING — Logging ve Checkpoint
+# -----------------------------------------------------------------------------
+logging:
+  log_dir:          "logs/"
+  checkpoint_dir:   "checkpoints/"
+  wandb_project:    "marl-air-combat"
+  wandb_entity:     ""              # WandB kullanıcı adı
+  log_interval:     100             # episode
+  checkpoint_interval: 1000        # episode
+  save_replay:      false           # replay buffer kaydetme (disk yoğun)
+  replay_dir:       "replays/"
+
+
+# -----------------------------------------------------------------------------
+# EVAL — Değerlendirme Ayarları
+# -----------------------------------------------------------------------------
+eval:
+  n_episodes:       20              # değerlendirme episode sayısı
+  deterministic:    true            # stokastik değil, greedy aksiyon
+  opponents:
+    - "heuristic_basic"             # Faz 1 baseline
+    - "heuristic_advanced"          # Faz 3+
+    - "self"                        # kendi önceki checkpoint'i
+  metrics:
+    - "win_rate"
+    - "loss_rate"
+    - "draw_rate"
+    - "kill_per_episode"
+    - "survival_time"
+    - "mean_reward"
