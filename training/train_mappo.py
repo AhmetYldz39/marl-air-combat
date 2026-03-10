@@ -44,7 +44,7 @@ import numpy as np
 from pathlib import Path
 from copy import deepcopy
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent
 
 try:
     import torch
@@ -78,166 +78,20 @@ if not _TORCH_AVAILABLE:
         "RolloutBuffer için: from train_mappo import RolloutBuffer"
     )
 
-# ===========================================================================
-# Actor Network
-# ===========================================================================
-
-class MAPPOActor(nn.Module):
-    """
-    Gaussian policy — continuous action space.
-
-    Giriş : normalize obs vektörü (obs_dim,)
-    Çıkış : action mean (action_dim,) + log_std (action_dim,) — paylaşımlı
-
-    Aksiyon sınırları:
-        da, de, dr : tanh → [-1, 1]
-        dt         : sigmoid → [0, 1]
-        fire       : sigmoid → [0, 1]
-    """
-
-    def __init__(self, obs_dim: int, action_dim: int, hidden: int = 256):
-        super().__init__()
-        self.action_dim = action_dim
-
-        self.net = nn.Sequential(
-            nn.Linear(obs_dim, hidden),
-            nn.ReLU(),
-            nn.Linear(hidden, hidden),
-            nn.ReLU(),
-        )
-        self.mean_head    = nn.Linear(hidden, action_dim)
-        # log_std: sabit parametre (state'ten bağımsız — basit Gaussian)
-        self.log_std      = nn.Parameter(torch.zeros(action_dim))
-
-        self._init_weights()
-
-    def _init_weights(self):
-        for layer in self.net:
-            if isinstance(layer, nn.Linear):
-                nn.init.orthogonal_(layer.weight, gain=np.sqrt(2))
-                nn.init.zeros_(layer.bias)
-        nn.init.orthogonal_(self.mean_head.weight, gain=0.01)
-        nn.init.zeros_(self.mean_head.bias)
-
-    def forward(self, obs: "torch.Tensor"):
-        """
-        Returns
-        -------
-        mean    : (batch, action_dim)
-        log_std : (action_dim,) broadcast edilir
-        """
-        feat = self.net(obs)
-        mean = self.mean_head(feat)
-        return mean, self.log_std
-
-    def get_dist(self, obs: "torch.Tensor") -> "Normal":
-        mean, log_std = self.forward(obs)
-        std = log_std.exp().clamp(min=1e-4, max=2.0)
-        return Normal(mean, std)
-
-    @torch.no_grad()
-    def act(self, obs: "torch.Tensor", deterministic: bool = False):
-        """
-        Tek adım aksiyon örnekleme.
-
-        Returns
-        -------
-        action_raw  : (action_dim,) — squeeze ve clip öncesi
-        log_prob    : scalar
-        """
-        dist = self.get_dist(obs)
-        if deterministic:
-            raw = dist.mean
-        else:
-            raw = dist.sample()
-        log_prob = dist.log_prob(raw).sum(-1)
-        return raw, log_prob
-
-    @staticmethod
-    def squash(raw: "torch.Tensor") -> "torch.Tensor":
-        """
-        Ham aksiyon → geçerli aralık:
-            [:3] (da, de, dr) → tanh → [-1, 1]
-            [3]  (dt)         → sigmoid → [0, 1]
-            [4]  (fire)       → sigmoid → [0, 1]
-        """
-        out = raw.clone()
-        out[..., :3] = torch.tanh(raw[..., :3])
-        out[..., 3:] = torch.sigmoid(raw[..., 3:])
-        return out
-
-
-# ===========================================================================
-# Critic Network (Centralized)
-# ===========================================================================
-
-class MAPPOCritic(nn.Module):
-    """
-    Centralized value function.
-
-    Giriş : tüm eğitilen ajanların obs'u birleştirilmiş
-            (n_agents × obs_dim,)
-    Çıkış : scalar value
-
-    CTDE: eğitimde global bilgi kullanır,
-    execution'da actor sadece kendi obs'unu kullanır.
-    """
-
-    def __init__(self, global_obs_dim: int, hidden: int = 256):
-        super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(global_obs_dim, hidden),
-            nn.ReLU(),
-            nn.Linear(hidden, hidden),
-            nn.ReLU(),
-            nn.Linear(hidden, 1),
-        )
-        self._init_weights()
-
-    def _init_weights(self):
-        for i, layer in enumerate(self.net):
-            if isinstance(layer, nn.Linear):
-                gain = np.sqrt(2) if i < len(self.net) - 1 else 1.0
-                nn.init.orthogonal_(layer.weight, gain=gain)
-                nn.init.zeros_(layer.bias)
-
-    def forward(self, global_obs: "torch.Tensor") -> "torch.Tensor":
-        """
-        Parameters
-        ----------
-        global_obs : (batch, global_obs_dim)
-
-        Returns
-        -------
-        value : (batch, 1)
-        """
-        return self.net(global_obs)
-
-
 from training.rollout_buffer import RolloutBuffer
 
-
-if not _TORCH_AVAILABLE:
-    raise ImportError(
-        "PyTorch bulunamadı. Kurulum: pip install torch\n"
-        "RolloutBuffer için: from train_mappo import RolloutBuffer"
-    )
-
 # ===========================================================================
 # Actor Network
 # ===========================================================================
 
 class MAPPOActor(nn.Module):
     """
-    Gaussian policy — continuous action space.
+    Gaussian policy (ctrl) + Bernoulli policy (fire).
 
     Giriş : normalize obs vektörü (obs_dim,)
-    Çıkış : action mean (action_dim,) + log_std (action_dim,) — paylaşımlı
-
-    Aksiyon sınırları:
-        da, de, dr : tanh → [-1, 1]
-        dt         : sigmoid → [0, 1]
-        fire       : sigmoid → [0, 1]
+    Çıkış :
+        ctrl : da, de, dr, dt — Normal dağılım, tanh/sigmoid squash
+        fire : 0/1             — Bernoulli head (collapse'e karşı)
     """
 
     def __init__(self, obs_dim: int, action_dim: int, hidden: int = 256):
@@ -250,9 +104,11 @@ class MAPPOActor(nn.Module):
             nn.Linear(hidden, hidden),
             nn.ReLU(),
         )
-        self.mean_head    = nn.Linear(hidden, action_dim)
-        # log_std: sabit parametre (state'ten bağımsız — basit Gaussian)
-        self.log_std      = nn.Parameter(torch.zeros(action_dim))
+        # Kontrol aksiyonları: da, de, dr, dt (4 adet Gaussian)
+        self.mean_head = nn.Linear(hidden, action_dim - 1)
+        self.log_std   = nn.Parameter(torch.zeros(action_dim - 1))
+        # Fire: ayrı Bernoulli head — collapse'i önler
+        self.fire_head = nn.Linear(hidden, 1)
 
         self._init_weights()
 
@@ -263,22 +119,30 @@ class MAPPOActor(nn.Module):
                 nn.init.zeros_(layer.bias)
         nn.init.orthogonal_(self.mean_head.weight, gain=0.01)
         nn.init.zeros_(self.mean_head.bias)
+        # Fire head: başlangıçta ~%30 ateş olasılığı (logit=-0.85)
+        nn.init.constant_(self.fire_head.bias, -0.85)
+        nn.init.orthogonal_(self.fire_head.weight, gain=0.01)
 
     def forward(self, obs: "torch.Tensor"):
         """
         Returns
         -------
-        mean    : (batch, action_dim)
-        log_std : (action_dim,) broadcast edilir
+        mean       : (batch, action_dim-1)  — da, de, dr, dt
+        log_std    : (action_dim-1,)
+        fire_logit : (batch, 1)             — Bernoulli logit
         """
-        feat = self.net(obs)
-        mean = self.mean_head(feat)
-        return mean, self.log_std
+        feat       = self.net(obs)
+        mean       = self.mean_head(feat)
+        fire_logit = self.fire_head(feat)
+        return mean, self.log_std, fire_logit
 
-    def get_dist(self, obs: "torch.Tensor") -> "Normal":
-        mean, log_std = self.forward(obs)
-        std = log_std.exp().clamp(min=1e-4, max=2.0)
-        return Normal(mean, std)
+    def get_dist(self, obs: "torch.Tensor"):
+        """Returns (Normal dist for ctrl, Bernoulli dist for fire)"""
+        mean, log_std, fire_logit = self.forward(obs)
+        std       = log_std.exp().clamp(min=1e-4, max=2.0)
+        ctrl_dist = Normal(mean, std)
+        fire_dist = torch.distributions.Bernoulli(logits=fire_logit)
+        return ctrl_dist, fire_dist
 
     @torch.no_grad()
     def act(self, obs: "torch.Tensor", deterministic: bool = False):
@@ -287,28 +151,33 @@ class MAPPOActor(nn.Module):
 
         Returns
         -------
-        action_raw  : (action_dim,) — squeeze ve clip öncesi
-        log_prob    : scalar
+        action_raw : (action_dim,) — [ctrl(4), fire(1)]
+        log_prob   : scalar
         """
-        dist = self.get_dist(obs)
+        ctrl_dist, fire_dist = self.get_dist(obs)
         if deterministic:
-            raw = dist.mean
+            ctrl_raw = ctrl_dist.mean
+            fire_raw = (fire_dist.probs > 0.5).float()
         else:
-            raw = dist.sample()
-        log_prob = dist.log_prob(raw).sum(-1)
+            ctrl_raw = ctrl_dist.sample()
+            fire_raw = fire_dist.sample()
+        ctrl_lp  = ctrl_dist.log_prob(ctrl_raw).sum(-1)
+        fire_lp  = fire_dist.log_prob(fire_raw).sum(-1)
+        raw      = torch.cat([ctrl_raw, fire_raw], dim=-1)
+        log_prob = ctrl_lp + fire_lp
         return raw, log_prob
 
     @staticmethod
     def squash(raw: "torch.Tensor") -> "torch.Tensor":
         """
         Ham aksiyon → geçerli aralık:
-            [:3] (da, de, dr) → tanh → [-1, 1]
+            [:3] (da, de, dr) → tanh  → [-1, 1]
             [3]  (dt)         → sigmoid → [0, 1]
-            [4]  (fire)       → sigmoid → [0, 1]
+            [4]  (fire)       → binary (Bernoulli'den geliyor, dokunma)
         """
         out = raw.clone()
         out[..., :3] = torch.tanh(raw[..., :3])
-        out[..., 3:] = torch.sigmoid(raw[..., 3:])
+        out[..., 3]  = torch.sigmoid(raw[..., 3])
         return out
 
 
@@ -320,12 +189,8 @@ class MAPPOCritic(nn.Module):
     """
     Centralized value function.
 
-    Giriş : tüm eğitilen ajanların obs'u birleştirilmiş
-            (n_agents × obs_dim,)
+    Giriş : global obs (tüm ajanların obs'u concat) (global_obs_dim,)
     Çıkış : scalar value
-
-    CTDE: eğitimde global bilgi kullanır,
-    execution'da actor sadece kendi obs'unu kullanır.
     """
 
     def __init__(self, global_obs_dim: int, hidden: int = 256):
@@ -342,121 +207,17 @@ class MAPPOCritic(nn.Module):
     def _init_weights(self):
         for i, layer in enumerate(self.net):
             if isinstance(layer, nn.Linear):
-                gain = np.sqrt(2) if i < len(self.net) - 1 else 1.0
+                gain = 1.0 if i < len(self.net) - 1 else 0.01
                 nn.init.orthogonal_(layer.weight, gain=gain)
                 nn.init.zeros_(layer.bias)
 
     def forward(self, global_obs: "torch.Tensor") -> "torch.Tensor":
-        """
-        Parameters
-        ----------
-        global_obs : (batch, global_obs_dim)
+        return self.net(global_obs).squeeze(-1)
 
-        Returns
-        -------
-        value : (batch, 1)
-        """
-        return self.net(global_obs)
+    @torch.no_grad()
+    def act(self, global_obs: "torch.Tensor") -> float:
+        return float(self.forward(global_obs).item())
 
-
-# ===========================================================================
-# Rollout Buffer
-# ===========================================================================
-
-class RolloutBuffer:
-    """
-    n_steps adımlık rollout verisi — tüm eğitilen ajanlar için.
-
-    Her ajan için ayrı buffer tutulur, update sırasında birleştirilir.
-    """
-
-    def __init__(self, n_steps: int, n_agents: int,
-                 obs_dim: int, action_dim: int, global_obs_dim: int):
-        self.n_steps        = n_steps
-        self.n_agents       = n_agents
-        self.obs_dim        = obs_dim
-        self.action_dim     = action_dim
-        self.global_obs_dim = global_obs_dim
-        self.reset()
-
-    def reset(self):
-        n, a = self.n_steps, self.n_agents
-        self.obs        = np.zeros((n, a, self.obs_dim),        dtype=np.float32)
-        self.actions    = np.zeros((n, a, self.action_dim),     dtype=np.float32)
-        self.log_probs  = np.zeros((n, a),                      dtype=np.float32)
-        self.rewards    = np.zeros((n, a),                      dtype=np.float32)
-        self.dones      = np.zeros((n, a),                      dtype=np.float32)
-        self.values     = np.zeros((n, a),                      dtype=np.float32)
-        self.global_obs = np.zeros((n, self.global_obs_dim),    dtype=np.float32)
-        self._ptr       = 0
-
-    def add(self, obs: dict, actions: dict, log_probs: dict,
-            rewards: dict, dones: dict, values: np.ndarray,
-            global_obs: np.ndarray, agent_ids: list):
-        """Bir adımın verisini buffer'a ekle."""
-        assert self._ptr < self.n_steps, "Buffer dolu — önce get() çağırın."
-        t = self._ptr
-        for i, aid in enumerate(agent_ids):
-            self.obs[t, i]      = obs[aid]
-            self.actions[t, i]  = actions[aid]
-            self.log_probs[t, i]= log_probs[aid]
-            self.rewards[t, i]  = rewards[aid]
-            self.dones[t, i]    = float(dones.get(aid, False))
-            self.values[t, i]   = values[i]
-        self.global_obs[t] = global_obs
-        self._ptr += 1
-
-    def compute_gae(self, last_values: np.ndarray,
-                    gamma: float, gae_lambda: float) -> tuple:
-        """
-        GAE (Generalized Advantage Estimation).
-
-        Parameters
-        ----------
-        last_values : (n_agents,) — bootstrap için son adım value tahmini
-        gamma       : discount faktörü
-        gae_lambda  : GAE lambda
-
-        Returns
-        -------
-        advantages : (n_steps, n_agents)
-        returns    : (n_steps, n_agents)  — value target
-        """
-        T = self.n_steps
-        advantages = np.zeros_like(self.rewards)
-        last_gae   = np.zeros(self.n_agents, dtype=np.float32)
-
-        for t in reversed(range(T)):
-            if t == T - 1:
-                next_non_terminal = 1.0 - self.dones[t]
-                next_values       = last_values
-            else:
-                next_non_terminal = 1.0 - self.dones[t]
-                next_values       = self.values[t + 1]
-
-            delta    = (self.rewards[t]
-                        + gamma * next_values * next_non_terminal
-                        - self.values[t])
-            last_gae = delta + gamma * gae_lambda * next_non_terminal * last_gae
-            advantages[t] = last_gae
-
-        returns = advantages + self.values
-        return advantages, returns
-
-    def get(self) -> dict:
-        """Buffer içeriğini numpy dict olarak döndürür."""
-        assert self._ptr == self.n_steps, "Buffer henüz dolmadı."
-        return {
-            "obs":        self.obs,
-            "actions":    self.actions,
-            "log_probs":  self.log_probs,
-            "global_obs": self.global_obs,
-        }
-
-
-# ===========================================================================
-# MAPPO Trainer
-# ===========================================================================
 
 class MAPPOTrainer:
     """
@@ -547,8 +308,11 @@ class MAPPOTrainer:
         self.global_step   = 0
         self.episode_count = 0
         self._ep_rewards   = []
-        self._ep_wins      = []
+        self._ep_wins      = []   # 1=win, 0=diğer
+        self._ep_losses    = []   # 1=loss, 0=diğer
+        self._ep_draws     = []   # 1=draw, 0=diğer
         self._ep_lengths   = []
+        self._ep_reasons   = []   # "win" | "loss" | "draw" | "timeout"
         self._update_count = 0
 
         # Erken durdurma — Faz 1 geçiş kriterleri
@@ -559,6 +323,7 @@ class MAPPOTrainer:
         self.early_stop_kill     = float(cur.get("min_kill_per_ep", 0.80))
         self.early_stop_oob      = float(cur.get("max_oob_rate",    0.05))
         self._stopped_early      = False
+
 
         print(f"[MAPPO] Device      : {self.device}")
         print(f"[MAPPO] obs_dim     : {self.obs_dim}")
@@ -594,9 +359,26 @@ class MAPPOTrainer:
                 actions_train, log_probs_train, values = \
                     self._collect_train_actions(obs_dict)
 
-                # Heuristic rakip aksiyonları
+                # Heuristic rakip aksiyonları — kademeli güçlendirme
+                # İlk 500k adım: %0 heuristic (rastgele)
+                # 500k-1M adım: %0 → %50 heuristic
+                # 1M+ adım: %100 heuristic
                 state_dict   = self.env.get_all_states()
-                actions_opp  = self.opp_policy.act(state_dict)
+                opp_strength = float(np.clip(
+                    (self.global_step - 500_000) / 500_000, 0.0, 1.0
+                ))
+                if opp_strength < 1.0:
+                    heur_acts = self.opp_policy.act(state_dict)
+                    rand_acts  = {aid: np.random.uniform(-1,1,5).astype(np.float32)
+                                  for aid in self.opp_policy.agent_ids
+                                  if aid not in self.train_ids}
+                    actions_opp = {
+                        aid: (opp_strength * heur_acts[aid]
+                              + (1-opp_strength) * rand_acts[aid])
+                        for aid in rand_acts
+                    }
+                else:
+                    actions_opp = self.opp_policy.act(state_dict)
 
                 # Tüm aksiyonları birleştir
                 action_dict = {**actions_train, **actions_opp}
@@ -631,13 +413,25 @@ class MAPPOTrainer:
                 # Episode bitti mi?
                 if done_dict["__all__"]:
                     winner = done_dict.get("winner", "draw")
-                    win    = 1 if winner == TRAIN_TEAM else 0
+                    is_win   = 1 if winner == TRAIN_TEAM else 0
+                    is_loss  = 1 if winner == OPP_TEAM   else 0
+                    is_draw  = 1 if winner == "draw"     else 0
+                    # Timeout: max_steps doldu ve beraberlik
+                    reason = (
+                        "win"     if is_win  else
+                        "loss"    if is_loss else
+                        "timeout" if ep_steps >= self.env.max_steps - 1 else
+                        "draw"
+                    )
 
                     mean_rew = np.mean([ep_reward[aid]
                                         for aid in self.train_ids])
                     self._ep_rewards.append(mean_rew)
-                    self._ep_wins.append(win)
+                    self._ep_wins.append(is_win)
+                    self._ep_losses.append(is_loss)
+                    self._ep_draws.append(is_draw)
                     self._ep_lengths.append(ep_steps)
+                    self._ep_reasons.append(reason)
                     self.episode_count += 1
 
                     if self.episode_count % self.log_interval == 0:
@@ -685,8 +479,14 @@ class MAPPOTrainer:
         # Kill tahmini: w_kill=10 oldugu icin kill olan ep'de reward yuksek
         kill_per_ep = sum(1 for r in rewards if r > 5.0) / max(len(rewards), 1)
 
-        # OOB tahmini: cok negatif reward -> penalty tetiklendi
-        oob_rate = sum(1 for r in rewards if r < -2.0) / max(len(rewards), 1)
+        # OOB/crash: loss olan ama timeout olmayan episode'lar
+        # (gerçek kill/crash = loss + kısa episode)
+        losses  = self._ep_losses[-w:]
+        lengths = self._ep_lengths[-w:]
+        oob_rate = sum(
+            1 for loss, ln in zip(losses, lengths)
+            if loss and ln < self.env.max_steps * 0.5
+        ) / max(len(losses), 1)
 
         passed = (
             win_rate    >= self.early_stop_win_rate and
@@ -740,12 +540,31 @@ class MAPPOTrainer:
         # Tüm ajanlar aynı global value paylaşır (centralized critic)
         values_np[:] = value
 
+        # Blue heuristic (CRITICAL override için)
+        if not hasattr(self, '_blue_heuristic'):
+            from agents.heuristic_agent import HeuristicAgent
+            self._blue_heuristic = {
+                aid: HeuristicAgent(self.config, aid)
+                for aid in self.train_ids
+            }
+
+        state_dict = self.env.get_all_states()
+
         for aid in self.train_ids:
             obs_t = torch.FloatTensor(obs_dict[aid]).unsqueeze(0).to(self.device)
             with torch.no_grad():
                 raw, lp = self.actor.act(obs_t)
-            squashed   = MAPPOActor.squash(raw.squeeze(0))
-            actions[aid]   = squashed.cpu().numpy()
+            squashed = MAPPOActor.squash(raw.squeeze(0)).cpu().numpy()
+
+            # CRITICAL override: zemin/stall/sınır tehlikesinde heuristic devreye girer
+            s = state_dict[aid]
+            critical = self._blue_heuristic[aid]._critical_recovery(s)
+            if critical is not None:
+                squashed = MAPPOActor.squash(
+                    torch.FloatTensor(critical)
+                ).numpy()
+
+            actions[aid]   = squashed
             log_probs[aid] = float(lp.item())
 
         return actions, log_probs, values_np
@@ -807,11 +626,14 @@ class MAPPOTrainer:
                 mb_ret    = ret_t[mb_idx]
                 mb_gobs   = gobs_t[mb_idx]
 
-                # Yeni log_prob ve entropy
-                dist    = self.actor.get_dist(mb_obs)
-                # squash correction — tanh/sigmoid log_prob düzeltmesi
-                new_lp  = dist.log_prob(mb_act).sum(-1)
-                entropy = dist.entropy().sum(-1).mean()
+                # Yeni log_prob ve entropy — ctrl + fire ayrı
+                ctrl_dist, fire_dist = self.actor.get_dist(mb_obs)
+                mb_ctrl = mb_act[..., :4]   # da, de, dr, dt
+                mb_fire = mb_act[..., 4:5]  # fire (binary)
+                new_lp  = (ctrl_dist.log_prob(mb_ctrl).sum(-1)
+                           + fire_dist.log_prob(mb_fire).sum(-1))
+                entropy = (ctrl_dist.entropy().sum(-1).mean()
+                           + fire_dist.entropy().sum(-1).mean())
 
                 # PPO ratio
                 ratio   = torch.exp(new_lp - mb_old_lp)
@@ -857,20 +679,33 @@ class MAPPOTrainer:
 
     def _log_progress(self, t_start: float):
         """Konsol + CSV log."""
-        window = min(self.log_interval, len(self._ep_rewards))
+        window    = min(self.log_interval, len(self._ep_rewards))
         mean_rew  = float(np.mean(self._ep_rewards[-window:]))
         win_rate  = float(np.mean(self._ep_wins[-window:]))
+        loss_rate = float(np.mean(self._ep_losses[-window:]))
+        draw_rate = float(np.mean(self._ep_draws[-window:]))
         mean_len  = float(np.mean(self._ep_lengths[-window:]))
         elapsed   = time.time() - t_start
         steps_sec = self.global_step / max(elapsed, 1)
+
+        # Son window'daki bitiş sebepleri
+        reasons   = self._ep_reasons[-window:]
+        r_counts  = {r: reasons.count(r) for r in ["win","loss","draw","timeout"]}
 
         print(
             f"[Ep {self.episode_count:>6}] "
             f"step={self.global_step:>9,} | "
             f"rew={mean_rew:>7.2f} | "
-            f"win={win_rate:.2f} | "
+            f"W={win_rate:.2f} L={loss_rate:.2f} D={draw_rate:.2f} | "
             f"len={mean_len:>5.0f} | "
-            f"{steps_sec:>6.0f} sps"
+            f"{steps_sec:>5.0f}sps"
+        )
+        print(
+            f"{'':>10}bitiş: "
+            f"win={r_counts['win']:>3} "
+            f"loss={r_counts['loss']:>3} "
+            f"draw={r_counts['draw']:>3} "
+            f"timeout={r_counts['timeout']:>3}"
         )
 
         # CSV
@@ -880,10 +715,17 @@ class MAPPOTrainer:
             w = csv.writer(f)
             if write_header:
                 w.writerow(["episode", "global_step", "mean_reward",
-                             "win_rate", "mean_ep_len", "updates"])
-            w.writerow([self.episode_count, self.global_step,
-                        round(mean_rew, 4), round(win_rate, 4),
-                        round(mean_len, 1), self._update_count])
+                             "win_rate", "loss_rate", "draw_rate",
+                             "mean_ep_len", "updates",
+                             "n_win", "n_loss", "n_draw", "n_timeout"])
+            w.writerow([
+                self.episode_count, self.global_step,
+                round(mean_rew, 4), round(win_rate, 4),
+                round(loss_rate, 4), round(draw_rate, 4),
+                round(mean_len, 1), self._update_count,
+                r_counts["win"], r_counts["loss"],
+                r_counts["draw"], r_counts["timeout"],
+            ])
 
     def _save_checkpoint(self, final: bool = False):
         """Actor + Critic ağırlıklarını kaydet."""
