@@ -44,7 +44,7 @@ import numpy as np
 from pathlib import Path
 from copy import deepcopy
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 try:
     import torch
@@ -370,7 +370,7 @@ class MAPPOTrainer:
                 if opp_strength < 1.0:
                     heur_acts = self.opp_policy.act(state_dict)
                     rand_acts  = {aid: np.random.uniform(-1,1,5).astype(np.float32)
-                                  for aid in self.opp_policy.agent_ids
+                                  for aid in self.opp_policy._agent_ids
                                   if aid not in self.train_ids}
                     actions_opp = {
                         aid: (opp_strength * heur_acts[aid]
