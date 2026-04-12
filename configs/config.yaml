@@ -171,7 +171,7 @@ reward:
   w_kill:      15.0    # r_kill      — düşman imhası (anlık)
   w_wez:        5.0    # r_wez       — WEZ avantajı [0,1] sürekli
   w_tracking:   1.0    # r_tracking  — radar izleme kalitesi
-  w_survival:   0.1    # r_survival  — hayatta kalma (dt başına)
+  w_survival:   0.01    # r_survival  — hayatta kalma (dt başına)
   w_coord:      0.5    # r_coord     — takım koordinasyonu
   w_resource:   0.1    # r_resource  — yakıt/ammo verimliliği
   w_penalty:   -5.0    # r_penalty   — tehlikeli davranış (negatif!)
@@ -248,15 +248,15 @@ training:
   gamma:              0.99          # discount faktörü
   gae_lambda:         0.95          # GAE lambda
   clip_epsilon:       0.2           # PPO clip
-  entropy_coeff:      0.01          # keşif teşviki
+  entropy_coeff:      0.05          # keşif teşviki
   value_loss_coeff:   0.5
   max_grad_norm:      0.5
 
   # Rollout ve güncelleme
-  n_steps:            128           # adım / rollout
+  n_steps:            512           # adım / rollout
   n_epochs:           4             # PPO güncelleme epoch sayısı
-  batch_size:         256
-  minibatch_size:     64
+  batch_size:         512
+  minibatch_size:     128
 
   # QMIX (karşılaştırma için)
   qmix_mixing_embed:  32
@@ -307,14 +307,34 @@ curriculum:
 # LOGGING — Logging ve Checkpoint
 # -----------------------------------------------------------------------------
 logging:
-  log_dir:          "../logs/"
-  checkpoint_dir:   "../checkpoints/"
+  log_dir:          "logs/"
+  checkpoint_dir:   "checkpoints/"
   wandb_project:    "marl-air-combat"
   wandb_entity:     ""              # WandB kullanıcı adı
   log_interval:     100             # episode
   checkpoint_interval: 1000        # episode
   save_replay:      false           # replay buffer kaydetme (disk yoğun)
   replay_dir:       "replays/"
+
+
+# -----------------------------------------------------------------------------
+# OPPONENT_POOL — Fictitious Self-Play Rakip Havuzu
+#
+# Policy collapse çözümü: Red takımı sabit heuristic yerine Blue'nun geçmiş
+# checkpoint'lerinden örneklenen bir policy kullanır.
+#
+# Pipeline:
+#   0 .. start_step        : rastgele aksiyon (warm-up, exploration)
+#   start_step+            : pool'dan seçilen checkpoint (self-play)
+#                            pool boşsa heuristic fallback devreye girer
+#
+# Her pool_update_interval episode'da bir actor snapshot kaydedilir ve
+# pool'a eklenir. Ring buffer kapasitesi max_pool_size'dır.
+# -----------------------------------------------------------------------------
+opponent_pool:
+  max_pool_size:          20    # ring buffer kapasitesi (eski checkpoint silinir)
+  start_step:        500_000    # bu adımdan itibaren self-play pool kullanılır
+  pool_update_interval:  200    # her N episode'da bir snapshot ekle
 
 
 # -----------------------------------------------------------------------------

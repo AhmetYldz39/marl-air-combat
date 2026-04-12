@@ -13,7 +13,7 @@ Tüm testler geçmeden aircraft_model.py yazımına geçilmez.
 import numpy as np
 import sys
 import os
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from envs.geometry_utils import (
     relative_position, distance_3d, distance_horizontal,

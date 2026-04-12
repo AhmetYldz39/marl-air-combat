@@ -131,15 +131,18 @@ else:
 
     # Forward — batch
     obs_batch = torch.randn(4, OBS_DIM)
-    mean, log_std = actor.forward(obs_batch)
-    check("Actor mean shape = (4, 5)",    tuple(mean.shape) == (4, ACTION_DIM))
-    check("Actor log_std shape = (5,)",   tuple(log_std.shape) == (ACTION_DIM,))
-    check("Actor mean NaN yok",           not torch.any(torch.isnan(mean)))
+    mean, log_std, fire_logit = actor.forward(obs_batch)
+    check("Actor mean shape = (4, 4)",       tuple(mean.shape)       == (4, ACTION_DIM - 1))
+    check("Actor log_std shape = (4,)",      tuple(log_std.shape)    == (ACTION_DIM - 1,))
+    check("Actor fire_logit shape = (4, 1)", tuple(fire_logit.shape) == (4, 1))
+    check("Actor mean NaN yok",              not torch.any(torch.isnan(mean)))
 
-    # get_dist
-    dist = actor.get_dist(obs_batch)
-    check("Actor dist type Normal",
-          isinstance(dist, torch.distributions.Normal))
+    # get_dist — ctrl (Normal) + fire (Bernoulli) ayrı head
+    ctrl_dist, fire_dist = actor.get_dist(obs_batch)
+    check("Actor ctrl_dist type Normal",
+          isinstance(ctrl_dist, torch.distributions.Normal))
+    check("Actor fire_dist type Bernoulli",
+          isinstance(fire_dist, torch.distributions.Bernoulli))
 
     # act — single obs
     obs_single = torch.randn(1, OBS_DIM)
@@ -157,9 +160,8 @@ else:
     check("Squash dt ∈ [0,1]",
           bool((squashed[:, 3] >= -1e-6).all() and
                (squashed[:, 3] <= 1.0 + 1e-6).all()))
-    check("Squash fire ∈ [0,1]",
-          bool((squashed[:, 4] >= -1e-6).all() and
-               (squashed[:, 4] <= 1.0 + 1e-6).all()))
+    check("Squash fire passthrough (Bernoulli tarafından üretilir, squash dokunmaz)",
+          torch.allclose(squashed[:, 4], raw_t[:, 4]))
 
     # Deterministic act tekrarlanabilir
     obs_d = torch.randn(1, OBS_DIM)
@@ -185,7 +187,7 @@ else:
     # Forward — batch
     gobs_batch = torch.randn(4, GLOBAL_DIM)
     val = critic(gobs_batch)
-    check("Critic output shape = (4, 1)", tuple(val.shape) == (4, 1))
+    check("Critic output shape = (4,)", tuple(val.shape) == (4,))
     check("Critic output NaN yok",        not torch.any(torch.isnan(val)))
 
     # Single

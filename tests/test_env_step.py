@@ -23,7 +23,7 @@ Kategoriler:
 
 import numpy as np
 import sys, os, yaml
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from envs.dogfight_env import DogfightEnv, BLUE, RED
 from envs.aircraft_model import ACTION_DIM, STATE_ALIVE, STATE_HP

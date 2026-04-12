@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7a9103f8-00b5-45ba-a8b7-85f53568ba1f" name="Changes" comment="Train code collapse fix and config update">
-      <change beforePath="$PROJECT_DIR$/training/train_mappo.py" beforeDir="false" afterPath="$PROJECT_DIR$/training/train_mappo.py" afterDir="false" />
+    <list default="true" id="7a9103f8-00b5-45ba-a8b7-85f53568ba1f" name="Changes" comment="Train code fix">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/config.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -230,7 +231,15 @@
       <option name="project" value="LOCAL" />
       <updated>1773174897125</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Train code fix">
+      <option name="closed" value="true" />
+      <created>1773175011163</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1773175011163</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -249,6 +258,7 @@
     <MESSAGE value="Train and eval codes added (Phase 1)" />
     <MESSAGE value="Trim code to initialize the training added" />
     <MESSAGE value="Train code collapse fix and config update" />
-    <option name="LAST_COMMIT_MESSAGE" value="Train code collapse fix and config update" />
+    <MESSAGE value="Train code fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="Train code fix" />
   </component>
 </project>

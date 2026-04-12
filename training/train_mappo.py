@@ -36,6 +36,8 @@ Bu dosya değişirse etkilenen dosyalar:
 import os
 import sys
 import csv
+sys.stdout = open(sys.stdout.fileno(), mode='w', buffering=1, closefd=False)
+sys.stderr = open(sys.stderr.fileno(), mode='w', buffering=1, closefd=False)
 import json
 import time
 import argparse
@@ -61,6 +63,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from envs.dogfight_env import DogfightEnv, BLUE, RED
 from agents.heuristic_agent import MultiHeuristicPolicy
+from agents.opponent_pool import OpponentPool
 from utils.normalization import Normalizer
 
 # ---------------------------------------------------------------------------
@@ -289,6 +292,20 @@ class MAPPOTrainer:
         self.opp_policy = MultiHeuristicPolicy(config, self.env.agent_ids,
                                                 team_map)
 
+        # Fictitious self-play opponent pool
+        pool_cfg = config.get("opponent_pool", {})
+        self.pool_start_step      = int(pool_cfg.get("start_step",            500_000))
+        self.pool_update_interval = int(pool_cfg.get("pool_update_interval",  200))
+        self.pool = OpponentPool(
+            config        = config,
+            red_ids       = self.env.red_ids,
+            obs_dim       = self.obs_dim,
+            action_dim    = self.action_dim,
+            device        = self.device,
+            fallback      = self.opp_policy,
+            max_pool_size = int(pool_cfg.get("max_pool_size", 20)),
+        )
+
         # Buffer
         self.buffer = RolloutBuffer(
             self.n_steps, self.n_agents,
@@ -359,26 +376,11 @@ class MAPPOTrainer:
                 actions_train, log_probs_train, values = \
                     self._collect_train_actions(obs_dict)
 
-                # Heuristic rakip aksiyonları — kademeli güçlendirme
-                # İlk 500k adım: %0 heuristic (rastgele)
-                # 500k-1M adım: %0 → %50 heuristic
-                # 1M+ adım: %100 heuristic
-                state_dict   = self.env.get_all_states()
-                opp_strength = float(np.clip(
-                    (self.global_step - 500_000) / 500_000, 0.0, 1.0
-                ))
-                if opp_strength < 1.0:
-                    heur_acts = self.opp_policy.act(state_dict)
-                    rand_acts  = {aid: np.random.uniform(-1,1,5).astype(np.float32)
-                                  for aid in self.opp_policy._agent_ids
-                                  if aid not in self.train_ids}
-                    actions_opp = {
-                        aid: (opp_strength * heur_acts[aid]
-                              + (1-opp_strength) * rand_acts[aid])
-                        for aid in rand_acts
-                    }
-                else:
-                    actions_opp = self.opp_policy.act(state_dict)
+                # Opponent aksiyonları: heuristic fallback → fictitious self-play
+                # Pool boşken (ep < pool_update_interval) heuristic fallback devreye girer.
+                # İlk snapshot ep=pool_update_interval'da eklenir; sonrası self-play artar.
+                state_dict  = self.env.get_all_states()
+                actions_opp = self.pool.act(obs_dict, state_dict)
 
                 # Tüm aksiyonları birleştir
                 action_dict = {**actions_train, **actions_opp}
@@ -439,6 +441,10 @@ class MAPPOTrainer:
 
                     if self.episode_count % self.ckpt_interval == 0:
                         self._save_checkpoint()
+
+                    if self.episode_count % self.pool_update_interval == 0:
+                        snap = self._save_pool_snapshot()
+                        self.pool.add_checkpoint(snap)
 
                     # Erken durdurma kontrolü
                     if (self.episode_count % self.early_stop_interval == 0
@@ -668,8 +674,19 @@ class MAPPOTrainer:
     # -----------------------------------------------------------------------
 
     def _reset_episode(self) -> dict:
-        self.opp_policy.reset()
+        self.pool.reset()   # opp_policy.reset() pool içinde çağrılır
         return self.env.reset()
+
+    def _save_pool_snapshot(self) -> str:
+        """Actor ağırlıklarını pool snapshot olarak kaydet (optimizer olmadan)."""
+        path = self.ckpt_dir / f"pool_actor_ep{self.episode_count}.pt"
+        torch.save({
+            "episode":     self.episode_count,
+            "global_step": self.global_step,
+            "actor":       self.actor.state_dict(),
+            "config":      self.config,
+        }, path)
+        return str(path)
 
     def _build_global_obs(self, obs_dict: dict) -> np.ndarray:
         """Eğitilen ajanların obs'unu birleştir → (global_obs_dim,)"""
@@ -692,11 +709,15 @@ class MAPPOTrainer:
         reasons   = self._ep_reasons[-window:]
         r_counts  = {r: reasons.count(r) for r in ["win","loss","draw","timeout"]}
 
+        # Kill tahmini (reward > 5.0 olan episode'lar)
+        kill_per_ep = sum(1 for r in self._ep_rewards[-window:] if r > 5.0) / max(window, 1)
+
         print(
             f"[Ep {self.episode_count:>6}] "
             f"step={self.global_step:>9,} | "
             f"rew={mean_rew:>7.2f} | "
             f"W={win_rate:.2f} L={loss_rate:.2f} D={draw_rate:.2f} | "
+            f"kill/ep={kill_per_ep:.2f} | "
             f"len={mean_len:>5.0f} | "
             f"{steps_sec:>5.0f}sps"
         )
@@ -716,12 +737,13 @@ class MAPPOTrainer:
             if write_header:
                 w.writerow(["episode", "global_step", "mean_reward",
                              "win_rate", "loss_rate", "draw_rate",
-                             "mean_ep_len", "updates",
+                             "kill_per_ep", "mean_ep_len", "updates",
                              "n_win", "n_loss", "n_draw", "n_timeout"])
             w.writerow([
                 self.episode_count, self.global_step,
                 round(mean_rew, 4), round(win_rate, 4),
                 round(loss_rate, 4), round(draw_rate, 4),
+                round(kill_per_ep, 4),
                 round(mean_len, 1), self._update_count,
                 r_counts["win"], r_counts["loss"],
                 r_counts["draw"], r_counts["timeout"],

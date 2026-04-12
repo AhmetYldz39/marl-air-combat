@@ -10,7 +10,7 @@ weapons_model.py için unit testler.
 import numpy as np
 import sys
 import os
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from envs.weapons_model import WeaponsModel
 from envs.aircraft_model import (
