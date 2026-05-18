@@ -4,6 +4,7 @@ logs/
 
 # Claude Code config
 .claude/
+CLAUDE.md
 
 # Python virtual environment
 venv/
