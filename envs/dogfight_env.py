@@ -32,20 +32,28 @@ Bu dosya değişirse etkilenen dosyalar:
 
 import numpy as np
 import yaml
+from collections import deque
 from copy import deepcopy
 
 from envs.aircraft_model import (
     AircraftModel,
     STATE_X, STATE_Y, STATE_H, STATE_V,
-    STATE_ALPHA, STATE_PSI, STATE_FUEL,
+    STATE_ALPHA, STATE_PHI, STATE_PSI, STATE_FUEL,
     STATE_AMMO, STATE_HP, STATE_ALIVE,
     STATE_DIM, ACTION_DIM,
+    ACTION_DA, ACTION_DE, ACTION_DR, ACTION_DT,
 )
 from envs.weapons_model  import WeaponsModel
 from envs.reward_model   import RewardModel
 from utils.normalization  import Normalizer
-from envs.geometry_utils import deg2rad
+from envs.geometry_utils import deg2rad, bearing_angle, wrap_to_pi, distance_3d
 from envs.trim_solver import TrimSolver
+
+# ---------------------------------------------------------------------------
+# CRITICAL recovery sabitleri (Blue MAPPO agent OOB koruması)
+# ---------------------------------------------------------------------------
+_CRIT_H_FLOOR    = 300.0    # m   — zemin kurtarma eşiği
+_CRIT_MAP_MARGIN = 5000.0   # m   — harita kenarı döndürme eşiği (3000→5000)
 
 
 # ---------------------------------------------------------------------------
@@ -80,7 +88,7 @@ class DogfightEnv:
         self.dt                 = float(env_cfg["dt"])
         self.max_steps          = int(env_cfg["max_steps"])
         self.map_size           = float(env_cfg["map_size"])
-        self.n_per_team         = int(env_cfg["n_agents_per_team"])
+        self._max_n_per_team    = int(env_cfg["n_agents_per_team"])  # config'deki max değer (2)
 
         # Spawn aralıkları
         self.spawn_x_range      = float(env_cfg.get("spawn_x_range",   10000.0))
@@ -91,28 +99,36 @@ class DogfightEnv:
         self.spawn_V_max        = float(env_cfg.get("spawn_V_max",       280.0))
         self.spawn_team_offset  = float(env_cfg.get("spawn_team_offset", 8000.0))
 
-        # ── Ajan ID'leri ──────────────────────────────────────────────
-        self.blue_ids = [f"blue_{i}" for i in range(self.n_per_team)]
-        self.red_ids  = [f"red_{i}"  for i in range(self.n_per_team)]
-        self.agent_ids = self.blue_ids + self.red_ids
-        self.n_agents  = len(self.agent_ids)
+        # Curriculum-v2 spawn parametreleri
+        cur = config.get("curriculum_v2", {})
+        self._phase1_dist_min    = float(cur.get("phase1_spawn_dist_min",  500.0))
+        self._phase1_dist_max    = float(cur.get("phase1_spawn_dist_max", 1500.0))
+        self._dynamic_spawn_dist = float(cur.get("phase15_dist_start",   2000.0))
+        self._normal_spawn_dist     = float(cur.get("phase3_spawn_dist",     6000.0))
+        self._normal_spawn_dist_max = float(cur.get("phase3_spawn_dist_max", 12000.0))
 
-        # Takım üyeliği: ajan_id → takım adı
-        self._team_of = {aid: BLUE for aid in self.blue_ids}
-        self._team_of.update({aid: RED for aid in self.red_ids})
+        # Team kill bonus (config'den)
+        self._team_kill_bonus = float(config.get("reward", {}).get("team_kill_bonus", 0.0))
+
+        # Curriculum fazı: 1=WEZ-close, 2=dinamik-dist, 3=1v1-normal, 4=2v2-normal
+        self._curriculum_phase = 1
 
         # ── Alt modüller ──────────────────────────────────────────────
-        self._aircraft  = AircraftModel(config)
+        self._aircraft   = AircraftModel(config)
         self._normalizer = Normalizer(config)
 
-        # Her ajan için ayrı WeaponsModel ve RewardModel
-        self._weapons = {aid: WeaponsModel(config) for aid in self.agent_ids}
-        self._rewards = {aid: RewardModel(config)  for aid in self.agent_ids}
+        # Dead-agent için sıfır state (obs padding'de kullanılır)
+        self._dummy_state = np.zeros(STATE_DIM, dtype=np.float32)
+
+        # ── Ajan ID'leri (başlangıç: Faz 1 = 1v1) ────────────────────
+        self.n_per_team = 1
+        self._rebuild_agent_ids()
 
         # ── Boyutlar ──────────────────────────────────────────────────
-        n_tm = self.n_per_team - 1   # takım arkadaşı sayısı
-        n_en = self.n_per_team       # düşman sayısı
-        self.obs_dim    = self._normalizer.obs_dim(n_tm, n_en)
+        # obs_dim her zaman max topoloji (2v2) boyutunda — ağ sabit kalır
+        n_tm_max = self._max_n_per_team - 1   # 1
+        n_en_max = self._max_n_per_team        # 2
+        self.obs_dim    = self._normalizer.obs_dim(n_tm_max, n_en_max)  # 50
         self.action_dim = ACTION_DIM
 
         # ── Episode state ─────────────────────────────────────────────
@@ -121,6 +137,15 @@ class DogfightEnv:
         self._done        = False
         self._episode_rewards: dict[str, float] = {}
         self._info_history:    dict[str, list]  = {}
+
+        # ── Düşman obs geçmişi (OpponentModel için) ────────────────────
+        # Her Blue ajan için son _opp_hist_steps adım düşman obs (24D/adım) tutulur.
+        # Trainer bu buffer'ı okur, OpponentModel çalıştırır, opp_intent'i obs'a ekler.
+        opp_cfg = config.get("opponent_model", {})
+        self._opp_hist_steps  = int(opp_cfg.get("history_window", 20))
+        self._opp_enemy_dim   = 12   # OBS_ENEMY_DIM
+        self._opp_step_dim    = self._max_n_per_team * self._opp_enemy_dim  # 24
+        self._enemy_history: dict[str, deque] = {}  # doldurulur reset()'te
 
         # RNG (seed dışarıdan set edilebilir)
         self.rng = np.random.default_rng(seed=None)
@@ -132,6 +157,41 @@ class DogfightEnv:
             h_range=(self.spawn_h_min, self.spawn_h_max),
             n_V=10, n_h=8,
         )
+
+    # -----------------------------------------------------------------------
+    # Curriculum
+    # -----------------------------------------------------------------------
+
+    def _rebuild_agent_ids(self):
+        """n_per_team'e göre ajan listelerini ve alt modülleri yeniden oluşturur."""
+        self.blue_ids  = [f"blue_{i}" for i in range(self.n_per_team)]
+        self.red_ids   = [f"red_{i}"  for i in range(self.n_per_team)]
+        self.agent_ids = self.blue_ids + self.red_ids
+        self.n_agents  = len(self.agent_ids)
+        self._team_of  = {aid: BLUE for aid in self.blue_ids}
+        self._team_of.update({aid: RED for aid in self.red_ids})
+        self._weapons  = {aid: WeaponsModel(self.config) for aid in self.agent_ids}
+        self._rewards  = {aid: RewardModel(self.config)  for aid in self.agent_ids}
+
+    def set_curriculum_phase(self, phase: int):
+        """
+        Curriculum fazını günceller.
+
+        Dahili faz numaraları:
+          1 = Faz-1   : 1v1 WEZ-close
+          2 = Faz-1.5 : 1v1 dinamik mesafe
+          3 = Faz-2   : 1v1 normal
+          4 = Faz-3   : 2v2 normal
+        """
+        self._curriculum_phase = phase
+        new_n = 1 if phase < 4 else self._max_n_per_team
+        if new_n != self.n_per_team:
+            self.n_per_team = new_n
+            self._rebuild_agent_ids()
+
+    def set_dynamic_spawn_dist(self, dist: float):
+        """Faz 1.5 için spawn mesafesini günceller."""
+        self._dynamic_spawn_dist = float(dist)
 
     # -----------------------------------------------------------------------
     # Seed
@@ -178,6 +238,25 @@ class DogfightEnv:
         # Spawn
         self._states = self._spawn_agents()
 
+        # Önceki aksiyon takibi (smoothness reward için)
+        self._prev_actions = {aid: None for aid in self.agent_ids}
+
+        # Kapanma hızı ödülü için önceki mesafe
+        self._prev_distances: dict[str, float] = {aid: None for aid in self.agent_ids}
+
+        # WEZ streak sayacı (N ardışık adım WEZ içindeyse bonus)
+        self._wez_streaks: dict[str, int] = {aid: 0 for aid in self.agent_ids}
+
+        # Düşman geçmişi sıfırla — her Blue ajan için _opp_hist_steps × sıfır vektör
+        zero_step = np.zeros(self._opp_step_dim, dtype=np.float32)
+        self._enemy_history = {
+            aid: deque(
+                [zero_step.copy() for _ in range(self._opp_hist_steps)],
+                maxlen=self._opp_hist_steps,
+            )
+            for aid in self.blue_ids
+        }
+
         return self._build_obs_dict()
 
     # -----------------------------------------------------------------------
@@ -185,7 +264,9 @@ class DogfightEnv:
     # -----------------------------------------------------------------------
 
     def step(self, action_dict: dict,
-             gat_messages: dict = None) -> tuple:
+             gat_messages: dict = None,
+             role_support_probs: dict = None,
+             role_vecs: dict = None) -> tuple:
         """
         Bir adım ilerler.
 
@@ -217,9 +298,13 @@ class DogfightEnv:
                 fire_results[aid] = None
                 continue
 
-            action = self._normalizer.normalize_action(
-                action_dict.get(aid, np.zeros(ACTION_DIM, dtype=np.float32))
-            )
+            raw_act = action_dict.get(aid, np.zeros(ACTION_DIM, dtype=np.float32))
+            # Blue MAPPO agent için OOB / zemin kurtarma override
+            if aid in self.blue_ids:
+                recovery = self._critical_recovery_blue(state)
+                if recovery is not None:
+                    raw_act = recovery
+            action = self._normalizer.normalize_action(raw_act)
 
             # Fizik
             self._states[aid] = self._aircraft.step(state, action, self.dt)
@@ -241,6 +326,11 @@ class DogfightEnv:
                         )
                         if fire_result["kill"]:
                             self._states[target_id][STATE_ALIVE] = 0.0
+                # Ammo güncelle (fired=True durumunda)
+                if fire_result["fired"]:
+                    self._states[aid][STATE_AMMO] = float(
+                        fire_result["ammo_remaining"]
+                    )
             else:
                 fire_result = self._weapons[aid]._no_fire_result(
                     self._weapons[aid]._empty_wez(), "no_target"
@@ -253,6 +343,9 @@ class DogfightEnv:
 
         self._step_count += 1
 
+        # Düşman geçmişini güncelle (tüm Blue ajanlar için)
+        self._update_enemy_history()
+
         # ── 2. Reward hesabı ──────────────────────────────────────────
         rew_dict  = {}
         info_dict = {}
@@ -263,27 +356,69 @@ class DogfightEnv:
             enemies    = self._get_enemies(aid)
             agg        = self._aggression.get(aid)
 
+            # Aksiyon deltası: smoothness reward için (episode başında None)
+            raw_action  = action_dict.get(aid, np.zeros(self.action_dim, dtype=np.float32))
+            prev_act    = self._prev_actions.get(aid)
+            action_delta = (raw_action - prev_act) if prev_act is not None else None
+            self._prev_actions[aid] = raw_action.copy()
+
+            # Kapanma hızı için önceki mesafe
+            prev_dist = self._prev_distances.get(aid)
+
+            role_sp = (role_support_probs.get(aid, 1.0)
+                       if role_support_probs and aid in self.blue_ids
+                       else 1.0)
+            role_v = (role_vecs.get(aid, None)
+                      if role_vecs and aid in self.blue_ids
+                      else None)
             total_rew, rew_info = self._rewards[aid].compute(
-                agent_state     = state,
-                teammate_states = teammates,
-                enemy_states    = enemies,
-                weapons_model   = self._weapons[aid],
-                prev_state      = prev_states[aid],
-                fire_result     = fire_results[aid],
-                dt              = self.dt,
-                map_size        = self.map_size,
-                aggression      = agg,
+                agent_state        = state,
+                teammate_states    = teammates,
+                enemy_states       = enemies,
+                weapons_model      = self._weapons[aid],
+                prev_state         = prev_states[aid],
+                fire_result        = fire_results[aid],
+                dt                 = self.dt,
+                map_size           = self.map_size,
+                aggression         = agg,
+                prev_action        = action_delta,
+                prev_distance      = prev_dist,
+                current_action     = raw_action,
+                role_support_prob  = role_sp,
+                role_vec           = role_v,
             )
+
+            # Mevcut adımda en yakın düşman mesafesini kaydet
+            self._prev_distances[aid] = self._nearest_enemy_dist(aid)
 
             rew_dict[aid]  = float(total_rew)
             info_dict[aid] = rew_info
             self._episode_rewards[aid] += float(total_rew)
             self._info_history[aid].append(rew_info)
 
+            # WEZ streak bonusu: N=5 ardışık adım WEZ içindeyse +0.3
+            if aid in self.blue_ids:
+                fr = fire_results.get(aid)
+                in_wez = (fr is not None and
+                          fr.get("wez_info", {}).get("in_wez", False))
+                if in_wez:
+                    self._wez_streaks[aid] += 1
+                    if self._wez_streaks[aid] % 5 == 0:
+                        rew_dict[aid] += 0.3
+                        self._episode_rewards[aid] += 0.3
+                else:
+                    self._wez_streaks[aid] = 0
+
         # ── 3. Done kontrolü ─────────────────────────────────────────
         done_dict = self._check_done()
         if done_dict["__all__"]:
             self._done = True
+            # Team kill bonus: tüm Red'ler ölünce her Blue ajana bonus
+            if done_dict.get("winner") == BLUE and self._team_kill_bonus > 0.0:
+                for aid in self.blue_ids:
+                    if self._states[aid][STATE_ALIVE] > 0.5:
+                        rew_dict[aid] = rew_dict.get(aid, 0.0) + self._team_kill_bonus
+                        self._episode_rewards[aid] += self._team_kill_bonus
             # Episode özeti her ajana ekle
             for aid in self.agent_ids:
                 info_dict[aid]["episode"] = self._build_episode_summary(aid)
@@ -297,48 +432,254 @@ class DogfightEnv:
     # Spawn
     # -----------------------------------------------------------------------
 
-    def _spawn_agents(self) -> dict:
+    def _update_enemy_history(self):
         """
-        İki takımı karşılıklı rastgele spawn eder.
+        Her Blue ajan için güncel düşman obs (24D) geçmişe ekler.
+        Her adımda _step_count artışından sonra çağrılır.
+        """
+        for aid in self.blue_ids:
+            state = self._states.get(aid)
+            if state is None:
+                continue
+            parts = []
+            for eid in self.red_ids:
+                es = self._states.get(eid, self._dummy_state)
+                parts.append(self._normalizer.enemy_obs(state, es))
+            # Kalan slotları sıfırla doldur (1v1 fazlarda 2. düşman yok)
+            while len(parts) < self._max_n_per_team:
+                parts.append(np.zeros(self._opp_enemy_dim, dtype=np.float32))
+            step_obs = np.concatenate(parts[:self._max_n_per_team], axis=0)  # 24D
+            if aid in self._enemy_history:
+                self._enemy_history[aid].append(step_obs)
 
-        Blue takımı: +y offset (Kuzey)
-        Red  takımı: -y offset (Güney)
-        Her takım içinde x'te rastgele dağılım.
+    def get_enemy_history_flat(self, aid: str) -> np.ndarray:
+        """
+        Belirtilen Blue ajan için düşman obs geçmişini düzleştirilmiş olarak döndürür.
+        Döndürür: (HISTORY_STEPS * N_ENEMIES * ENEMY_OBS_DIM,) = (480,) float32
+        Sıfır vektörle başlatılmış: ilk episode'da geçmiş dolana kadar sıfır.
+        """
+        hist = self._enemy_history.get(aid)
+        if hist is None:
+            return np.zeros(self._opp_hist_steps * self._opp_step_dim, dtype=np.float32)
+        return np.concatenate(list(hist), axis=0)
+
+    def _nearest_enemy_dist(self, aid: str) -> float:
+        """aid'nin en yakın hayatta düşmanına 3D mesafe (m). Düşman yoksa inf."""
+        state = self._states.get(aid)
+        if state is None or state[STATE_ALIVE] < 0.5:
+            return np.inf
+        pos = state[[STATE_X, STATE_Y, STATE_H]]
+        enemy_ids = self.red_ids if aid in self.blue_ids else self.blue_ids
+        best = np.inf
+        for eid in enemy_ids:
+            es = self._states.get(eid)
+            if es is None or es[STATE_ALIVE] < 0.5:
+                continue
+            d = distance_3d(pos, es[[STATE_X, STATE_Y, STATE_H]])
+            if d < best:
+                best = d
+        return best
+
+    def _spawn_agents(self) -> dict:
+        """Curriculum fazına göre doğru spawn metodunu çağırır."""
+        if self._curriculum_phase == 1:
+            return self._spawn_agents_wez_close()
+        if self._curriculum_phase == 2:
+            return self._spawn_agents_dynamic_dist()
+        return self._spawn_agents_normal()
+
+    def _spawn_agents_wez_close(self) -> dict:
+        """
+        Faz 1: 1v1, WEZ içi yakın spawn.
+
+        Blue rastgele konumda spawn edilir.
+        Red, Blue'nun ±25° önünde _phase1_dist_min–_phase1_dist_max mesafede
+        Blue'ya doğru bakacak şekilde spawn edilir.
+        Her iki ajan da birbirinin WEZ'inde başlar.
         """
         states = {}
-        half_offset = self.spawn_team_offset / 2.0
 
-        for team, ids, y_sign in [(BLUE, self.blue_ids, +1.0),
-                                   (RED,  self.red_ids,  -1.0)]:
-            for i, aid in enumerate(ids):
-                x = float(self.rng.uniform(-self.spawn_x_range,
-                                            self.spawn_x_range))
-                y = float(y_sign * half_offset +
-                           self.rng.uniform(-self.spawn_y_range * 0.3,
-                                             self.spawn_y_range * 0.3))
-                h = float(self.rng.uniform(self.spawn_h_min, self.spawn_h_max))
-                V = float(self.rng.uniform(self.spawn_V_min, self.spawn_V_max))
+        # Blue spawn
+        x_b   = float(self.rng.uniform(-self.spawn_x_range * 0.4,
+                                        self.spawn_x_range * 0.4))
+        y_b   = float(self.rng.uniform(-self.spawn_y_range * 0.4,
+                                        self.spawn_y_range * 0.4))
+        h_b   = float(self.rng.uniform(self.spawn_h_min, self.spawn_h_max))
+        V_b   = float(self.rng.uniform(self.spawn_V_min, self.spawn_V_max))
+        psi_init = float(self.rng.uniform(-np.pi, np.pi))
 
-                # Heading: Blue kuzeyde → güneye (-π/2), Red güneyde → kuzeye (π/2)
-                # ENU: 0=Doğu, π/2=Kuzey, -π/2=Güney, π=Batı
-                psi = -np.pi / 2.0 if team == BLUE else np.pi / 2.0
-                psi += float(self.rng.uniform(-0.3, 0.3))  # küçük randomizasyon
+        # Red: Blue'nun önünde WEZ konisi içinde
+        dist     = float(self.rng.uniform(self._phase1_dist_min,
+                                           self._phase1_dist_max))
+        ang_off  = float(self.rng.uniform(-deg2rad(25.0), deg2rad(25.0)))
+        ang_to_r = psi_init + ang_off
 
-                # Wing-level trim
-                trim = self._trim_solver.lookup(V, h, self._trim_table)
-                if not trim.success:
-                    trim = self._trim_solver.solve(V, h)
-                init = {
-                    "x": x, "y": y, "h": h, "V": V,
-                    "psi": psi, "alpha": trim.alpha,
-                }
-                s = self._aircraft.reset(init)
-                # İlk adım trim aksiyonu → kararlı başlangıç
-                trim_action = np.zeros(5, dtype=np.float32)
-                trim_action[1] = float(trim.de)   # elevator
-                trim_action[3] = float(trim.dt)   # throttle
-                s = self._aircraft.step(s, trim_action, self.dt)
-                states[aid] = s
+        # ENU: x=Doğu, y=Kuzey  →  sin(psi)=Doğu bileşeni, cos(psi)=Kuzey bileşeni
+        x_r  = x_b + dist * np.sin(ang_to_r)
+        y_r  = y_b + dist * np.cos(ang_to_r)
+        h_r  = float(np.clip(h_b + self.rng.uniform(-300.0, 300.0),
+                              self.spawn_h_min, self.spawn_h_max))
+        V_r  = float(self.rng.uniform(self.spawn_V_min, self.spawn_V_max))
+
+        # Heading hizalama: her ajan karşısındakine ±45° içinde yönelsin
+        ang_to_red  = float(np.arctan2(y_r - y_b, x_r - x_b))
+        ang_to_blue = float(np.arctan2(y_b - y_r, x_b - x_r))
+        psi_b = ang_to_red  + float(self.rng.uniform(-np.pi / 4, np.pi / 4))
+        psi_r = ang_to_blue + float(self.rng.uniform(-np.pi / 4, np.pi / 4))
+
+        for aid, x, y, h, V, psi in [
+            (self.blue_ids[0], x_b, y_b, h_b, V_b, psi_b),
+            (self.red_ids[0],  x_r, y_r, h_r, V_r, psi_r),
+        ]:
+            trim = self._trim_solver.lookup(V, h, self._trim_table)
+            if not trim.success:
+                trim = self._trim_solver.solve(V, h)
+            init = {"x": x, "y": y, "h": h, "V": V,
+                    "psi": psi, "alpha": trim.alpha}
+            s = self._aircraft.reset(init)
+            trim_action = np.zeros(5, dtype=np.float32)
+            trim_action[1] = float(trim.de)
+            trim_action[3] = float(trim.dt)
+            s = self._aircraft.step(s, trim_action, self.dt)
+            states[aid] = s
+
+        return states
+
+    def _spawn_agents_dynamic_dist(self) -> dict:
+        """
+        Faz 1.5: 1v1, dinamik spawn mesafesi.
+
+        _dynamic_spawn_dist CurriculumManager tarafından dışarıdan güncellenir.
+        Yapı WEZ-close ile aynı: Blue rastgele, Red Blue'nun önünde dist mesafede.
+        """
+        states = {}
+
+        x_b   = float(self.rng.uniform(-self.spawn_x_range * 0.4,
+                                        self.spawn_x_range * 0.4))
+        y_b   = float(self.rng.uniform(-self.spawn_y_range * 0.4,
+                                        self.spawn_y_range * 0.4))
+        h_b   = float(self.rng.uniform(self.spawn_h_min, self.spawn_h_max))
+        V_b   = float(self.rng.uniform(self.spawn_V_min, self.spawn_V_max))
+        psi_init = float(self.rng.uniform(-np.pi, np.pi))
+
+        # Mesafe: _dynamic_spawn_dist ± %20 rastgele
+        dist    = float(self._dynamic_spawn_dist *
+                        self.rng.uniform(0.8, 1.2))
+        ang_off = float(self.rng.uniform(-deg2rad(30.0), deg2rad(30.0)))
+        ang_to_r = psi_init + ang_off
+
+        x_r  = x_b + dist * np.sin(ang_to_r)
+        y_r  = y_b + dist * np.cos(ang_to_r)
+        h_r  = float(np.clip(h_b + self.rng.uniform(-500.0, 500.0),
+                              self.spawn_h_min, self.spawn_h_max))
+        V_r  = float(self.rng.uniform(self.spawn_V_min, self.spawn_V_max))
+
+        # Heading hizalama: her ajan karşısındakine ±45° içinde yönelsin
+        ang_to_red  = float(np.arctan2(y_r - y_b, x_r - x_b))
+        ang_to_blue = float(np.arctan2(y_b - y_r, x_b - x_r))
+        psi_b = ang_to_red  + float(self.rng.uniform(-np.pi / 4, np.pi / 4))
+        psi_r = ang_to_blue + float(self.rng.uniform(-np.pi / 4, np.pi / 4))
+
+        for aid, x, y, h, V, psi in [
+            (self.blue_ids[0], x_b, y_b, h_b, V_b, psi_b),
+            (self.red_ids[0],  x_r, y_r, h_r, V_r, psi_r),
+        ]:
+            trim = self._trim_solver.lookup(V, h, self._trim_table)
+            if not trim.success:
+                trim = self._trim_solver.solve(V, h)
+            init = {"x": x, "y": y, "h": h, "V": V,
+                    "psi": psi, "alpha": trim.alpha}
+            s = self._aircraft.reset(init)
+            trim_action = np.zeros(5, dtype=np.float32)
+            trim_action[1] = float(trim.de)
+            trim_action[3] = float(trim.dt)
+            s = self._aircraft.step(s, trim_action, self.dt)
+            states[aid] = s
+
+        return states
+
+    def _spawn_agents_normal(self) -> dict:
+        """
+        Faz 2/3: Normal spawn — mesafe sınırlı, heading hizalamalı.
+
+        Blue rastgele konumda spawn edilir.
+        Red, Blue'dan _normal_spawn_dist ± %20 mesafede rastgele yönde spawn edilir.
+        Her iki ajan heading'i karşılıklı olarak ±45° içinde hizalanır.
+
+        Faz 4 (2v2): Her takımdan 2 ajan, Blue etrafında ±500m x-offset ile spawn edilir.
+        """
+        states = {}
+
+        # 1v1: Blue_0 ve Red_0
+        x_b = float(self.rng.uniform(-self.spawn_x_range * 0.4,
+                                      self.spawn_x_range * 0.4))
+        y_b = float(self.rng.uniform(-self.spawn_y_range * 0.4,
+                                      self.spawn_y_range * 0.4))
+        h_b = float(self.rng.uniform(self.spawn_h_min, self.spawn_h_max))
+        V_b = float(self.rng.uniform(self.spawn_V_min, self.spawn_V_max))
+
+        # Red'in konumunu Blue'dan 6000-12000m arası rastgele mesafede belirle
+        dist    = float(self.rng.uniform(self._normal_spawn_dist,
+                                         self._normal_spawn_dist_max))
+        # Rastgele yön açısı (tüm 360°)
+        ang_br  = float(self.rng.uniform(-np.pi, np.pi))
+        x_r     = x_b + dist * np.cos(ang_br)   # math convention: cos=East
+        y_r     = y_b + dist * np.sin(ang_br)    # math convention: sin=North
+
+        # Harita sınırı kontrolü — Red dışarı çıkmasın
+        half = self.map_size * 0.4
+        x_r  = float(np.clip(x_r, -half, half))
+        y_r  = float(np.clip(y_r, -half, half))
+
+        h_r = float(np.clip(h_b + self.rng.uniform(-500.0, 500.0),
+                             self.spawn_h_min, self.spawn_h_max))
+        V_r = float(self.rng.uniform(self.spawn_V_min, self.spawn_V_max))
+
+        # Heading hizalama: her ajan karşısındakine ±45° içinde yönelsin
+        # math convention: psi = atan2(dy, dx); 0=East, CCW
+        ang_to_red  = float(np.arctan2(y_r - y_b, x_r - x_b))
+        ang_to_blue = float(np.arctan2(y_b - y_r, x_b - x_r))
+        psi_b = ang_to_red  + float(self.rng.uniform(-np.pi / 4, np.pi / 4))
+        psi_r = ang_to_blue + float(self.rng.uniform(-np.pi / 4, np.pi / 4))
+
+        spawn_list = [(self.blue_ids[0], x_b, y_b, h_b, V_b, psi_b),
+                      (self.red_ids[0],  x_r, y_r, h_r, V_r, psi_r)]
+
+        # 2v2 (Faz 4): wingman'lar ±1000m x-offset ile aynı mesafede
+        if self.n_per_team == 2:
+            x_b2 = x_b + float(self.rng.uniform(-1000.0, 1000.0))
+            y_b2 = y_b + float(self.rng.uniform(-500.0,   500.0))
+            h_b2 = float(np.clip(h_b + self.rng.uniform(-300.0, 300.0),
+                                  self.spawn_h_min, self.spawn_h_max))
+            V_b2 = float(self.rng.uniform(self.spawn_V_min, self.spawn_V_max))
+            ang_b2 = float(np.arctan2(y_r - y_b2, x_r - x_b2))
+            psi_b2 = ang_b2 + float(self.rng.uniform(-np.pi / 4, np.pi / 4))
+
+            x_r2 = x_r + float(self.rng.uniform(-1000.0, 1000.0))
+            y_r2 = y_r + float(self.rng.uniform(-500.0,   500.0))
+            h_r2 = float(np.clip(h_r + self.rng.uniform(-300.0, 300.0),
+                                  self.spawn_h_min, self.spawn_h_max))
+            V_r2 = float(self.rng.uniform(self.spawn_V_min, self.spawn_V_max))
+            ang_r2 = float(np.arctan2(y_b - y_r2, x_b - x_r2))
+            psi_r2 = ang_r2 + float(self.rng.uniform(-np.pi / 4, np.pi / 4))
+
+            spawn_list += [
+                (self.blue_ids[1], x_b2, y_b2, h_b2, V_b2, psi_b2),
+                (self.red_ids[1],  x_r2, y_r2, h_r2, V_r2, psi_r2),
+            ]
+
+        for aid, x, y, h, V, psi in spawn_list:
+            trim = self._trim_solver.lookup(V, h, self._trim_table)
+            if not trim.success:
+                trim = self._trim_solver.solve(V, h)
+            init = {"x": x, "y": y, "h": h, "V": V,
+                    "psi": psi, "alpha": trim.alpha}
+            s = self._aircraft.reset(init)
+            trim_action = np.zeros(5, dtype=np.float32)
+            trim_action[1] = float(trim.de)
+            trim_action[3] = float(trim.dt)
+            s = self._aircraft.step(s, trim_action, self.dt)
+            states[aid] = s
 
         return states
 
@@ -347,8 +688,17 @@ class DogfightEnv:
     # -----------------------------------------------------------------------
 
     def _build_obs_dict(self, gat_messages: dict = None) -> dict:
-        """Her ajan için normalize observation vektörü döndürür."""
+        """
+        Her ajan için normalize observation vektörü döndürür.
+
+        obs_dim her zaman max topoloji (2v2) boyutundadır.
+        1v1 fazlarda eksik teammate/enemy slotları dummy (ölü) state ile doldurulur
+        → normalizer zeros döndürür → ağ boyutu sabit kalır (50D).
+        """
         obs_dict = {}
+        max_n_tm = self._max_n_per_team - 1  # 1
+        max_n_en = self._max_n_per_team       # 2
+
         for aid in self.agent_ids:
             state      = self._states[aid]
             teammates  = self._get_teammates(aid)
@@ -356,14 +706,67 @@ class DogfightEnv:
             agg        = self._aggression.get(aid)
             gat_msgs   = gat_messages.get(aid) if gat_messages else None
 
+            # Eksik slotları dummy dead-state ile doldur
+            while len(teammates) < max_n_tm:
+                teammates.append(self._dummy_state)
+            while len(enemies) < max_n_en:
+                enemies.append(self._dummy_state)
+
+            # Cooldown normalize: kalan süre / max cooldown → [0,1]
+            wep            = self._weapons[aid]
+            cooldown_norm  = float(np.clip(
+                wep._cooldown_timer / max(wep.fire_cooldown, 1e-9), 0.0, 1.0
+            ))
+
             obs_dict[aid] = self._normalizer.build_obs(
                 agent_state     = state,
                 teammate_states = teammates,
                 enemy_states    = enemies,
                 aggression      = agg,
                 gat_messages    = gat_msgs,
+                cooldown_norm   = cooldown_norm,
             )
         return obs_dict
+
+    # -----------------------------------------------------------------------
+    # CRITICAL Recovery — Blue MAPPO Agent OOB Koruması
+    # -----------------------------------------------------------------------
+
+    def _critical_recovery_blue(self, s: np.ndarray):
+        """
+        Blue MAPPO agent için zemin ve harita sınırı kurtarma override.
+
+        Heuristic agent'taki CRITICAL mantığını MAPPO'ya uygular.
+        None döndürürse tehlike yok — ajan kendi aksiyonunu kullanır.
+        Aksiyon uzayı heuristic ile aynı: [da, de, dr, dt, fire] ∈ [-1,1]/[0,1].
+        """
+        action = np.zeros(ACTION_DIM, dtype=np.float32)
+
+        # Zemin yaklaşımı — burun kaldır, tam gaz
+        if s[STATE_H] < _CRIT_H_FLOOR:
+            pull = float(np.clip(
+                (_CRIT_H_FLOOR - s[STATE_H]) / _CRIT_H_FLOOR, 0.3, 1.0
+            ))
+            action[ACTION_DE] = pull          # burun yukarı
+            action[ACTION_DT] = 1.0           # tam gaz
+            action[ACTION_DA] = float(-s[STATE_PHI] * 0.5)  # kanat düzelt
+            return action
+
+        # Harita sınırı — merkeze döndürme manevrası
+        half = self.map_size / 2.0
+        if (abs(s[STATE_X]) > half - _CRIT_MAP_MARGIN or
+                abs(s[STATE_Y]) > half - _CRIT_MAP_MARGIN):
+            own_pos    = np.array([s[STATE_X], s[STATE_Y], s[STATE_H]])
+            center_pos = np.array([0.0, 0.0, s[STATE_H]])
+            bear_to_center = bearing_angle(own_pos, center_pos)
+            bear_err       = wrap_to_pi(bear_to_center - s[STATE_PSI])
+            action[ACTION_DA] = float(np.clip(bear_err * 1.5, -1.0, 1.0))
+            action[ACTION_DR] = float(np.clip(bear_err * 0.5, -1.0, 1.0))  # koordineli dönüş
+            action[ACTION_DE] = 0.2    # hafif çekiş
+            action[ACTION_DT] = 1.0   # tam gaz — throttle_reward'dan bağımsız override
+            return action
+
+        return None
 
     # -----------------------------------------------------------------------
     # Done Kontrolü

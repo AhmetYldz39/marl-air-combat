@@ -108,6 +108,19 @@ class RewardModel:
         self.w_resource = float(r["w_resource"])
         self.w_penalty  = float(r["w_penalty"])
         self.w_role     = float(r.get("w_role", 1.0))
+        self.w_pursuit         = float(r.get("w_pursuit", 1.0))
+        self.pursuit_norm_dist = float(r.get("pursuit_norm_dist", 20000.0))
+        self.w_smooth_ctrl     = float(r.get("w_smooth_ctrl",
+                                             r.get("w_smooth", 0.05)))
+        self.w_smooth_throttle = float(r.get("w_smooth_throttle", 0.003))
+        self.w_throttle_ctx    = float(r.get("w_throttle_ctx", 0.0))
+        self.ammo_miss_penalty = float(r.get("ammo_miss_penalty", 2.0))
+        self.w_support            = float(r.get("w_support", 1.5))
+        self.w_role_match         = float(r.get("w_role_match", 1.0))
+        self.w_sniper_position    = float(r.get("w_sniper_position",    1.5))
+        self.w_defensive_survival = float(r.get("w_defensive_survival", 5.0))
+        self.w_sniper_patience    = float(r.get("w_sniper_patience",    1.0))
+        self.w_evasion            = float(r.get("w_evasion",            2.0))
 
         # ── Aggression lerp uç noktaları ──────────────────────────────
         # Ağırlık ölçekleri: aggression=0 (defansif) → aggression=1 (agresif)
@@ -160,15 +173,20 @@ class RewardModel:
     # -----------------------------------------------------------------------
 
     def compute(self,
-                agent_state:     np.ndarray,
-                teammate_states: list,
-                enemy_states:    list,
-                weapons_model:   WeaponsModel,
-                prev_state:      np.ndarray,
-                fire_result:     dict,
-                dt:              float,
-                map_size:        float,
-                aggression:      float = None) -> tuple:
+                agent_state:        np.ndarray,
+                teammate_states:    list,
+                enemy_states:       list,
+                weapons_model:      WeaponsModel,
+                prev_state:         np.ndarray,
+                fire_result:        dict,
+                dt:                 float,
+                map_size:           float,
+                aggression:         float = None,
+                prev_action:        np.ndarray = None,
+                prev_distance:      float = None,
+                current_action:     np.ndarray = None,
+                role_support_prob:  float = 1.0,
+                role_vec:           np.ndarray = None) -> tuple:
         """
         Bir adım için toplam reward hesaplar.
 
@@ -190,14 +208,39 @@ class RewardModel:
         scales = self._compute_scales(aggression)
 
         # Bileşenler
-        r_kill     = self._kill_reward(fire_result)
-        r_wez      = self._wez_reward(agent_state, enemy_states, weapons_model)
-        r_tracking = self._tracking_reward(agent_state, enemy_states, weapons_model)
-        r_survival = self._survival_reward(dt)
-        r_coord    = self._coord_reward(agent_state, teammate_states)
-        r_resource = self._resource_reward(agent_state, prev_state, fire_result)
-        r_penalty  = self._penalty_reward(agent_state, map_size)
-        r_role     = self._role_bonus(r_kill, r_survival, r_coord, aggression)
+        r_kill       = self._kill_reward(fire_result)
+        r_wez        = self._wez_reward(agent_state, enemy_states, weapons_model)
+        r_tracking   = self._tracking_reward(agent_state, enemy_states, weapons_model)
+        r_survival   = self._survival_reward(dt)
+        r_coord      = self._coord_reward(agent_state, teammate_states)
+        r_resource   = self._resource_reward(agent_state, prev_state, fire_result)
+        r_penalty    = self._penalty_reward(agent_state, map_size)
+        r_role       = self._role_bonus(r_kill, r_survival, r_coord, aggression)
+        r_fire_ready    = self._fire_ready_reward(fire_result, weapons_model, enemy_states)
+        r_pursuit       = self._pursuit_reward(agent_state, enemy_states)
+        r_smooth_ctrl   = self._smooth_ctrl_reward(prev_action)
+        r_smooth_thr    = self._smooth_throttle_reward(prev_action)
+        r_closing_raw   = self._closing_reward(agent_state, enemy_states, prev_distance)
+        r_closing       = self._closing_reward_role(r_closing_raw, role_vec)
+        r_throttle_ctx  = self._throttle_reward(agent_state, enemy_states,
+                                                 current_action, weapons_model)
+        r_support       = self._support_reward(agent_state, teammate_states,
+                                               enemy_states, weapons_model,
+                                               role_support_prob)
+        r_support_raw   = self._support_reward(agent_state, teammate_states,
+                                               enemy_states, weapons_model,
+                                               role_support_prob=1.0)
+        r_role_match    = self._role_match_reward(role_vec, fire_result, agent_state,
+                                                  teammate_states, enemy_states,
+                                                  weapons_model, prev_distance)
+        r_sniper_pos      = self._sniper_position_reward(agent_state, enemy_states)
+        r_sniper_patience = self._sniper_patience_reward(fire_result, agent_state,
+                                                         enemy_states, weapons_model)
+        r_evasion         = self._evasion_reward(agent_state, enemy_states, prev_distance)
+
+        # Role-conditional weights (one-hot soft weights from Gumbel-Softmax)
+        _sniper_w = float(role_vec[0]) if role_vec is not None else 0.0
+        _def_w    = float(role_vec[2]) if role_vec is not None else 0.0
 
         # Efektif ağırlıklar
         w_kill_eff     = self.w_kill     * scales["w_kill_scale"]
@@ -205,14 +248,26 @@ class RewardModel:
         w_coord_eff    = self.w_coord    * scales["w_coord_scale"]
 
         total = (
-            w_kill_eff      * r_kill     +
-            self.w_wez      * r_wez      +
-            self.w_tracking * r_tracking +
-            w_survival_eff  * r_survival +
-            w_coord_eff     * r_coord    +
-            self.w_resource * r_resource +
-            self.w_penalty  * r_penalty  +
-            self.w_role     * r_role
+            w_kill_eff              * r_kill          +
+            self.w_wez              * r_wez            +
+            self.w_tracking         * r_tracking       +
+            w_survival_eff          * r_survival       +
+            w_coord_eff             * r_coord          +
+            self.w_resource         * r_resource       +
+            self.w_penalty          * r_penalty        +
+            self.w_role             * r_role           +
+            r_fire_ready                               +  # sabit ağırlık: 0.5 iç içe
+            self.w_pursuit          * r_pursuit        +
+            self.w_smooth_ctrl      * r_smooth_ctrl    +
+            self.w_smooth_throttle  * r_smooth_thr     +
+            self.w_throttle_ctx     * r_throttle_ctx   +
+            r_closing                                  +  # PURSUIT-only (*0.0001)
+            self.w_support          * r_support        +
+            self.w_role_match       * r_role_match     +
+            self.w_sniper_position    * _sniper_w * r_sniper_pos      +  # SNIPER: pozisyon
+            self.w_sniper_patience    * _sniper_w * r_sniper_patience  +  # SNIPER: sabırlı bekleme
+            self.w_defensive_survival * _def_w   * r_survival          +  # DEFENSIVE: 2x survival
+            self.w_evasion            * _def_w   * r_evasion              # DEFENSIVE: uzaklaşma
         )
 
         info = {
@@ -221,6 +276,18 @@ class RewardModel:
             "r_tracking": float(r_tracking), "r_survival": float(r_survival),
             "r_coord": float(r_coord), "r_resource": float(r_resource),
             "r_penalty": float(r_penalty), "r_role": float(r_role),
+            "r_fire_ready": float(r_fire_ready), "r_pursuit": float(r_pursuit),
+            "r_smooth_ctrl": float(r_smooth_ctrl),
+            "r_smooth_throttle": float(r_smooth_thr),
+            "r_throttle_ctx": float(r_throttle_ctx),
+            "r_closing": float(r_closing),
+            "r_closing_raw": float(r_closing_raw),
+            "r_sniper_pos": float(r_sniper_pos),
+            "r_sniper_patience": float(r_sniper_patience),
+            "r_support": float(r_support),
+            "r_support_raw": float(r_support_raw),
+            "r_evasion": float(r_evasion),
+            "r_role_match": float(r_role_match),
             "aggression":       aggression,
             "w_kill_scale":     float(scales["w_kill_scale"]),
             "w_survival_scale": float(scales["w_survival_scale"]),
@@ -233,6 +300,7 @@ class RewardModel:
             "w_resource_contrib": float(self.w_resource * r_resource),
             "w_penalty_contrib":  float(self.w_penalty  * r_penalty),
             "w_role_contrib":     float(self.w_role     * r_role),
+            "w_pursuit_contrib":  float(self.w_pursuit  * r_pursuit),
         }
 
         return float(total), info
@@ -285,16 +353,104 @@ class RewardModel:
             ))
         return float(total / n) if n > 0 else 0.0
 
+    def _fire_ready_reward(self, fire_result, weapons_model, enemy_states) -> float:
+        """
+        WEZ içinde cooldown=0 iken fire_cmd=True ise +0.5 bonus.
+        WEZ içinde cooldown>0 iken fire_cmd=True ise -0.1 ceza
+        (cooldown farkında olmadan ateşlemeyi caydır).
+
+        fire_result None ise (ajan ölü) → 0.0
+        """
+        if fire_result is None:
+            return 0.0
+
+        in_wez   = fire_result.get("wez_info", {}).get("in_wez", False)
+        fired    = fire_result.get("fired", False)
+        reason   = fire_result.get("fail_reason", "")
+        fire_cmd = fired or (reason != "no_fire_command" and reason != "")
+
+        if not in_wez:
+            return 0.0
+
+        # WEZ içinde, cooldown=0, ateş edildi → bonus
+        if fired:
+            return 0.5
+
+        # WEZ içinde, cooldown nedeniyle ateş edilemedi → küçük ceza
+        if "cooldown" in reason:
+            return -0.1
+
+        return 0.0
+
     def _resource_reward(self, agent_state, prev_state, fire_result):
         penalty = 0.0
         if fire_result is not None:
-            if fire_result.get("fired", False) and not fire_result.get("hit", False):
-                penalty -= 1.0
+            fired   = fire_result.get("fired", False)
+            in_wez  = fire_result.get("wez_info", {}).get("in_wez", False)
+            if fired and not in_wez:
+                penalty -= self.ammo_miss_penalty   # WEZ dışı ateş
+            elif fired and not fire_result.get("hit", False):
+                penalty -= 1.0                      # WEZ içi ıskalama
         fuel_burn = float(prev_state[STATE_FUEL]) - float(agent_state[STATE_FUEL])
         if fuel_burn > 0:
             excess = max(0.0, fuel_burn - self._init_fuel * 0.005)
             penalty -= excess / (self._init_fuel + 1e-9)
         return float(penalty)
+
+    def _smooth_ctrl_reward(self, prev_action: np.ndarray) -> float:
+        """Aileron/elevator/rudder ([:3]) jitter cezası. w_smooth_ctrl ile çarpılır."""
+        if prev_action is None:
+            return 0.0
+        return -float(np.sum(prev_action[:3] ** 2))
+
+    def _smooth_throttle_reward(self, prev_action: np.ndarray) -> float:
+        """Throttle ([3]) değişim cezası. w_smooth_throttle ile çarpılır (gevşek)."""
+        if prev_action is None:
+            return 0.0
+        return -float(prev_action[3] ** 2)
+
+    def _throttle_reward(self, agent_state: np.ndarray, enemy_states: list,
+                         current_action: np.ndarray, weapons_model: WeaponsModel) -> float:
+        """
+        ATA + mesafe bazlı throttle yönlendirmesi.
+
+        Düşman arkada (ATA cos < -0.3):
+            yakın (<3 km) → kes (engage fırsatı, overshoot)
+            uzak (>8 km)  → bas (yeniden konumlan)
+            arası         → doğrusal hedef
+        Düşman önde (ATA cos > 0.5):
+            bas (kovala)
+
+        w_throttle_ctx ile çarpılır. Dönen değer [0, 0.15].
+        """
+        if current_action is None or not enemy_states:
+            return 0.0
+        agent_pos = agent_state[[STATE_X, STATE_Y, STATE_H]]
+        best_cos, best_dist = -2.0, np.inf
+        for es in enemy_states:
+            if es[STATE_ALIVE] < 0.5:
+                continue
+            cos_val = weapons_model.antenna_train_cos(agent_state, es)
+            d       = distance_3d(agent_pos, es[[STATE_X, STATE_Y, STATE_H]])
+            if d < best_dist:
+                best_dist = d
+                best_cos  = cos_val
+        if best_cos < -2.0 or np.isinf(best_dist):
+            return 0.0
+        throttle = float(np.clip(current_action[3], 0.0, 1.0))
+        D_NEAR, D_FAR = 3000.0, 8000.0
+        if best_cos < -0.3:             # Düşman arkada
+            if best_dist < D_NEAR:
+                return (1.0 - throttle) * 0.12   # kes
+            elif best_dist > D_FAR:
+                return throttle * 0.08            # bas
+            else:
+                t      = (best_dist - D_NEAR) / (D_FAR - D_NEAR)
+                target = t                         # 0=kes, 1=bas
+                return (1.0 - abs(throttle - target)) * 0.10
+        elif best_cos > 0.5:            # Düşman önde
+            return throttle * 0.15
+        return 0.0
 
     def _penalty_reward(self, agent_state, map_size):
         penalty = 0.0
@@ -310,6 +466,239 @@ class RewardModel:
         if agent_state[STATE_V] < self._V_min * 1.2:
             penalty += 0.3
         return float(penalty)
+
+    def _pursuit_reward(self, agent_state, enemy_states) -> float:
+        """
+        Düşmana yaklaşma teşviki.
+        En yakın canlı düşman mesafesine göre [0, 0.3] aralığında reward.
+        dist=0m  → 0.3 (tam yakın)
+        dist=20000m → 0.0 (harita sınırında)
+
+        2v2'de bir düşman ölünce kalan düşmana r_pursuit 2x çarpanla uygulanır.
+        Bu, ikinci kill'i de tamamlamayı teşvik eder.
+        """
+        if not enemy_states:
+            return 0.0
+        agent_pos = agent_state[[STATE_X, STATE_Y, STATE_H]]
+        best_dist = np.inf
+        alive_count = 0
+        for es in enemy_states:
+            if es[STATE_ALIVE] < 0.5:
+                continue
+            alive_count += 1
+            d = distance_3d(agent_pos, es[[STATE_X, STATE_Y, STATE_H]])
+            if d < best_dist:
+                best_dist = d
+        if np.isinf(best_dist):
+            return 0.0
+        base = float(max(0.0, 1.0 - best_dist / self.pursuit_norm_dist) * 0.3)
+        # Bir düşman ölünce (yalnızca 1 kaldı) 3x çarpan — w_pursuit efektif 3.0
+        # İkinci kill'i tamamlamayı güçlü biçimde teşvik eder
+        multiplier = 3.0 if alive_count == 1 else 1.0
+        return base * multiplier
+
+    def _closing_reward(self, agent_state, enemy_states, prev_distance) -> float:
+        """
+        Düşmana kapanma hızı ödülü (koşulsuz ham değer).
+        r_closing = max(0, d_prev - d_now) * 0.0001
+        compute() içinde _closing_reward_role() ile rol filtresi uygulanır.
+        """
+        if prev_distance is None or not enemy_states:
+            return 0.0
+        if agent_state[STATE_ALIVE] < 0.5:
+            return 0.0
+        agent_pos = agent_state[[STATE_X, STATE_Y, STATE_H]]
+        best_dist = np.inf
+        for es in enemy_states:
+            if es[STATE_ALIVE] < 0.5:
+                continue
+            d = distance_3d(agent_pos, es[[STATE_X, STATE_Y, STATE_H]])
+            if d < best_dist:
+                best_dist = d
+        if np.isinf(best_dist):
+            return 0.0
+        return float(max(0.0, prev_distance - best_dist) * 0.0001)
+
+    def _closing_reward_role(self, r_closing_raw: float,
+                             role_vec: np.ndarray = None) -> float:
+        """
+        Rol bazlı kapanma filtresi.
+        PURSUIT (index 1): tam aktif  — role_vec[1] ile ölçeklenir
+        Diğer roller      : 0.0       (role_vec[0,2,3] ≈ 0 one-hot durumunda)
+        role_vec=None     : koşulsuz (geriye uyumluluk, Faz-1)
+        """
+        if role_vec is None:
+            return r_closing_raw
+        return r_closing_raw * float(role_vec[1])
+
+    def _sniper_position_reward(self, agent_state, enemy_states) -> float:
+        """
+        SNIPER rolü için WEZ optimal mesafe pozisyon ödülü.
+        Gaussian: tepe ~3000m, σ=2000m, max=0.3
+        compute() içinde role_vec[0] ile ağırlıklandırılır.
+        """
+        if not enemy_states or agent_state[STATE_ALIVE] < 0.5:
+            return 0.0
+        agent_pos = agent_state[[STATE_X, STATE_Y, STATE_H]]
+        best_dist = np.inf
+        for es in enemy_states:
+            if es[STATE_ALIVE] < 0.5:
+                continue
+            d = distance_3d(agent_pos, es[[STATE_X, STATE_Y, STATE_H]])
+            if d < best_dist:
+                best_dist = d
+        if np.isinf(best_dist):
+            return 0.0
+        opt_dist = 3000.0
+        sigma    = 2000.0
+        return float(np.exp(-((best_dist - opt_dist) ** 2) / (2 * sigma ** 2)) * 0.3)
+
+    def _sniper_patience_reward(self, fire_result, agent_state,
+                                enemy_states, weapons_model) -> float:
+        """
+        SNIPER sabırlı pozisyon ödülü.
+        WEZ içindeyken ateş etmeden bekliyorsa +0.5 — optimal atış anını bekler.
+        compute() içinde role_vec[0] ile ağırlıklandırılır.
+        """
+        if fire_result is None or agent_state[STATE_ALIVE] < 0.5:
+            return 0.0
+        if not enemy_states:
+            return 0.0
+        in_wez = fire_result.get("wez_info", {}).get("in_wez", False)
+        if not in_wez:
+            return 0.0
+        fired = fire_result.get("fired", False)
+        if fired:
+            return 0.0  # zaten ateş etti — ayrıca fire_ready ödülü alır
+        return 0.5
+
+    def _evasion_reward(self, agent_state, enemy_states, prev_distance) -> float:
+        """
+        DEFENSIVE rolü için uzaklaşma ödülü — r_closing_raw'ın tersi.
+        Düşmana olan mesafe arttıkça pozitif; compute() içinde role_vec[2] ile ölçeklenir.
+        """
+        if not enemy_states or agent_state[STATE_ALIVE] < 0.5 or prev_distance is None:
+            return 0.0
+        agent_pos = agent_state[[STATE_X, STATE_Y, STATE_H]]
+        best_dist = np.inf
+        for es in enemy_states:
+            if es[STATE_ALIVE] < 0.5:
+                continue
+            d = distance_3d(agent_pos, es[[STATE_X, STATE_Y, STATE_H]])
+            if d < best_dist:
+                best_dist = d
+        if np.isinf(best_dist):
+            return 0.0
+        return float(max(0.0, best_dist - prev_distance) * 0.0001)
+
+    def _support_reward(self, agent_state: np.ndarray,
+                        teammate_states: list,
+                        enemy_states:    list,
+                        weapons_model:   WeaponsModel,
+                        role_support_prob: float = 1.0) -> float:
+        """
+        Takım arkadaşı angajmandayken ikinci düşmana yönel.
+
+        Koşullar:
+          1. Takım arkadaşı hayatta ve en az 1 düşmanı WEZ içinde (score > 0.3)
+          2. Ajan 2. düşmana (takım arkadaşının hedef almadığı) yöneliyor
+
+        r_raw = (tracking_term + dist_term) * 0.5   ∈ [0, ~0.65]
+        Döndürür: w_support bu metodun dışında uygulanır.
+        role_support_prob: RoleSelector[support] ağırlığı — soft eğitimde [0,1],
+                           inference'da {0,1}. Faz-3 öncesi her zaman 1.0 kalır.
+        """
+        if not teammate_states or not enemy_states:
+            return 0.0
+        if agent_state[STATE_ALIVE] < 0.5:
+            return 0.0
+
+        alive_teammates = [tm for tm in teammate_states if tm[STATE_ALIVE] > 0.5]
+        if not alive_teammates:
+            return 0.0
+
+        alive_enemies = [es for es in enemy_states if es[STATE_ALIVE] > 0.5]
+        if not alive_enemies:
+            return 0.0
+
+        # Takım arkadaşı WEZ içinde mi? Hedef aldığı düşman indeksini bul.
+        teammate_wez   = False
+        tm_target_idx  = 0
+        for tm in alive_teammates:
+            best_score = 0.0
+            for idx, es in enumerate(alive_enemies):
+                score = weapons_model.wez_advantage_score(tm, es)
+                if score > best_score:
+                    best_score    = score
+                    tm_target_idx = idx
+            if best_score > 0.3:
+                teammate_wez = True
+                break
+
+        if not teammate_wez:
+            return 0.0
+
+        # Ajanın hedeflemesi gereken düşman: takım arkadaşının hedefinden farklı
+        if len(alive_enemies) > 1:
+            second_idx   = 1 - tm_target_idx if tm_target_idx == 0 else 0
+            second_enemy = alive_enemies[second_idx]
+        else:
+            second_enemy = alive_enemies[0]  # tek düşman varsa aynı hedef — destek = baskı
+
+        agent_pos  = agent_state[[STATE_X, STATE_Y, STATE_H]]
+        second_pos = second_enemy[[STATE_X, STATE_Y, STATE_H]]
+        d          = distance_3d(agent_pos, second_pos)
+
+        tracking_term = float(max(0.0, weapons_model.antenna_train_cos(agent_state, second_enemy)))
+        dist_term     = float(max(0.0, 1.0 - d / self.pursuit_norm_dist)) * 0.3
+
+        r_raw = (tracking_term + dist_term) * 0.5
+        return float(r_raw * float(np.clip(role_support_prob, 0.0, 1.0)))
+
+    def _role_match_reward(self, role_vec, fire_result, agent_state,
+                           teammate_states, enemy_states, weapons_model,
+                           prev_distance) -> float:
+        """
+        RoleSelector çıktısına uyumlu davranış bonusu.
+
+        SNIPER    (0) + kill          → +3.0
+        PURSUIT   (1) + dist_closing  → +0.5
+        SUPPORT   (3) + tm_in_wez     → +0.5
+        DEFENSIVE (2) + hp < 0.5      → +0.5
+        """
+        if role_vec is None or agent_state[STATE_ALIVE] < 0.5:
+            return 0.0
+        r = 0.0
+        # SNIPER: kill yaptıysa güçlü bonus
+        if fire_result is not None and fire_result.get("kill", False):
+            r += 3.0 * float(role_vec[0])
+        # PURSUIT: mesafe kapandıysa
+        if prev_distance is not None:
+            agent_pos = agent_state[[STATE_X, STATE_Y, STATE_H]]
+            best_dist = np.inf
+            for es in enemy_states:
+                if es[STATE_ALIVE] < 0.5:
+                    continue
+                d = distance_3d(agent_pos, es[[STATE_X, STATE_Y, STATE_H]])
+                if d < best_dist:
+                    best_dist = d
+            if not np.isinf(best_dist) and prev_distance > best_dist:
+                r += 0.5 * float(role_vec[1])
+        # SUPPORT: takım arkadaşı WEZ içindeyse
+        for tm in teammate_states:
+            if tm[STATE_ALIVE] < 0.5:
+                continue
+            for es in enemy_states:
+                if es[STATE_ALIVE] < 0.5:
+                    continue
+                if weapons_model.wez_advantage_score(tm, es) > 0.3:
+                    r += 0.5 * float(role_vec[3])
+                    break
+            break
+        # DEFENSIVE: düşük HP
+        if float(agent_state[STATE_HP]) < 0.5:
+            r += 0.5 * float(role_vec[2])
+        return float(r)
 
     def _role_bonus(self, r_kill, r_survival, r_coord, aggression):
         """
@@ -337,10 +726,14 @@ class RewardModel:
     def _zero_info(self, aggression) -> dict:
         scales = self._compute_scales(aggression)
         keys = ["total", "r_kill", "r_wez", "r_tracking", "r_survival",
-                "r_coord", "r_resource", "r_penalty", "r_role",
+                "r_coord", "r_resource", "r_penalty", "r_role", "r_fire_ready",
+                "r_pursuit", "r_smooth_ctrl", "r_smooth_throttle",
+                "r_throttle_ctx", "r_closing", "r_closing_raw",
+                "r_sniper_pos", "r_sniper_patience",
+                "r_support", "r_support_raw", "r_evasion", "r_role_match",
                 "w_kill_contrib", "w_wez_contrib", "w_tracking_contrib",
                 "w_survival_contrib", "w_coord_contrib", "w_resource_contrib",
-                "w_penalty_contrib", "w_role_contrib"]
+                "w_penalty_contrib", "w_role_contrib", "w_pursuit_contrib"]
         info = {k: 0.0 for k in keys}
         info.update({"aggression": aggression, **scales})
         return info

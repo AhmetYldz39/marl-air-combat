@@ -124,7 +124,7 @@ weapons:
   wez_range_min:    300.0   # m   — minimum güvenli ateş mesafesi
   wez_angle_max:     30.0   # deg — WEZ yarı açısı (±30° boresight'tan)
   missile_damage:     0.6   # [0,1] — tek isabet hasarı
-  fire_cooldown:      2.0   # s   — ard arda ateş arası bekleme
+  fire_cooldown:      0.5   # s   — ard arda ateş arası bekleme
   min_fire_altitude:  200.0 # m   — zemin yakını ateş yasağı
 
 
@@ -139,7 +139,7 @@ env:
 
   # Fizik
   dt:           0.05      # s   — RK4 entegrasyon adımı (6-DoF için 20 Hz)
-  max_steps:  2000        # adım — episode uzunluğu (2000 × 0.05s = 100s)
+  max_steps:  1000        # adım — episode uzunluğu (1000 × 0.05s = 50s)
 
   # Angular hız sınırları (normalize için kullanılır, fizik modeli kullanmaz)
   p_max:  3.0             # rad/s
@@ -168,14 +168,27 @@ env:
 # Mevcut ağırlıklar bu dersten çıkarılarak revize edilmiştir.
 # -----------------------------------------------------------------------------
 reward:
-  w_kill:      15.0    # r_kill      — düşman imhası (anlık)
+  w_kill:      25.0    # r_kill      — düşman imhası (anlık)
   w_wez:        5.0    # r_wez       — WEZ avantajı [0,1] sürekli
-  w_tracking:   1.0    # r_tracking  — radar izleme kalitesi
-  w_survival:   0.01    # r_survival  — hayatta kalma (dt başına)
+  w_tracking:   6.0    # r_tracking  — radar izleme kalitesi
+  w_survival:   0.0    # r_survival  — hayatta kalma (dt başına, pasif uçuşu teşvik etmemek için 0)
   w_coord:      0.5    # r_coord     — takım koordinasyonu
   w_resource:   0.1    # r_resource  — yakıt/ammo verimliliği
   w_penalty:   -5.0    # r_penalty   — tehlikeli davranış (negatif!)
   w_role:       1.0    # r_role      — aggression uyumu (Faz 2+)
+  w_pursuit:    2.5    # r_pursuit   — düşmana yaklaşma teşviki [0, 0.3]
+  pursuit_norm_dist: 10000.0  # r_pursuit normalizasyon mesafesi (m)
+  team_kill_bonus: 15.0  # r_team_kill — tüm düşmanlar imha edilince bonus
+  w_smooth_ctrl:     0.05   # r_smooth    — kontrol yüzeyi jitter cezası (ail/elev/rud)
+  w_smooth_throttle: 0.003  # r_smooth    — throttle değişim cezası (gevşek)
+  w_throttle_ctx:    0.8    # r_throttle  — ATA+mesafe bazlı throttle yönlendirme
+  w_support:            1.5    # r_support   — takım arkadaşı WEZ aktifken ikinci hedefe destek
+  ammo_miss_penalty:    0.5    # WEZ dışı ateş cezası (resource reward içinde)
+  w_role_match:         1.0    # r_role_match — RoleSelector çıktısına uyumlu davranış bonusu
+  w_sniper_position:    1.5    # r_sniper_pos — SNIPER: WEZ optimal mesafe (Gaussian ~3000m)
+  w_defensive_survival: 5.0    # DEFENSIVE rolü için ekstra survival katkısı (w_survival=0 geçersiz kılar)
+  w_sniper_patience:    1.0    # SNIPER: WEZ içinde ateş etmeden bekleme bonusu (+0.5)
+  w_evasion:            2.0    # DEFENSIVE rolü için uzaklaşma ödülü (r_closing'in tersi)
 
 
 # -----------------------------------------------------------------------------
@@ -239,7 +252,7 @@ training:
 
   # Genel
   algorithm:          "mappo"       # mappo | qmix | maddpg
-  total_timesteps:    10_000_000    # Faz 1 bütçesi
+  total_timesteps:    50_000_000    # epsilon-greedy role run: ep37000 (step≈29.3M) + 20M yeni adım
   seed:               42
 
   # PPO / MAPPO
@@ -248,7 +261,8 @@ training:
   gamma:              0.99          # discount faktörü
   gae_lambda:         0.95          # GAE lambda
   clip_epsilon:       0.2           # PPO clip
-  entropy_coeff:      0.05          # keşif teşviki
+  entropy_coeff:      0.15          # keşif teşviki
+  mean_penalty_coeff: 0.01          # action mean L2 penalty (satürasyon önleme)
   value_loss_coeff:   0.5
   max_grad_norm:      0.5
 
@@ -318,6 +332,31 @@ logging:
 
 
 # -----------------------------------------------------------------------------
+# COMMUNICATION — Faz-2 GAT İletişim Modülü
+#
+# enable_comms: true  → GATMAPPOActor + GATMAPPOCritic kullanılır
+#               false → Faz-1 MAPPOActor (varsayılan)
+#
+# Transfer learning:
+#   İlk freeze_steps adım: eski ağırlıklar (fc1_old) dondurulur,
+#   sadece GAT + yeni giriş (fc1_new) öğrenir.
+#   Sonrası: tüm ağ birlikte fine-tune edilir.
+#
+# Obs boyutu değişimi:
+#   Faz-1: 50D  (17 ego + 9 tm + 12×2 enemy)
+#   Faz-2: 68D  (50 base + 2 role_emb + 16 GAT mesajı)
+#   Critic: 100D → 136D  (2 ajan × 68D)
+# -----------------------------------------------------------------------------
+communication:
+  enable_comms:  false    # Faz-2 başlatmak için --phase2 argümanı kullan
+  node_dim:      17       # ego obs boyutu (cooldown dahil)
+  edge_dim:      3        # [distance_norm, bearing_norm, threat]
+  n_heads:       4        # attention head sayısı
+  msg_dim:       16       # çıkış mesaj boyutu (n_heads × head_dim = 4×4)
+  freeze_steps:  0        # eski ağırlıkların dondurulacağı adım sayısı (0=hemen aç)
+
+
+# -----------------------------------------------------------------------------
 # OPPONENT_POOL — Fictitious Self-Play Rakip Havuzu
 #
 # Policy collapse çözümü: Red takımı sabit heuristic yerine Blue'nun geçmiş
@@ -334,8 +373,119 @@ logging:
 opponent_pool:
   max_pool_size:          20    # ring buffer kapasitesi (eski checkpoint silinir)
   start_step:        500_000    # bu adımdan itibaren self-play pool kullanılır
-  pool_update_interval:  200    # her N episode'da bir snapshot ekle
+  pool_update_interval:  1200    # her 1200 ep'de bir snapshot — hardening oscillation minimize
 
+# -----------------------------------------------------------------------------
+# ROLE_EXPLORATION — Epsilon-Greedy Rol Keşfi
+# İlk role_epsilon_steps adımda rastgele rol seç → RoleSelector'a çeşitli sinyaller ver
+# -----------------------------------------------------------------------------
+role_exploration:
+  role_epsilon_start:  0.5        # başlangıç keşif oranı (%50 rastgele rol)
+  role_epsilon_end:    0.0        # son keşif oranı (tamamen öğrenilmiş)
+  role_epsilon_steps:  10_000_000 # bu run'ın başından itibaren lineer decay adım sayısı
+
+
+# -----------------------------------------------------------------------------
+# CURRICULUM_V2 — 3-Fazlı Curriculum (1v1 WEZ-close → 1v1 normal → 2v2)
+# -----------------------------------------------------------------------------
+curriculum_v2:
+  eval_window:              100     # kriter kontrolü için rolling window (episode)
+
+  # Faz 1: 1v1 WEZ-yakın spawn
+  phase1_kill_threshold:   0.30     # kill/ep >= 0.30 (son eval_window ep)
+  phase1_win_threshold:    0.40     # win_rate >= 0.40 (son eval_window ep)
+  phase1_min_episodes:     100      # en az 100 episode Faz-1'de kal
+  phase1_spawn_dist_min:   500.0    # WEZ spawn min mesafe (m)
+  phase1_spawn_dist_max:  1500.0    # WEZ spawn max mesafe (m)
+
+  # Faz 1.5: 1v1 kademeli mesafe artışı (4000→16000m)
+  phase15_dist_start:     4000.0    # başlangıç mesafesi (m) — Faz-1.5 başlangıcı
+  phase15_dist_max:      16000.0    # maksimum mesafe (m)
+  phase15_dist_step:      1000.0    # her 100 ep'de artış (m)
+  phase15_step_episodes:   100      # kaç ep'de bir mesafe güncellenir
+  phase15_pullback_thresh:  0.10    # kill/ep bu altına düşerse mesafeyi geri çek
+  phase15_kill_threshold:   0.20    # kill/ep >= 0.20 → Faz 2'ye geç
+  phase15_min_episodes:    1200     # Faz 1.5'te minimum episode sayısı (4k→16k için)
+
+  # Faz 2: 1v1 normal spawn
+  phase2_kill_threshold:   0.15     # kill/ep >= 0.15 → Faz 3'e geç (2v2)
+  phase2_min_episodes:     300      # Faz 2'de minimum episode sayısı
+  phase3_spawn_dist:      2500.0    # normal spawn min mesafe (m) — geçici 2500m
+  phase3_spawn_dist_max: 12000.0    # normal spawn max mesafe (m)
+
+# -----------------------------------------------------------------------------
+# QMIX — Hiperparametreler
+# -----------------------------------------------------------------------------
+qmix:
+  # Ağ boyutları
+  obs_dim:          50              # ajan gözlem boyutu (50D, MAPPO ile aynı)
+  global_obs_dim:   100             # global durum boyutu (2 ajan × 50D)
+  n_actions:        162             # ayrık aksiyon sayısı (3×3×3×3×2)
+  agent_hidden:     128             # AgentQNetwork gizli katman boyutu
+  qmix_hidden:      64              # QMixNet gizli katman boyutu
+
+  # Eğitim hiperparametreleri
+  lr:               0.0001          # Adam öğrenme hızı
+  gamma:            0.99            # indirim faktörü
+  batch_size:       64              # minibatch boyutu
+  min_buffer:       1000            # güncelleme için minimum buffer doluluk
+
+  # Replay buffer
+  buffer_capacity:  50000           # geçiş sayısı
+
+  # Keşif (ε-greedy)
+  eps_start:        1.0             # başlangıç epsilon
+  eps_end:          0.05            # son epsilon
+  eps_decay_steps:  100000          # lineer decay adım sayısı
+
+  # Senkronizasyon
+  target_update_interval: 200       # hedef ağ güncelleme sıklığı (episode)
+  train_freq:       4               # kaç adımda bir güncelleme
+
+  # Diğer
+  grad_clip:        10.0            # gradyan kırpma
+  total_episodes:   30000           # toplam eğitim episode sayısı
+  log_interval:     100             # log yazdırma sıklığı (episode)
+  save_interval:    500             # checkpoint kaydetme sıklığı (episode)
+  pool_update_interval: 500        # her N ep'de AgentQNet snapshot → self-play pool
+
+# -----------------------------------------------------------------------------
+# FACMAC — Hiperparametreler
+# -----------------------------------------------------------------------------
+facmac:
+  # Ağ boyutları
+  hidden:           256             # actor/critic gizli katman
+  qmix_hidden:      64              # QMixNet gizli katman (QMIX ile aynı)
+
+  # Eğitim
+  lr_actor:         0.0001          # actor Adam öğrenme hızı
+  lr_critic:        0.0001          # critic+mixer Adam öğrenme hızı (1e-3→1e-4, divergence fix)
+  gamma:            0.99
+  tau:              0.005           # Polyak averaging katsayısı
+  batch_size:       256
+  min_buffer:       1000
+  grad_clip:        1.0             # 10.0→1.0, agresif kırpma ile Q patlamasını engelle
+
+  # Replay buffer
+  replay_capacity:  50000           # 10k→50k: curriculum fazları arası dağılım kararlılığı
+
+  # Keşif: ctrl'e Gaussian noise, fire Bernoulli ile doğal
+  noise_sigma:      0.1             # başlangıç Gaussian std
+  noise_clip:       0.5             # noise clipping sınırı
+  noise_decay:      0.9999          # her episode'da noise_sigma *= decay
+
+  # TD3 iyileştirmeleri
+  policy_freq:          4           # 2→4: critic daha çok stabilize olsun, sonra actor güncelle
+  target_noise_sigma:   0.2         # target policy smoothing std
+  target_noise_clip:    0.5         # target noise clamp sınırı
+  q_target_clamp:       2000.0      # Faz-4 Q_tot_max~709 (2 ajan+kill bonus) → 2000 güvenli marjin
+
+  # Senkronizasyon & log
+  train_freq:       4
+  total_episodes:   30000
+  log_interval:     100
+  save_interval:    500
+  pool_update_interval: 500         # Faz-4'te her N ep'de actor snapshot → pool
 
 # -----------------------------------------------------------------------------
 # EVAL — Değerlendirme Ayarları

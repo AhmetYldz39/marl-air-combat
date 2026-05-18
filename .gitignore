@@ -1,0 +1,12 @@
+# Training outputs
+checkpoints/
+logs/
+
+# Claude Code config
+.claude/
+
+# Python virtual environment
+venv/
+
+# Boş/hatalı dosya
+null

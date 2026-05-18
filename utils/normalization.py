@@ -19,15 +19,15 @@ Normalize stratejileri:
     Alive           : zaten {0, 1}
 
 Observation vektörü yapısı (Faz 0-1, iletişimsiz, rol yok):
-    Ego         : 16 boyut — kendi normalize state
+    Ego         : 17 boyut — kendi normalize state + cooldown_norm (index 16)
     Takım ark.  : 9 boyut × n_teammates (her biri için)
     Düşman      : 12 boyut × n_enemies  (her biri için)
     ──────────────────────────────────────────
-    2v2 toplam  : 16 + 9 + 12×2 = 49 boyut
+    2v2 toplam  : 17 + 9 + 12×2 = 50 boyut  ← Faz-1 baseline (obs_dim=50)
 
-    Faz 2 eklemeleri:
-    + Rol embedding  : +2 boyut → 51
-    + GAT mesajı     : +16 boyut × n_teammates → 67 (2v2)
+    Faz-2 eklemeleri (train_mappo._extend_obs_phase2 tarafından yapılır):
+    + Rol embedding  : +2 boyut → 52
+    + GAT mesajı     : +16 boyut → 68 (2v2 toplam, obs_dim=68)
 
 Bağımlılıklar:
     - numpy
@@ -58,7 +58,7 @@ from envs.geometry_utils import (
 )
 
 # Observation bileşen boyutları — dogfight_env.py bu sabitleri kullanır
-OBS_EGO_DIM        = 16
+OBS_EGO_DIM        = 17   # +1: cooldown_norm
 OBS_TEAMMATE_DIM   = 9
 OBS_ENEMY_DIM      = 12
 OBS_ROLE_DIM       = 2    # Faz 2: aggression embedding
@@ -182,11 +182,12 @@ class Normalizer:
     # Ego Observation (16 boyut)
     # -----------------------------------------------------------------------
 
-    def ego_obs(self, state: np.ndarray) -> np.ndarray:
+    def ego_obs(self, state: np.ndarray,
+                cooldown_norm: float = 0.0) -> np.ndarray:
         """
         Kendi state'inden ego observation vektörü oluşturur.
 
-        Boyutlar (16):
+        Boyutlar (17):
             0-1  : x_norm, y_norm        — normalize konum [-1,1]
             2    : h_norm                — normalize irtifa [0,1]
             3    : V_norm                — normalize hız [0,1]
@@ -202,6 +203,7 @@ class Normalizer:
             13   : fuel_norm             — yakıt [0,1]
             14   : ammo_norm             — mühimmat [0,1]
             15   : hp                   — HP [0,1] (zaten normalize)
+            16   : cooldown_norm         — kalan cooldown / max_cooldown [0,1]
         """
         pos_norm = self._norm_pos(state[STATE_X], state[STATE_Y])
 
@@ -222,6 +224,7 @@ class Normalizer:
             self._norm_fuel(state[STATE_FUEL]),
             self._norm_ammo(state[STATE_AMMO]),
             float(np.clip(state[STATE_HP], 0.0, 1.0)),
+            float(np.clip(cooldown_norm, 0.0, 1.0)),
         ], dtype=np.float32)
 
         assert len(obs) == OBS_EGO_DIM, f"Ego obs boyutu hatalı: {len(obs)}"
@@ -343,7 +346,8 @@ class Normalizer:
                   teammate_states: list,
                   enemy_states:    list,
                   aggression:      float = None,
-                  gat_messages:    list  = None) -> np.ndarray:
+                  gat_messages:    list  = None,
+                  cooldown_norm:   float = 0.0) -> np.ndarray:
         """
         Tüm bileşenlerden tam observation vektörü oluşturur.
 
@@ -358,23 +362,22 @@ class Normalizer:
         gat_messages     : list[np.ndarray] | None
                            None → GAT mesajı eklenmez (Faz 0-2)
                            list → her takım arkadaşından 16 boyutlu mesaj (Faz 3)
+        cooldown_norm    : float — kalan cooldown / max_cooldown [0,1]
 
         Returns
         -------
         np.ndarray — normalize edilmiş tam observation vektörü
 
         Boyut örnekleri:
-            2v2, Faz 0-1 (rol yok, GAT yok)  : 16 + 9 + 12×2       = 49
-            2v2, Faz 2   (rol var, GAT yok)   : 16 + 9 + 12×2 + 2   = 51
-            2v2, Faz 3   (rol var, GAT var)   : 16 + 9 + 12×2 + 2+16= 67
-            3v3, Faz 0-1                       : 16 + 9×2 + 12×3     = 70
-            3v3, Faz 2                         : 70 + 2               = 72
-            3v3, Faz 3                         : 72 + 16×2            = 104
+            2v2, Faz 0-1 (rol yok, GAT yok)  : 17 + 9 + 12×2       = 50
+            2v2, Faz 2   (rol var, GAT yok)   : 17 + 9 + 12×2 + 2   = 52
+            2v2, Faz 3   (rol var, GAT var)   : 17 + 9 + 12×2 + 2+16= 68
+            3v3, Faz 0-1                       : 17 + 9×2 + 12×3     = 71
         """
         parts = []
 
-        # 1. Ego (16)
-        parts.append(self.ego_obs(agent_state))
+        # 1. Ego (17)
+        parts.append(self.ego_obs(agent_state, cooldown_norm=cooldown_norm))
 
         # 2. Takım arkadaşları (9 × n_teammates)
         for tm_state in teammate_states:

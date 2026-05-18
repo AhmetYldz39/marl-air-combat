@@ -210,19 +210,24 @@ def antenna_train_angle(pos_self: np.ndarray,
     WEZ kontrolünde: |ATA| < wez_angle_max ise ateş koridorundayız
     """
     delta = relative_position(pos_self, pos_target)
-    delta_h = np.array([delta[0], delta[1], 0.0])
-    delta_h_norm = np.linalg.norm(delta_h)
+    delta_norm = np.linalg.norm(delta)
 
-    if delta_h_norm < EPS:
+    if delta_norm < EPS:
         return 0.0
 
-    # Hedefin bearing açısı
-    target_bearing = np.arctan2(delta[0], delta[1])  # atan2(Doğu, Kuzey)
+    delta_unit = delta / delta_norm
+    # Heading birim vektörü (yatay, ENU: kuzey=0, doğu=π/2)
+    heading = np.array([np.sin(psi_self), np.cos(psi_self), 0.0])
 
-    # Kendi heading'imize göre fark
-    ata = target_bearing - psi_self
+    # 3D off-boresight açısı (unsigned)
+    dot = float(np.clip(np.dot(heading, delta_unit), -1.0, 1.0))
+    ata = float(np.arccos(dot))
 
-    # (-π, π] aralığına normalize et
+    # İşaret: heading × delta_unit z-bileşeni pozitifse hedef sol tarafta
+    cross_z = heading[0] * delta_unit[1] - heading[1] * delta_unit[0]
+    if cross_z > 0.0:
+        ata = -ata
+
     return float(wrap_to_pi(ata))
 
 
