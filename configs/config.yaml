@@ -252,7 +252,7 @@ training:
 
   # Genel
   algorithm:          "mappo"       # mappo | qmix | maddpg
-  total_timesteps:    50_000_000    # epsilon-greedy role run: ep37000 (step≈29.3M) + 20M yeni adım
+  total_timesteps:    50_000_000    # Option-B role fix run: ep37000 (29.3M) + 20M yeni adım
   seed:               42
 
   # PPO / MAPPO
@@ -482,10 +482,10 @@ facmac:
 
   # Senkronizasyon & log
   train_freq:       4
-  total_episodes:   30000
+  total_episodes:   97000            # ep17000'den ~20M toplam step ≈ 80k ep daha
   log_interval:     100
   save_interval:    500
-  pool_update_interval: 500         # Faz-4'te her N ep'de actor snapshot → pool
+  pool_update_interval: 1200        # hardening oscillation minimize
 
 # -----------------------------------------------------------------------------
 # EVAL — Değerlendirme Ayarları

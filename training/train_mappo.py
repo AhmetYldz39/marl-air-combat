@@ -72,6 +72,13 @@ try:
 except ImportError:
     OpponentModel = None
 
+from collections import deque
+from models.om_net import (
+    CentralizedOpponentModel, CentralizedRoleAssigner,
+    EnemyHistoryBuffer, OMReplayBuffer, build_team_state, get_om_label,
+    INTENT_DIM, ROLE_DIM, INTENT_DEFENSIVE, ROLE_PAIRS,
+)
+
 # ---------------------------------------------------------------------------
 # Sabitler
 # ---------------------------------------------------------------------------
@@ -389,43 +396,42 @@ class MAPPOCritic(nn.Module):
 
 class GATMAPPOActor(nn.Module):
     """
-    Transfer learning Actor: Faz-1 ağırlıkları korunur, yeni giriş eklenir.
+    Transfer learning Actor — 4-yönlü split giriş.
 
-    İlk katman split:
-        fc1_old : Linear(old_obs_dim=50, hidden) — mappo_final.pt'den yüklenir
-        fc1_new : Linear(ext_dim,        hidden, bias=False) — sıfır init
-
-        Faz-2 GAT  : ext_dim=18  (role_2 + gat_16)       → new_obs_dim=68
-        Faz-2+opp  : ext_dim=26  (role_4 + gat_16 + opp_intent_6) → new_obs_dim=76
-
-    compute_role(obs, teammate_role): obs[70:76]=opp_intent, obs[13:16]=resources
+    Obs yapısı (78D):
+      [0:50]   fc1_old    — base obs (checkpoint'ten)
+      [50:68]  fc1_new    — eski ext (2D dummy + 16D GAT, checkpoint'ten)
+      [68:74]  fc1_intent — yeni OM intent 6D (sıfır init)
+      [74:78]  fc1_role   — yeni rol ataması 4D (sıfır init)
     """
 
-    def __init__(self, old_obs_dim: int, new_obs_dim: int,
-                 action_dim: int, hidden: int = 256,
-                 with_role_selector: bool = False):
+    def __init__(self, old_obs_dim: int, ext_dim: int,
+                 intent_dim: int, role_dim: int,
+                 action_dim: int, hidden: int = 256):
         super().__init__()
-        self.old_obs_dim = old_obs_dim
-        ext_dim = new_obs_dim - old_obs_dim  # 18 veya 24
+        self.old_obs_dim  = old_obs_dim   # 50
+        self.ext_dim      = ext_dim       # 18
+        self.intent_dim   = intent_dim    # 6
+        self.role_dim     = role_dim      # 4
+        self._s0 = old_obs_dim
+        self._s1 = old_obs_dim + ext_dim
+        self._s2 = old_obs_dim + ext_dim + intent_dim
 
-        self.fc1_old   = nn.Linear(old_obs_dim, hidden, bias=True)
-        self.fc1_new   = nn.Linear(ext_dim,     hidden, bias=False)
-        self.fc2       = nn.Linear(hidden, hidden)
-        self.mean_head = nn.Linear(hidden, action_dim - 1)
-        self.log_std   = nn.Parameter(torch.zeros(action_dim - 1))
-        self.fire_head = nn.Linear(hidden, 1)
-
-        # RoleSelector: ext_dim=24 (opp_intent_6 dahil) olduğunda aktif
-        self._has_role_selector = with_role_selector
-        if with_role_selector:
-            from models.opponent_model import RoleSelector
-            self.role_selector = RoleSelector()
+        self.fc1_old    = nn.Linear(old_obs_dim,  hidden, bias=True)
+        self.fc1_new    = nn.Linear(ext_dim,      hidden, bias=False)
+        self.fc1_intent = nn.Linear(intent_dim,   hidden, bias=False)
+        self.fc1_role   = nn.Linear(role_dim,     hidden, bias=False)
+        self.fc2        = nn.Linear(hidden, hidden)
+        self.mean_head  = nn.Linear(hidden, action_dim - 1)
+        self.log_std    = nn.Parameter(torch.zeros(action_dim - 1))
+        self.fire_head  = nn.Linear(hidden, 1)
 
         self._init_new_weights()
 
     def _init_new_weights(self):
-        """Sadece yeni/tail kısımları init et; fc1_old checkpoint'ten gelir."""
         nn.init.zeros_(self.fc1_new.weight)
+        nn.init.zeros_(self.fc1_intent.weight)
+        nn.init.zeros_(self.fc1_role.weight)
         nn.init.orthogonal_(self.fc2.weight, gain=np.sqrt(2))
         nn.init.zeros_(self.fc2.bias)
         nn.init.orthogonal_(self.mean_head.weight, gain=0.01)
@@ -434,16 +440,20 @@ class GATMAPPOActor(nn.Module):
         nn.init.orthogonal_(self.fire_head.weight, gain=0.01)
 
     def freeze_old(self):
-        """Eski girişi dondur (transfer learning aşama 1)."""
         self.fc1_old.requires_grad_(False)
+        self.fc1_new.requires_grad_(False)
 
     def unfreeze_old(self):
-        """Eski girişi çöz (transfer learning aşama 2)."""
         self.fc1_old.requires_grad_(True)
+        self.fc1_new.requires_grad_(True)
 
     def forward(self, obs: "torch.Tensor"):
-        feat = F.relu(self.fc1_old(obs[..., :self.old_obs_dim]) +
-                      self.fc1_new(obs[..., self.old_obs_dim:]))
+        feat = F.relu(
+            self.fc1_old(obs[..., :self._s0]) +
+            self.fc1_new(obs[..., self._s0:self._s1]) +
+            self.fc1_intent(obs[..., self._s1:self._s2]) +
+            self.fc1_role(obs[..., self._s2:])
+        )
         feat = F.relu(self.fc2(feat))
         return self.mean_head(feat), self.log_std, self.fire_head(feat)
 
@@ -454,27 +464,6 @@ class GATMAPPOActor(nn.Module):
         fire_dist = torch.distributions.Bernoulli(logits=fire_logit)
         return ctrl_dist, fire_dist
 
-    def compute_role(self, obs: "torch.Tensor",
-                     teammate_role: "torch.Tensor" = None,
-                     hard: bool = False) -> "torch.Tensor":
-        """
-        RoleSelector forward pass. Yalnızca with_role_selector=True ile kullanılır.
-        obs: (..., 76D)  — base(50)|role(4)|gat(16)|opp_intent(6), obs[70:76]=opp_intent, obs[13:16]=resources
-        teammate_role: (..., 4D) veya None → uniform [0.25]*4
-        Döndürür: (..., 4D) Gumbel-Softmax
-        """
-        if not self._has_role_selector:
-            return torch.full((*obs.shape[:-1], 4), 0.25,
-                              device=obs.device, dtype=obs.dtype)
-        opp_intent = obs[..., 70:76]
-        resources  = obs[..., 13:16]
-        if teammate_role is None:
-            teammate_role = torch.full(
-                (*obs.shape[:-1], 4), 0.25,
-                device=obs.device, dtype=obs.dtype
-            )
-        return self.role_selector(opp_intent, teammate_role, resources, hard=hard)
-
     @torch.no_grad()
     def act(self, obs: "torch.Tensor", deterministic: bool = False):
         ctrl_dist, fire_dist = self.get_dist(obs)
@@ -484,9 +473,9 @@ class GATMAPPOActor(nn.Module):
         else:
             ctrl_raw = ctrl_dist.sample()
             fire_raw = fire_dist.sample()
-        ctrl_lp  = ctrl_dist.log_prob(ctrl_raw).sum(-1)
-        fire_lp  = fire_dist.log_prob(fire_raw).sum(-1)
-        raw      = torch.cat([ctrl_raw, fire_raw], dim=-1)
+        ctrl_lp = ctrl_dist.log_prob(ctrl_raw).sum(-1)
+        fire_lp = fire_dist.log_prob(fire_raw).sum(-1)
+        raw     = torch.cat([ctrl_raw, fire_raw], dim=-1)
         return raw, ctrl_lp + fire_lp
 
     @staticmethod
@@ -499,27 +488,36 @@ class GATMAPPOActor(nn.Module):
 
 class GATMAPPOCritic(nn.Module):
     """
-    Transfer learning Critic: 100D → 136D genişletme.
+    Transfer learning Critic — 4-yönlü split giriş.
 
-    fc1_old : Linear(old_global_dim=100, hidden) — checkpoint'ten yüklenir
-    fc1_new : Linear(ext_dim=36,          hidden, bias=False) — sıfır init
+    Global obs yapısı (156D = 2×78):
+      [0:100]   fc1_old      — eski base global obs (checkpoint'ten)
+      [100:136] fc1_new      — eski ext 2×18D (checkpoint'ten, başta dondurulmuş)
+      [136:148] fc1_intent_c — yeni OM intent 2×6D (sıfır init)
+      [148:156] fc1_role_c   — yeni rol ataması 2×4D (sıfır init)
     """
 
-    def __init__(self, old_global_dim: int, new_global_dim: int,
-                 hidden: int = 256):
+    def __init__(self, old_global_dim: int, ext_dim: int,
+                 intent_dim_c: int, role_dim_c: int, hidden: int = 256):
         super().__init__()
         self.old_global_dim = old_global_dim
-        ext_dim = new_global_dim - old_global_dim  # 36
+        self._s0 = old_global_dim
+        self._s1 = old_global_dim + ext_dim
+        self._s2 = old_global_dim + ext_dim + intent_dim_c
 
-        self.fc1_old = nn.Linear(old_global_dim, hidden, bias=True)
-        self.fc1_new = nn.Linear(ext_dim,        hidden, bias=False)
-        self.fc2     = nn.Linear(hidden, hidden)
-        self.out     = nn.Linear(hidden, 1)
+        self.fc1_old      = nn.Linear(old_global_dim, hidden, bias=True)
+        self.fc1_new      = nn.Linear(ext_dim,        hidden, bias=False)
+        self.fc1_intent_c = nn.Linear(intent_dim_c,   hidden, bias=False)
+        self.fc1_role_c   = nn.Linear(role_dim_c,     hidden, bias=False)
+        self.fc2          = nn.Linear(hidden, hidden)
+        self.out          = nn.Linear(hidden, 1)
 
         self._init_new_weights()
 
     def _init_new_weights(self):
         nn.init.zeros_(self.fc1_new.weight)
+        nn.init.zeros_(self.fc1_intent_c.weight)
+        nn.init.zeros_(self.fc1_role_c.weight)
         nn.init.orthogonal_(self.fc2.weight, gain=np.sqrt(2))
         nn.init.zeros_(self.fc2.bias)
         nn.init.orthogonal_(self.out.weight, gain=0.01)
@@ -527,13 +525,19 @@ class GATMAPPOCritic(nn.Module):
 
     def freeze_old(self):
         self.fc1_old.requires_grad_(False)
+        self.fc1_new.requires_grad_(False)
 
     def unfreeze_old(self):
         self.fc1_old.requires_grad_(True)
+        self.fc1_new.requires_grad_(True)
 
     def forward(self, global_obs: "torch.Tensor") -> "torch.Tensor":
-        feat = F.relu(self.fc1_old(global_obs[..., :self.old_global_dim]) +
-                      self.fc1_new(global_obs[..., self.old_global_dim:]))
+        feat = F.relu(
+            self.fc1_old(global_obs[..., :self._s0]) +
+            self.fc1_new(global_obs[..., self._s0:self._s1]) +
+            self.fc1_intent_c(global_obs[..., self._s1:self._s2]) +
+            self.fc1_role_c(global_obs[..., self._s2:])
+        )
         feat = F.relu(self.fc2(feat))
         return self.out(feat).squeeze(-1)
 
@@ -549,7 +553,7 @@ class MAPPOTrainer:
     Parametreler config.yaml'dan okunur.
     """
 
-    def __init__(self, config: dict, device: str = "auto"):
+    def __init__(self, config: dict, device: str = "auto", mode: str = "mappo_gat_om"):
         self.config = config
         tr = config["training"]
 
@@ -601,21 +605,24 @@ class MAPPOTrainer:
 
         hidden = int(tr.get("hidden_dim", 256))
 
-        # Phase-2: GAT iletişim modu
+        # GAT iletişim modu
         comm = config.get("communication", {})
-        self.phase2_mode   = bool(comm.get("enable_comms", False))
+        self.mode      = mode
+        self.gat_mode  = mode in ("mappo_gat", "mappo_gat_om")
+        self.om_mode   = mode == "mappo_gat_om"
         self.base_obs_dim  = self.obs_dim   # Faz-1 baseline: 50
         self._old_unfrozen = False
         self._freeze_steps = int(comm.get("freeze_steps", 500_000))
 
-        if self.phase2_mode:
+        if self.gat_mode:
             from models.gat_comm import GATComm
-            from models.opponent_model import OpponentModel
-            _role_dim       = 4
+            _role_dim       = 4 if self.om_mode else 0
             _gat_msg        = int(comm.get("msg_dim", 16))
-            _opp_intent_dim = 6   # 2 düşman × 3D intent
-            self.obs_dim        = self.base_obs_dim + _role_dim + _gat_msg + _opp_intent_dim  # 76
-            self.global_obs_dim = self.obs_dim * self.env._max_n_per_team   # 152
+            _opp_intent_dim = 6 if self.om_mode else 0   # 2 düşman × 3D intent
+            _ext_dim        = _gat_msg + 2   # 16D GAT + 2D dummy = 18D
+            self.obs_dim        = self.base_obs_dim + _ext_dim + _opp_intent_dim + _role_dim
+            # mappo_gat: 68D  |  mappo_gat_om: 78D
+            self.global_obs_dim = self.obs_dim * self.env._max_n_per_team
             self._gat_node_dim  = int(comm.get("node_dim", 17))
             self._gat_wez_range = float(config.get("weapons", {})
                                         .get("wez_range_max", 8000.0))
@@ -628,46 +635,37 @@ class MAPPOTrainer:
             ).to(self.device)
 
             self.actor = GATMAPPOActor(
-                old_obs_dim        = self.base_obs_dim,
-                new_obs_dim        = self.obs_dim,
-                action_dim         = self.action_dim,
-                hidden             = hidden,
-                with_role_selector = True,
+                old_obs_dim  = self.base_obs_dim,
+                ext_dim      = _ext_dim,
+                intent_dim   = _opp_intent_dim,
+                role_dim     = _role_dim,
+                action_dim   = self.action_dim,
+                hidden       = hidden,
             ).to(self.device)
+            _n = self.env._max_n_per_team
             self.critic = GATMAPPOCritic(
-                old_global_dim = self.base_obs_dim * self.env._max_n_per_team,
-                new_global_dim = self.global_obs_dim,
+                old_global_dim = self.base_obs_dim * _n,
+                ext_dim        = _ext_dim * _n,
+                intent_dim_c   = _opp_intent_dim * _n,
+                role_dim_c     = _role_dim * _n,
                 hidden         = hidden,
             ).to(self.device)
 
-            # OpponentModel (trainer tarafından çalıştırılır, obs'a eklenir)
-            opp_cfg = config.get("opponent_model", {})
-            self.opponent_model = OpponentModel(
-                history_steps = int(opp_cfg.get("history_window", 20)),
-                hidden1       = int(opp_cfg.get("hidden1", 128)),
-                hidden2       = int(opp_cfg.get("hidden2", 64)),
-            ).to(self.device)
-            self.opt_opp = optim.Adam(
-                self.opponent_model.parameters(), lr=1e-3
-            )
-            self._opp_hist_buf: list  = []   # (480,) numpy per step
-            self._opp_label_buf: list = []   # (2,) int64 numpy per step
+            # OM bileşenler (sadece om_mode)
+            if self.om_mode:
+                self.cent_om    = CentralizedOpponentModel().to(self.device)
+                self.cent_role  = CentralizedRoleAssigner().to(self.device)
+                self.enemy_hist = EnemyHistoryBuffer()
+                self.om_replay  = OMReplayBuffer(capacity=5_000)
+                self.opt_om     = optim.Adam(self.cent_om.parameters(), lr=1e-3)
+                self.opt_role   = optim.Adam(self.cent_role.parameters(), lr=3e-4)
+                self._intent_acc:    list = []
+                self._role_acc:      list = []
+                self._role_inp_buf:  list = []
+                self._role_pair_buf: list = []          # REINFORCE için pair indeksleri
+                self._return_history = deque(maxlen=200)  # REINFORCE baseline
 
-            # Logging akümülatörleri (log_interval'da sıfırlanır)
-            self._intent_acc: list = []      # (6,) float per step — 2 enemy × 3 class
-            self._role_acc:   list = []      # (4,) float per step — 4 roller
-
-            # Role supervision buffer (her update_interval'da temizlenir)
-            self._role_obs_buf: list = []    # (76,) float per step
-            self._role_tgt_buf: list = []    # int per step (0-3)
-
-            # Prev roles: önceki adım rol vektörleri (RoleSelector için)
-            self._prev_roles: dict = {
-                aid: np.full(4, 0.25, dtype=np.float32)
-                for aid in [f"blue_{i}" for i in range(self.env._max_n_per_team)]
-            }
-
-            # opt_actor: gat_comm + fc1_new + actor tail (fc1_old başta dondurulmuş)
+            # opt_actor: gat_comm + fc1_new + fc1_intent + fc1_role + tail (fc1_old başta dondurulmuş)
             _actor_params = (list(self.gat_comm.parameters()) +
                              [p for n, p in self.actor.named_parameters()
                               if 'fc1_old' not in n])
@@ -766,10 +764,10 @@ class MAPPOTrainer:
 
             for _ in range(self.n_steps):
 
-                # Phase-2: 50D obs → 68D (GAT mesajı + rol embedding)
+                # GAT: 50D obs → 68D/78D (GAT mesajı + rol embedding)
                 # Pool ve env hâlâ 50D obs_dict kullanır
-                if self.phase2_mode:
-                    obs_ext = self._extend_obs_phase2(obs_dict)
+                if self.gat_mode:
+                    obs_ext = self._extend_obs_gat(obs_dict)
                 else:
                     obs_ext = obs_dict
 
@@ -787,16 +785,16 @@ class MAPPOTrainer:
                 # Global obs (critic girişi) — genişletilmiş obs
                 global_obs = self._build_global_obs(obs_ext)
 
-                # Phase-2: rol obs_ext[50:54]'ten oku (zaten _extend_obs_phase2'de hesaplandı)
+                # om_mode: rol obs_ext[74:78]'den oku (yeni layout: base50|ext18|intent6|role4)
                 role_support_probs = None
                 role_vecs          = None
-                if self.phase2_mode:
+                if self.om_mode:
                     role_support_probs = {}
                     role_vecs          = {}
                     for aid in self.train_ids:
                         if aid not in obs_ext:
                             continue
-                        role_np = obs_ext[aid][50:54]   # base(50)|role(4)|...
+                        role_np = obs_ext[aid][74:78]   # [74:78] = role(4)
                         role_support_probs[aid] = float(role_np[3])
                         role_vecs[aid]          = role_np
 
@@ -804,31 +802,6 @@ class MAPPOTrainer:
                 next_obs, rew_dict, done_dict, info_dict = \
                     self.env.step(action_dict, role_support_probs=role_support_probs,
                                   role_vecs=role_vecs)
-
-                # Phase-2: supervisor label — taktiksel bağama göre, mevcut rolden bağımsız
-                if self.phase2_mode and role_vecs:
-                    for aid in self.train_ids:
-                        if aid not in obs_ext:
-                            continue
-                        info       = info_dict.get(aid, {})
-                        hp         = float(obs_ext[aid][15])          # HP normalized [0,1]
-                        closing    = info.get("r_closing_raw",  0.0)  # ≥0: biz kapanıyoruz
-                        sniper_pos = info.get("r_sniper_pos",   0.0)  # Gaussian ~1500-5500m
-                        r_sup_raw  = info.get("r_support_raw",  0.0)  # role_vec bağımsız
-
-                        tgt = None
-                        if hp < 0.5:
-                            tgt = 2  # DEFENSIVE: HP kritik, öncelikli
-                        elif r_sup_raw > 0.10:
-                            tgt = 3  # SUPPORT: takım arkadaşı angajmanda
-                        elif sniper_pos > 0.10 and closing <= 0:
-                            tgt = 0  # SNIPER: iyi menzilde, düşman kapanmıyor
-                        elif closing > 0 and sniper_pos < 0.05:
-                            tgt = 1  # PURSUIT: uzakta (>6.8km), biz kapanıyoruz
-
-                        if tgt is not None:
-                            self._role_obs_buf.append(obs_ext[aid].copy())
-                            self._role_tgt_buf.append(tgt)
 
                 # Buffer'a ekle — genişletilmiş obs saklanır (phase2: 76D, diğer: 50D)
                 max_n      = self.env._max_n_per_team
@@ -882,6 +855,9 @@ class MAPPOTrainer:
 
                     mean_rew = np.mean([ep_reward[aid]
                                         for aid in self.train_ids])
+                    # REINFORCE: cent_role gradient (her episode sonunda)
+                    if self.om_mode:
+                        self._update_role_reinforce(float(mean_rew))
                     self._ep_rewards.append(mean_rew)
                     self._ep_wins.append(is_win)
                     self._ep_losses.append(is_loss)
@@ -917,7 +893,7 @@ class MAPPOTrainer:
                         self._save_checkpoint()
 
                     # Phase-2: eski ağırlıkları çöz (aşama 1 → 2)
-                    if (self.phase2_mode and not self._old_unfrozen
+                    if (self.gat_mode and not self._old_unfrozen
                             and self.global_step >= self._freeze_steps):
                         self._unfreeze_old_weights()
 
@@ -943,7 +919,7 @@ class MAPPOTrainer:
 
             # ── PPO Güncelleme ─────────────────────────────────────────
             self._update()
-            self._update_role_supervisor()
+            self._update_om()
 
         # Eğitim sonu
         self._save_checkpoint(final=True)
@@ -1069,7 +1045,7 @@ class MAPPOTrainer:
         Epsilon-greedy rol keşfi için lineer decay.
         Bu run'ın başından itibaren sayar (_train_start_step).
         """
-        if not self.phase2_mode:
+        if not self.om_mode:
             return 0.0
         cfg       = self.config.get("role_exploration", {})
         eps_start = float(cfg.get("role_epsilon_start", 0.0))
@@ -1081,44 +1057,75 @@ class MAPPOTrainer:
         t = min(1.0, steps_done / max(eps_steps, 1))
         return float(eps_start + (eps_end - eps_start) * t)
 
-    def _update_role_supervisor(self) -> float:
-        """
-        RoleSelector'ı behavioral outcome'lara göre supervise eder.
-        Buffer: (obs(76D), target_role) çiftleri — her rollout sonrası temizlenir.
-        opp_intent: obs[70:76] (base50 + role4 + gat16 = 70 offset)
-        """
-        if not self.phase2_mode or len(self._role_tgt_buf) < 32:
-            self._role_obs_buf.clear()
-            self._role_tgt_buf.clear()
+    def _update_om(self) -> float:
+        """CentralizedOpponentModel supervised loss (sadece om_mode)."""
+        if not self.om_mode:
             return 0.0
-        import torch.nn.functional as F
-        n    = min(len(self._role_tgt_buf), 512)
-        idxs = np.random.choice(len(self._role_tgt_buf), n, replace=False)
-        role_obs_np = np.stack([self._role_obs_buf[i] for i in idxs])
-        role_tgt_np = np.array([self._role_tgt_buf[i] for i in idxs], dtype=np.int64)
-        role_obs_t  = torch.FloatTensor(role_obs_np).to(self.device)
-        role_tgt_t  = torch.LongTensor(role_tgt_np).to(self.device)
-        opp_intent  = role_obs_t[:, 70:76]
-        resources   = role_obs_t[:, 13:16]
-        tm_role     = torch.full((n, 4), 0.25, device=self.device, dtype=torch.float32)
-        x           = torch.cat([opp_intent, tm_role, resources], dim=-1)
-        role_logits = self.actor.role_selector.net(x)
-        role_loss   = F.cross_entropy(role_logits, role_tgt_t)
-        self.opt_actor.zero_grad()
+        if len(self.om_replay) < 32:
+            return 0.0
+        batch     = min(len(self.om_replay), 128)
+        hist_np, labels_np = self.om_replay.sample(batch)
+        hist_t    = torch.FloatTensor(hist_np).to(self.device)
+        label_t   = torch.LongTensor(labels_np).to(self.device)
+        om_loss   = self.cent_om.supervised_loss(hist_t, label_t)
+        self.opt_om.zero_grad()
+        om_loss.backward()
+        nn.utils.clip_grad_norm_(self.cent_om.parameters(), 0.5)
+        self.opt_om.step()
+        return float(om_loss.item())
+
+    def _update_role_reinforce(self, episode_return: float) -> None:
+        """
+        Episode-level REINFORCE ile cent_role eğitimi.
+        Rol atamalarının log-olasılığı × normalize_return ile gradient geçirir.
+        Her episode sonunda çağrılır (_update_om'dan bağımsız).
+        """
+        if not self.om_mode:
+            return
+        if len(self._role_pair_buf) < 1:
+            return
+
+        self._return_history.append(episode_return)
+        if len(self._return_history) < 10:
+            self._role_pair_buf.clear()
+            self._role_inp_buf.clear()
+            return
+
+        ret_mean = float(np.mean(self._return_history))
+        ret_std  = float(np.std(self._return_history)) + 1e-8
+        ret_norm = float(np.clip((episode_return - ret_mean) / ret_std, -3.0, 3.0))
+
+        # Cent_role MLP'sini geçmişe tekrar koştur (gradient AKIYOR)
+        x_np    = np.array(self._role_inp_buf, dtype=np.float32)   # [T, inp_dim]
+        x_t     = torch.FloatTensor(x_np).to(self.device)
+        logits  = self.cent_role.mlp(x_t)                          # [T, 12]
+        log_p   = F.log_softmax(logits, dim=-1)                    # [T, 12]
+
+        pair_t  = torch.LongTensor(self._role_pair_buf).to(self.device)  # [T]
+        T       = len(pair_t)
+        assigned_lp = log_p[torch.arange(T, device=self.device), pair_t]  # [T]
+
+        # Çeşitlilik entropisi bonusu
+        probs   = F.softmax(logits, dim=-1)
+        entropy = -(probs * log_p).sum(dim=-1).mean()
+
+        # REINFORCE + entropy
+        role_loss = -(ret_norm * assigned_lp.mean()) - 0.05 * entropy
+
+        self.opt_role.zero_grad()
         role_loss.backward()
-        import torch.nn as nn
-        nn.utils.clip_grad_norm_(self.actor.role_selector.parameters(), 0.5)
-        self.opt_actor.step()
-        self._role_obs_buf.clear()
-        self._role_tgt_buf.clear()
-        return float(role_loss.item())
+        nn.utils.clip_grad_norm_(self.cent_role.parameters(), 0.5)
+        self.opt_role.step()
+
+        self._role_pair_buf.clear()
+        self._role_inp_buf.clear()
 
     def _update(self):
         """GAE + PPO clip loss + value loss + entropy."""
-        # Bootstrap value — phase2'de obs 68D'ye genişletilmeli
+        # Bootstrap value — gat_mode'da obs 68D/78D'ye genişletilmeli
         obs_dict = self.env._build_obs_dict()
-        if self.phase2_mode:
-            obs_dict = self._extend_obs_phase2(obs_dict)
+        if self.gat_mode:
+            obs_dict = self._extend_obs_gat(obs_dict)
         global_obs_t = torch.FloatTensor(
             self._build_global_obs(obs_dict)
         ).unsqueeze(0).to(self.device)
@@ -1212,21 +1219,6 @@ class MAPPOTrainer:
                 self.opt_critic.step()
 
         self._update_count += 1
-
-        # OpponentModel auxiliary loss güncelleme (PPO'dan bağımsız)
-        if (self.phase2_mode and self._opp_hist_buf and
-                len(self._opp_hist_buf) >= 32):
-            hist_arr   = np.stack(self._opp_hist_buf,   axis=0)  # (N, 480)
-            label_arr  = np.stack(self._opp_label_buf,  axis=0)  # (N, 2)
-            hist_t     = torch.FloatTensor(hist_arr).to(self.device)
-            label_t    = torch.LongTensor(label_arr).to(self.device)
-            _, logits  = self.opponent_model.forward_with_logits(hist_t)
-            aux        = OpponentModel.aux_loss(logits, label_t)
-            self.opt_opp.zero_grad()
-            aux.backward()
-            self.opt_opp.step()
-            self._opp_hist_buf.clear()
-            self._opp_label_buf.clear()
 
     # -----------------------------------------------------------------------
     # Yardımcı Metodlar
@@ -1350,17 +1342,19 @@ class MAPPOTrainer:
                 ]
         return edge
 
-    def _extend_obs_phase2(self, obs_dict: dict) -> dict:
+    def _extend_obs_gat(self, obs_dict: dict) -> dict:
         """
-        50D obs → 76D: base(50) + rol(4) + GAT mesajı(16) + opp_intent(6).
+        gat_mode=True obs genişletici.
+        om_mode=True : 50D → 78D (base+ext18+intent6+role4)
+        om_mode=False: 50D → 68D (base+ext18)
 
-        Node features: obs[:17] (ego obs, cooldown dahil).
-        Role embedding: RoleSelector one-hot çıktısı (4D, hard=True).
-        opp_intent: OpponentModel çıktısı, env'den okunan düşman geçmişiyle hesaplanır.
+        Centralized OM: tek bir 960D geçmiş buffer'dan 6D intent üretir.
+        Centralized RoleAssigner: intent+team_state → çakışmasız rol ataması.
         """
         blue_ids = [f"blue_{i}" for i in range(self.env._max_n_per_team)]
         states   = self.env.get_all_states()
 
+        # ── GAT mesajları (her zaman) ──────────────────────────────────────
         ego_list   = []
         alive_list = []
         for aid in blue_ids:
@@ -1368,72 +1362,86 @@ class MAPPOTrainer:
             ego_list.append(obs[:self._gat_node_dim])
             s = states.get(aid)
             alive_list.append(float(s[STATE_ALIVE]) if s is not None else 0.0)
-
         edge_feats = self._build_gat_edge_feats(blue_ids)
         messages   = self.gat_comm.compute_messages(
             ego_list, edge_feats, alive_list, self.device
         )
 
-        # opp_intent: tüm Blue ajanlar için tek batched GPU forward pass
-        opp_intents = {}
-        hist_list = [self.env.get_enemy_history_flat(aid) for aid in blue_ids]  # 2×(480,)
+        if not self.om_mode:
+            # 68D: base(50) + 2D_dummy + 16D_GAT
+            extended = {}
+            for i, aid in enumerate(blue_ids):
+                base  = obs_dict.get(aid, np.zeros(self.base_obs_dim, dtype=np.float32))
+                ext18 = np.concatenate([np.zeros(2, dtype=np.float32), messages[i]])
+                extended[aid] = np.concatenate([base, ext18])  # 68D
+            return extended
+
+        # ── Centralized OM: 960D geçmiş → 6D intent ───────────────────────
+        obs_arr = np.stack([
+            obs_dict.get(aid, np.zeros(self.base_obs_dim, dtype=np.float32))
+            for aid in blue_ids
+        ], axis=0)  # (2, 50)
+        hist_960 = self.enemy_hist.update(obs_arr)
+
         with torch.no_grad():
-            hist_batch = np.stack(hist_list, axis=0)                             # (2, 480)
-            hist_t     = torch.from_numpy(hist_batch).to(self.device)           # GPU'ya tek transfer
-            intents_np = self.opponent_model(hist_t).cpu().numpy()              # (2, 6)
-        for i, aid in enumerate(blue_ids):
-            opp_intents[aid] = intents_np[i]
+            hist_t    = torch.from_numpy(hist_960).unsqueeze(0).to(self.device)
+            intent_np = self.cent_om.intent_flat(hist_t).squeeze(0).cpu().numpy()  # (6,)
 
-        # Auxiliary loss için veri topla (geçmiş sıfır olmayan her adımda)
-        for i, (aid, hist_np) in enumerate(zip(blue_ids, hist_list)):
-            if np.any(hist_np != 0):
-                hist_arr = hist_np.reshape(
-                    self.opponent_model.history_steps,
-                    self.opponent_model.n_enemies * self.opponent_model.enemy_obs_dim
-                )
-                labels = OpponentModel._make_label(hist_arr)
-                self._opp_hist_buf.append(hist_np.copy())
-                self._opp_label_buf.append(labels)
+        # OM supervised replay doldur
+        if np.any(hist_960 != 0):
+            valid_pairs = []
+            for aid in blue_ids:
+                bs = states.get(aid)
+                if bs is not None:
+                    valid_pairs.append((bs, float(bs[STATE_ALIVE])))
+            label0 = INTENT_DEFENSIVE
+            label1 = INTENT_DEFENSIVE
+            if len(self.env.red_ids) > 0:
+                rs0 = states.get(self.env.red_ids[0])
+                if rs0 is not None:
+                    label0 = get_om_label(rs0, valid_pairs)
+            if len(self.env.red_ids) > 1:
+                rs1 = states.get(self.env.red_ids[1])
+                if rs1 is not None:
+                    label1 = get_om_label(rs1, valid_pairs)
+            self.om_replay.add(hist_960, label0, label1)
 
-        # Intent logging akümülasyonu: adım başına ajanlar ortalaması
-        if opp_intents:
-            self._intent_acc.append(
-                np.mean(list(opp_intents.values()), axis=0)  # (6,)
-            )
+        # ── Centralized Role Assignment ────────────────────────────────────
+        ts_np     = build_team_state(
+            [states.get(f"blue_{i}") for i in range(self.env._max_n_per_team)]
+        )
+        x_role_np = np.concatenate([intent_np, ts_np]).astype(np.float32)
+        with torch.no_grad():
+            x_role  = torch.from_numpy(x_role_np).unsqueeze(0).to(self.device)
+            role_0, role_1 = self.cent_role(x_role, hard=True, tau=0.5)
+        role_0_np = role_0.squeeze(0).cpu().numpy()  # (4,) one-hot
+        role_1_np = role_1.squeeze(0).cpu().numpy()
 
+        # REINFORCE: seçilen pair indeksini kaydet
+        r0_idx   = int(role_0_np.argmax())
+        r1_idx   = int(role_1_np.argmax())
+        pair_idx = ROLE_PAIRS.index((r0_idx, r1_idx))
+        self._role_pair_buf.append(pair_idx)
+
+        role_vecs = {blue_ids[0]: role_0_np, blue_ids[1]: role_1_np}
+
+        # Logging buffers
+        self._intent_acc.append(intent_np.copy())
+        self._role_acc.append(role_0_np.copy())
+        self._role_inp_buf.append(x_role_np.copy())
+
+        # ── 78D obs: base(50) + 2D_dummy+GAT16(18) + intent(6) + role(4) ──
         extended = {}
         for i, aid in enumerate(blue_ids):
-            base      = obs_dict.get(aid, np.zeros(self.base_obs_dim, dtype=np.float32))
-            intent    = opp_intents.get(aid, np.zeros(6, dtype=np.float32))
-            resources = base[13:16]
-            other_aids = [a for a in blue_ids if a != aid]
-            tm_role_np = (self._prev_roles[other_aids[0]] if other_aids
-                          else np.full(4, 0.25, dtype=np.float32))
-            with torch.no_grad():
-                intent_t  = torch.from_numpy(intent).unsqueeze(0).to(self.device)
-                res_t     = torch.from_numpy(resources).unsqueeze(0).to(self.device)
-                tm_role_t = torch.from_numpy(tm_role_np).unsqueeze(0).to(self.device)
-                role_t    = self.actor.role_selector(intent_t, tm_role_t, res_t, hard=True)
-            role_np = role_t.squeeze(0).cpu().numpy()  # (4,) one-hot
-
-            # Epsilon-greedy rol keşfi: ilk epsilon_steps adımda rastgele rol seç
-            eps = self._role_epsilon()
-            if eps > 0.0 and np.random.random() < eps:
-                rand_idx = np.random.randint(0, 4)
-                role_np  = np.eye(4, dtype=np.float32)[rand_idx]
-
-            self._prev_roles[aid] = role_np.copy()
-            self._role_acc.append(role_np.copy())
-            extended[aid] = np.concatenate([base, role_np, messages[i], intent], axis=0)  # 76D
-
+            base  = obs_dict.get(aid, np.zeros(self.base_obs_dim, dtype=np.float32))
+            ext18 = np.concatenate([np.zeros(2, dtype=np.float32), messages[i]])
+            extended[aid] = np.concatenate([base, ext18, intent_np, role_vecs[aid]])  # 78D
         return extended
 
     def _reset_episode(self) -> dict:
         self.pool.reset()
-        if self.phase2_mode:
-            # Prev roles sıfırla (yeni episode başı)
-            for aid in self._prev_roles:
-                self._prev_roles[aid][:] = 0.25
+        if self.gat_mode and self.om_mode:
+            self.enemy_hist.reset()
         return self.env.reset()
 
     def _save_pool_snapshot(self) -> str:
@@ -1445,9 +1453,9 @@ class MAPPOTrainer:
             "actor":       self.actor.state_dict(),
             "config":      self.config,
         }
-        if self.phase2_mode and self.gat_comm is not None:
-            snap["gat_comm"]    = self.gat_comm.state_dict()
-            snap["phase2_mode"] = True
+        if self.gat_mode and self.gat_comm is not None:
+            snap["gat_comm"] = self.gat_comm.state_dict()
+            snap["mode"]     = self.mode
         torch.save(snap, path)
         return str(path)
 
@@ -1509,7 +1517,7 @@ class MAPPOTrainer:
         # Intent / Role dağılımı (sadece phase2)
         intent_vals = [0.0] * 6   # [agg0, def0, eva0, agg1, def1, eva1]
         role_vals   = [0.25] * 4  # [sniper, pursuit, defensive, support]
-        if self.phase2_mode:
+        if self.om_mode:
             if self._intent_acc:
                 im = np.mean(self._intent_acc, axis=0)  # (6,)
                 intent_vals = [round(float(v), 4) for v in im]
@@ -1558,9 +1566,9 @@ class MAPPOTrainer:
             ])
 
     def _save_checkpoint(self, final: bool = False):
-        """Actor + Critic ağırlıklarını kaydet. Phase-2'de GATComm de eklenir."""
+        """Actor + Critic ağırlıklarını kaydet."""
         tag    = "final" if final else f"ep{self.episode_count}"
-        prefix = "mappo_gat" if self.phase2_mode else "mappo"
+        prefix = self.mode
         path   = self.ckpt_dir / f"{prefix}_{tag}.pt"
         ckpt = {
             "episode":      self.episode_count,
@@ -1570,12 +1578,15 @@ class MAPPOTrainer:
             "opt_actor":    self.opt_actor.state_dict(),
             "opt_critic":   self.opt_critic.state_dict(),
             "config":       self.config,
+            "mode":         self.mode,
         }
-        if self.phase2_mode and self.gat_comm is not None:
-            ckpt["gat_comm"]       = self.gat_comm.state_dict()
-            ckpt["phase2_mode"]    = True
-            ckpt["old_unfrozen"]   = self._old_unfrozen
-            ckpt["opponent_model"] = self.opponent_model.state_dict()
+        if self.gat_mode and self.gat_comm is not None:
+            ckpt["gat_comm"]     = self.gat_comm.state_dict()
+            ckpt["old_unfrozen"] = self._old_unfrozen
+            if self.om_mode:
+                ckpt["cent_om"]   = self.cent_om.state_dict()
+                ckpt["cent_role"] = self.cent_role.state_dict()
+                ckpt["opt_role"]  = self.opt_role.state_dict()
         torch.save(ckpt, path)
         print(f"[MAPPO] Checkpoint kaydedildi: {path}")
 
@@ -1609,11 +1620,17 @@ class MAPPOTrainer:
             if ckpt_w.shape != model_w.shape:
                 old_in = ckpt_w.shape[1]
                 new_in = model_w.shape[1]
-                print(f"[MAPPO] {label} fc1_new genişletiliyor: {old_in}D → {new_in}D")
-                expanded = torch.zeros_like(model_w)
-                expanded[:, :old_in] = ckpt_w
                 ckpt_state = dict(ckpt_state)  # shallow copy — orijinali değiştirme
-                ckpt_state[key] = expanded
+                if old_in <= new_in:
+                    # Genişletme: sütunları kopyala, kalan sıfır
+                    expanded = torch.zeros_like(model_w)
+                    expanded[:, :old_in] = ckpt_w
+                    ckpt_state[key] = expanded
+                    print(f"[MAPPO] {label} fc1_new genişletiliyor: {old_in}D → {new_in}D")
+                else:
+                    # Daralma: yeni split mimarisinde fc1_new sıfır init
+                    ckpt_state[key] = torch.zeros_like(model_w)
+                    print(f"[MAPPO] {label} fc1_new sıfırlanıyor: {old_in}D → {new_in}D (yeni split)")
         model.load_state_dict(ckpt_state, strict=False)
 
     def load_checkpoint(self, path: str):
@@ -1621,10 +1638,20 @@ class MAPPOTrainer:
         ckpt = torch.load(path, map_location=self.device, weights_only=False)
         self._load_state_dict_with_fc1new_expand(self.actor,  ckpt["actor"],  "actor")
         self._load_state_dict_with_fc1new_expand(self.critic, ckpt["critic"], "critic")
-        if self.phase2_mode and "gat_comm" in ckpt:
+        if self.gat_mode and "gat_comm" in ckpt:
             self.gat_comm.load_state_dict(ckpt["gat_comm"])
-            if "opponent_model" in ckpt:
-                self.opponent_model.load_state_dict(ckpt["opponent_model"])
+            if "cent_om" in ckpt:
+                self.cent_om.load_state_dict(ckpt["cent_om"])
+            if "cent_role" in ckpt:
+                try:
+                    self.cent_role.load_state_dict(ckpt["cent_role"])
+                except RuntimeError:
+                    print("[MAPPO] cent_role mimari değişti — sıfırdan başlıyor (joint pair)")
+            if "opt_role" in ckpt:
+                try:
+                    self.opt_role.load_state_dict(ckpt["opt_role"])
+                except ValueError:
+                    print("[MAPPO] opt_role state uyuşmadı — sıfırlanıyor")
             old_unfrozen = ckpt.get("old_unfrozen", False)
             if old_unfrozen:
                 # fc1_old daha önce açılmış: opt_actor'e grup ekle, sonra yükle
@@ -1708,16 +1735,17 @@ class MAPPOTrainer:
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--config", default="configs/config.yaml")
-    p.add_argument("--seed",   type=int, default=None)
-    p.add_argument("--device", default="auto",
+    p.add_argument("--config",  default="configs/config.yaml")
+    p.add_argument("--seed",    type=int, default=None)
+    p.add_argument("--device",  default="auto",
                    help="auto | cpu | cuda | cuda:0")
-    p.add_argument("--resume", default=None,
-                   help="Checkpoint yolu (devam eğitimi)")
-    p.add_argument("--phase2", default=None,
-                   help="Faz-2 transfer learning: mappo_final.pt yolu")
-    p.add_argument("--freeze-steps", type=int, default=0,
-                   help="Eski ağırlıkların dondurulacağı adım sayısı (--phase2 ile)")
+    p.add_argument("--mode",    default="mappo_gat_om",
+                   choices=["mappo", "mappo_gat", "mappo_gat_om"],
+                   help="Mimari: mappo | mappo_gat (GAT iletişim) | mappo_gat_om (GAT+OM+Rol)")
+    p.add_argument("--resume",  default=None,
+                   help="Aynı mimari checkpoint'ten devam")
+    p.add_argument("--transfer", default=None,
+                   help="Faz-1 MAPPO checkpoint'ten GAT mimarisine transfer")
     p.add_argument("--start-phase", type=int, default=None,
                    help="Curriculum fazını manuel olarak set et (1/2/3/4)")
     return p.parse_args()
@@ -1733,21 +1761,13 @@ def main():
     if args.seed is not None:
         config["training"]["seed"] = args.seed
 
-    # Phase-2: config'e enable_comms + freeze_steps yaz
-    if args.phase2:
-        if "communication" not in config:
-            config["communication"] = {}
-        config["communication"]["enable_comms"] = True
-        config["communication"]["freeze_steps"] = args.freeze_steps
+    trainer = MAPPOTrainer(config, device=args.device, mode=args.mode)
 
-    trainer = MAPPOTrainer(config, device=args.device)
-
-    if args.phase2:
+    if args.mode in ("mappo_gat", "mappo_gat_om"):
         if args.resume:
-            # Phase2 devam: mimariyi phase2 olarak kur, sonra checkpoint'ten yükle
             trainer.load_checkpoint(args.resume)
-        else:
-            trainer.load_phase2_checkpoint(args.phase2)
+        elif args.transfer:
+            trainer.load_phase2_checkpoint(args.transfer)
     elif args.resume:
         trainer.load_checkpoint(args.resume)
 

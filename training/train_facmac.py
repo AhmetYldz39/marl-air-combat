@@ -54,8 +54,16 @@ if str(ROOT) not in sys.path:
 
 from envs.dogfight_env import DogfightEnv
 from agents.heuristic_agent import MultiHeuristicPolicy
-from models.facmac_net import FACMACActor, FACMACTwinCritic
+from models.facmac_net import FACMACActor, FACMACActorOM, FACMACTwinCritic
 from models.qmix_net import QMixNet
+from models.om_net import (
+    CentralizedOpponentModel, CentralizedRoleAssigner,
+    EnemyHistoryBuffer, OMReplayBuffer,
+    build_team_state, get_om_label, INTENT_DEFENSIVE, ROLE_PAIRS,
+)
+from envs.aircraft_model import (STATE_X, STATE_Y, STATE_H,
+                                   STATE_PSI, STATE_AMMO, STATE_ALIVE)
+from envs.geometry_utils import antenna_train_angle, distance_3d
 
 
 # ---------------------------------------------------------------------------
@@ -63,9 +71,14 @@ from models.qmix_net import QMixNet
 # ---------------------------------------------------------------------------
 
 N_AGENTS       = 2
-OBS_DIM        = 50
-ACTION_DIM     = 5
-GLOBAL_OBS_DIM = N_AGENTS * OBS_DIM   # 100
+BASE_OBS_DIM   = 50                          # env obs boyutu
+OBS_DIM        = 60                          # actor/critic obs boyutu: 50+6+4
+ACTION_DIM     = 4   # fire kural-tabanlı; actor sadece ctrl (aileron,elevator,rudder,throttle)
+GLOBAL_OBS_DIM = N_AGENTS * OBS_DIM   # 120
+
+_WEZ_RANGE_MIN = 300.0
+_WEZ_RANGE_MAX = 8000.0
+_WEZ_ANGLE_MAX = np.radians(30.0)
 
 
 # ===========================================================================
@@ -178,7 +191,7 @@ class FACMACPool:
     def __init__(self, red_ids: list, obs_dim: int, hidden: int,
                  device: torch.device, max_size: int = 20):
         self.red_ids      = red_ids
-        self.obs_dim      = obs_dim
+        self.obs_dim      = BASE_OBS_DIM  # pool her zaman 50D base actor kullanır
         self.hidden       = hidden
         self.device       = device
         self.max_size     = max_size
@@ -188,8 +201,19 @@ class FACMACPool:
         self._current_actor = None
         self.using_fallback = True
 
-    def add_checkpoint(self, actor: FACMACActor) -> None:
+    def add_checkpoint(self, actor) -> None:
         sd = copy.deepcopy(actor.state_dict())
+        # FACMACActorOM → FACMACActor key remap (pool her zaman 50D base actor kullanır)
+        if 'fc1_base.weight' in sd:
+            remap = {
+                'fc1_base.weight': 'net.0.weight',
+                'fc1_base.bias':   'net.0.bias',
+                'fc2.weight':      'net.2.weight',
+                'fc2.bias':        'net.2.bias',
+                'ctrl_head.weight': 'ctrl_head.weight',
+                'ctrl_head.bias':   'ctrl_head.bias',
+            }
+            sd = {remap[k]: v for k, v in sd.items() if k in remap}
         if len(self._snapshots) >= self.max_size:
             self._snapshots.pop(0)
             self._win_records.pop(0)
@@ -235,7 +259,8 @@ class FACMACPool:
                 obs_np = np.array(obs_dict[rid], dtype=np.float32)[:self.obs_dim]
                 obs_t  = torch.from_numpy(obs_np).unsqueeze(0).to(self.device)
                 act, _ = self._current_actor.act(obs_t, deterministic=False)
-                actions[rid] = act.squeeze(0).cpu().numpy()
+                ctrl4 = act.squeeze(0).cpu().numpy()           # 4D ctrl
+                actions[rid] = np.append(ctrl4, 0.0)          # 5D: fire=0 (pool ateş etmez)
         return actions
 
     def record_outcome(self, is_win: bool) -> None:
@@ -254,16 +279,19 @@ class FACMACPool:
 # ---------------------------------------------------------------------------
 
 class ReplayBuffer:
-    def __init__(self, capacity: int = 10_000):
-        self.capacity = capacity
+    def __init__(self, capacity: int = 10_000,
+                 obs_dim: int = OBS_DIM, global_obs_dim: int = GLOBAL_OBS_DIM):
+        self.capacity    = capacity
+        self.obs_dim     = obs_dim
+        self.glob_dim    = global_obs_dim
         self.ptr  = 0
         self.size = 0
-        self.obs             = np.zeros((capacity, N_AGENTS, OBS_DIM),    dtype=np.float32)
-        self.global_obs      = np.zeros((capacity, GLOBAL_OBS_DIM),       dtype=np.float32)
+        self.obs             = np.zeros((capacity, N_AGENTS, obs_dim),    dtype=np.float32)
+        self.global_obs      = np.zeros((capacity, global_obs_dim),       dtype=np.float32)
         self.actions         = np.zeros((capacity, N_AGENTS, ACTION_DIM), dtype=np.float32)
         self.rewards         = np.zeros((capacity, N_AGENTS),             dtype=np.float32)
-        self.next_obs        = np.zeros((capacity, N_AGENTS, OBS_DIM),    dtype=np.float32)
-        self.next_global_obs = np.zeros((capacity, GLOBAL_OBS_DIM),       dtype=np.float32)
+        self.next_obs        = np.zeros((capacity, N_AGENTS, obs_dim),    dtype=np.float32)
+        self.next_global_obs = np.zeros((capacity, global_obs_dim),       dtype=np.float32)
         self.dones           = np.zeros((capacity,),                      dtype=np.float32)
 
     def add(self, obs, global_obs, actions, rewards,
@@ -327,9 +355,12 @@ class FACMACTrainer:
         self.policy_freq         = int(  fcfg.get("policy_freq",         2))
         self.target_noise_sigma  = float(fcfg.get("target_noise_sigma",  0.2))
         self.target_noise_clip   = float(fcfg.get("target_noise_clip",   0.5))
-        self.pool_update_interval = int( fcfg.get("pool_update_interval", 500))
+        self.pool_update_interval = (999_999 if getattr(args, "no_pool", False)
+                                     else int(fcfg.get("pool_update_interval", 500)))
         self.q_target_clamp      = float(fcfg.get("q_target_clamp",      2000.0))
 
+        if getattr(args, "total_episodes", None) is not None:
+            self.total_episodes = args.total_episodes
         if args.test:
             self.total_episodes = 10
             self.min_buffer     = 0
@@ -352,14 +383,35 @@ class FACMACTrainer:
         if start_phase == 2:
             self.env.set_dynamic_spawn_dist(self.curriculum.current_spawn_dist)
 
+        # ── Centralized OM + Role bileşenleri ───────────────────────────
+        self.om_mode = getattr(args, "mode", "facmac_om") == "facmac_om"
+        if self.om_mode:
+            self.cent_om          = CentralizedOpponentModel().to(self.device)
+            self.cent_role        = CentralizedRoleAssigner().to(self.device)
+            self.enemy_hist       = EnemyHistoryBuffer()
+            self.om_replay        = OMReplayBuffer(capacity=5_000)
+            self.opt_om           = torch.optim.Adam(self.cent_om.parameters(), lr=1e-3)
+            self.opt_role         = torch.optim.Adam(self.cent_role.parameters(), lr=3e-4)
+            self._role_inp_buf:   list  = []
+            self._role_pair_buf:  list  = []
+            self._return_history        = deque(maxlen=200)
+        else:
+            self.cent_om = self.cent_role = self.enemy_hist = self.om_replay = None
+
         # ── Ağlar (TD3: twin critics + iki mixer) ────────────────────────
-        self.actor         = FACMACActor(OBS_DIM, self.hidden).to(self.device)
+        if self.om_mode:
+            self.actor_obs_dim  = OBS_DIM         # 60D
+            self.actor = FACMACActorOM(BASE_OBS_DIM, hidden=self.hidden).to(self.device)
+        else:
+            self.actor_obs_dim  = BASE_OBS_DIM    # 50D — pure FACMAC
+            self.actor = FACMACActor(BASE_OBS_DIM, hidden=self.hidden).to(self.device)
+        self.global_obs_dim = N_AGENTS * self.actor_obs_dim
         self.actor_target  = copy.deepcopy(self.actor)
-        self.critic        = FACMACTwinCritic(OBS_DIM, ACTION_DIM, self.hidden).to(self.device)
+        self.critic        = FACMACTwinCritic(self.actor_obs_dim, ACTION_DIM, self.hidden).to(self.device)
         self.critic_target = copy.deepcopy(self.critic)
-        self.mixer1        = QMixNet(N_AGENTS, GLOBAL_OBS_DIM, self.qmix_hidden).to(self.device)
+        self.mixer1        = QMixNet(N_AGENTS, self.global_obs_dim, self.qmix_hidden).to(self.device)
         self.mixer1_target = copy.deepcopy(self.mixer1)
-        self.mixer2        = QMixNet(N_AGENTS, GLOBAL_OBS_DIM, self.qmix_hidden).to(self.device)
+        self.mixer2        = QMixNet(N_AGENTS, self.global_obs_dim, self.qmix_hidden).to(self.device)
         self.mixer2_target = copy.deepcopy(self.mixer2)
 
         for net in (self.actor_target, self.critic_target,
@@ -388,7 +440,9 @@ class FACMACTrainer:
         )
 
         # ── Buffer & Sayaçlar ────────────────────────────────────────────
-        self.buffer          = ReplayBuffer(self.replay_capacity)
+        self.buffer          = ReplayBuffer(self.replay_capacity,
+                                            obs_dim=self.actor_obs_dim,
+                                            global_obs_dim=self.global_obs_dim)
         self.episode_count   = 0
         self.total_steps     = 0
         self.noise_sigma_    = self.noise_sigma
@@ -396,10 +450,13 @@ class FACMACTrainer:
         self.pool            = None   # FACMACPool — Faz-4'te başlatılır
         self.losses_critic: list = []
         self.losses_actor:  list = []
+        self._intent_acc: list = []   # her adımda intent_np biriktirilir
+        self._role_acc:   list = []   # her adımda role_0_np biriktirilir
 
         # ── Log ──────────────────────────────────────────────────────────
-        self.ckpt_dir = ROOT / "checkpoints"
+        self.ckpt_dir    = ROOT / "checkpoints"
         self.ckpt_dir.mkdir(exist_ok=True)
+        self.ckpt_prefix = getattr(args, "checkpoint_prefix", "facmac_om")
         self.log_path = ROOT / "logs" / "facmac_log.csv"
         self.log_path.parent.mkdir(exist_ok=True)
         self._init_csv()
@@ -428,7 +485,7 @@ class FACMACTrainer:
 
     def _init_pool(self) -> None:
         self.pool = FACMACPool(
-            self.red_ids, OBS_DIM, self.hidden, self.device
+            self.red_ids, BASE_OBS_DIM, self.hidden, self.device
         )
         print(f"[FACMAC-TD3] FACMACPool başlatıldı (red_ids={self.red_ids})")
 
@@ -445,17 +502,82 @@ class FACMACTrainer:
             pt.data.copy_(self.tau * po.data + (1.0 - self.tau) * pt.data)
 
     def _build_obs_array(self, obs_dict: dict) -> np.ndarray:
-        arr = np.zeros((N_AGENTS, OBS_DIM), dtype=np.float32)
+        """50D base obs dizisi döndürür."""
+        arr = np.zeros((N_AGENTS, BASE_OBS_DIM), dtype=np.float32)
         for i, aid in enumerate(self.blue_ids):
             if aid in obs_dict:
-                arr[i] = np.array(obs_dict[aid], dtype=np.float32)[:OBS_DIM]
+                arr[i] = np.array(obs_dict[aid], dtype=np.float32)[:BASE_OBS_DIM]
         return arr
+
+    def _build_extended_obs(self, obs_arr: np.ndarray) -> np.ndarray:
+        """
+        om_mode=True : 50D base obs → 60D: base(50) + intent(6) + role(4).
+        om_mode=False: obs_arr olduğu gibi döner (50D, OM yok).
+        """
+        if not self.om_mode:
+            return obs_arr   # 50D olduğu gibi döner
+
+        hist_960 = self.enemy_hist.update(obs_arr)
+
+        with torch.no_grad():
+            hist_t    = torch.from_numpy(hist_960).unsqueeze(0).to(self.device)
+            intent_np = self.cent_om.intent_flat(hist_t).squeeze(0).cpu().numpy()  # (6,)
+
+        # OM replay doldur
+        if np.any(hist_960 != 0):
+            states = self.env.get_all_states()
+            blue_pairs = [
+                (states.get(bid), float(states.get(bid)[STATE_ALIVE]))
+                for bid in self.blue_ids
+                if states.get(bid) is not None
+            ]
+            label0 = INTENT_DEFENSIVE
+            label1 = INTENT_DEFENSIVE
+            if len(self.red_ids) > 0:
+                rs0 = states.get(self.red_ids[0])
+                if rs0 is not None:
+                    label0 = get_om_label(rs0, blue_pairs)
+            if len(self.red_ids) > 1:
+                rs1 = states.get(self.red_ids[1])
+                if rs1 is not None:
+                    label1 = get_om_label(rs1, blue_pairs)
+            self.om_replay.add(hist_960, label0, label1)
+
+        # Rol ataması
+        states = self.env.get_all_states()
+        ts_np  = build_team_state([states.get(bid) for bid in self.blue_ids])
+        with torch.no_grad():
+            x_role  = torch.from_numpy(
+                np.concatenate([intent_np, ts_np]).astype(np.float32)
+            ).unsqueeze(0).to(self.device)
+            role_0, role_1 = self.cent_role.assign(x_role)
+        role_0_np = role_0.squeeze(0).cpu().numpy()
+        role_1_np = role_1.squeeze(0).cpu().numpy()
+        roles = [role_0_np, role_1_np]
+
+        # REINFORCE için çift indeksi ve girdi biriktir
+        r0_idx   = int(role_0_np.argmax())
+        r1_idx   = int(role_1_np.argmax())
+        pair_idx = ROLE_PAIRS.index((r0_idx, r1_idx))
+        self._role_pair_buf.append(pair_idx)
+        x_role_np = np.concatenate([intent_np, ts_np]).astype(np.float32)
+        self._role_inp_buf.append(x_role_np.copy())
+
+        # Intent / rol birikimi (log için)
+        self._intent_acc.append(intent_np.copy())
+        self._role_acc.append(role_0_np.copy())
+
+        # 60D extended obs
+        ext = np.zeros((N_AGENTS, OBS_DIM), dtype=np.float32)
+        for i in range(len(self.blue_ids)):
+            ext[i] = np.concatenate([obs_arr[i], intent_np, roles[i]])
+        return ext
 
     def _build_global_obs(self, obs_array: np.ndarray) -> np.ndarray:
         return obs_array.reshape(-1)
 
     def _select_actions(self, obs_array: np.ndarray) -> np.ndarray:
-        """Bernoulli fire + Gaussian ctrl noise. fire[4] noise almaz."""
+        """4D ctrl çıktısı + Gaussian keşif gürültüsü. Fire harici kural tarafından belirlenir."""
         n_blue  = len(self.blue_ids)
         actions = np.zeros((N_AGENTS, ACTION_DIM), dtype=np.float32)
         obs_t   = torch.from_numpy(obs_array).to(self.device)
@@ -472,6 +594,30 @@ class FACMACTrainer:
                 actions[i] = act
         return actions
 
+    def _rule_based_fire(self, obs_arr: np.ndarray, states: dict) -> np.ndarray:
+        """WEZ içi + cooldown==0 ise fire=1, aksi halde fire=0."""
+        fire = np.zeros(N_AGENTS, dtype=np.float32)
+        for i, blue_id in enumerate(self.blue_ids):
+            if obs_arr[i][16] > 1e-4:   # cooldown_norm > 0 → henüz hazır değil
+                continue
+            b = states.get(blue_id)
+            if b is None or b[STATE_ALIVE] < 0.5 or b[STATE_AMMO] < 0.5:
+                continue
+            b_pos = b[[STATE_X, STATE_Y, STATE_H]]
+            for red_id in self.red_ids:
+                r = states.get(red_id)
+                if r is None or r[STATE_ALIVE] < 0.5:
+                    continue
+                r_pos = r[[STATE_X, STATE_Y, STATE_H]]
+                dist  = distance_3d(b_pos, r_pos)
+                if dist < _WEZ_RANGE_MIN or dist > _WEZ_RANGE_MAX:
+                    continue
+                ata = antenna_train_angle(b_pos, r_pos, b[STATE_PSI])
+                if abs(ata) <= _WEZ_ANGLE_MAX:
+                    fire[i] = 1.0
+                    break
+        return fire
+
     def _red_actions(self, obs_dict: dict, states: dict) -> dict:
         """Faz-4'te pool; diğer fazlarda heuristic."""
         if (self.curriculum.phase == 4 and self.pool is not None
@@ -481,6 +627,40 @@ class FACMACTrainer:
                 return pool_acts
         all_acts = self.heuristic.act(states)
         return {rid: all_acts[rid] for rid in self.red_ids if rid in all_acts}
+
+    # -----------------------------------------------------------------------
+    # REINFORCE Rol Gradyanı
+    # -----------------------------------------------------------------------
+
+    def _update_role_reinforce(self, episode_return: float) -> None:
+        if not self.om_mode:
+            return
+        if len(self._role_pair_buf) < 1:
+            self._role_pair_buf.clear(); self._role_inp_buf.clear()
+            return
+        self._return_history.append(episode_return)
+        if len(self._return_history) < 10:
+            self._role_pair_buf.clear(); self._role_inp_buf.clear()
+            return
+        ret_mean = float(np.mean(self._return_history))
+        ret_std  = float(np.std(self._return_history)) + 1e-8
+        ret_norm = float(np.clip((episode_return - ret_mean) / ret_std, -3.0, 3.0))
+        x_np    = np.array(self._role_inp_buf, dtype=np.float32)
+        x_t     = torch.FloatTensor(x_np).to(self.device)
+        logits  = self.cent_role.mlp(x_t)
+        log_p   = F.log_softmax(logits, dim=-1)
+        pair_t  = torch.LongTensor(self._role_pair_buf).to(self.device)
+        T       = len(pair_t)
+        assigned_lp = log_p[torch.arange(T, device=self.device), pair_t]
+        probs   = F.softmax(logits, dim=-1)
+        entropy = -(probs * log_p).sum(dim=-1).mean()
+        role_loss = -(ret_norm * assigned_lp.mean()) - 0.05 * entropy
+        self.opt_role.zero_grad()
+        role_loss.backward()
+        nn.utils.clip_grad_norm_(self.cent_role.parameters(), 0.5)
+        self.opt_role.step()
+        self._role_pair_buf.clear()
+        self._role_inp_buf.clear()
 
     # -----------------------------------------------------------------------
     # TD3 Güncelleme
@@ -503,10 +683,10 @@ class FACMACTrainer:
 
         # ── Critic güncelleme (her adım) ───────────────────────────────
         with torch.no_grad():
-            nobs_flat = nobs_t.view(bs * N_AGENTS, OBS_DIM)
-            nact_flat = self.actor_target.action_for_grad(nobs_flat)          # (bs*N, 5)
+            nobs_flat = nobs_t.view(bs * N_AGENTS, self.actor_obs_dim)
+            nact_flat = self.actor_target.action_for_grad(nobs_flat)          # (bs*N, 4)
 
-            # Target policy smoothing — ctrl dims (0-3), fire (4) dokunulmaz
+            # Target policy smoothing — 4D ctrl (aileron/elevator/rudder/throttle)
             noise = torch.clamp(
                 torch.randn(bs * N_AGENTS, 4, device=self.device) * self.target_noise_sigma,
                 -self.target_noise_clip, self.target_noise_clip,
@@ -525,7 +705,7 @@ class FACMACTrainer:
             y         = r_team + self.gamma * q_tot_tgt * (1.0 - dones_t)
             y         = y.clamp(-self.q_target_clamp, self.q_target_clamp)
 
-        obs_flat  = obs_t.view(bs * N_AGENTS, OBS_DIM)
+        obs_flat  = obs_t.view(bs * N_AGENTS, self.actor_obs_dim)
         acts_flat = acts_t.view(bs * N_AGENTS, ACTION_DIM)
         q1_flat, q2_flat = self.critic(obs_flat, acts_flat)
         q1_online = q1_flat.view(bs, N_AGENTS)
@@ -549,7 +729,7 @@ class FACMACTrainer:
 
         # ── Actor güncelleme (her policy_freq adımda) ──────────────────
         if self._update_counter % self.policy_freq == 0:
-            cur_act_flat  = self.actor.action_for_grad(obs_flat)              # (bs*N, 5)
+            cur_act_flat  = self.actor.action_for_grad(obs_flat)              # (bs*N, 4)
             q1_actor_flat = self.critic.Q1_only(obs_flat, cur_act_flat)       # (bs*N,)
             q1_actor      = q1_actor_flat.view(bs, N_AGENTS)
             q1_tot_actor  = self.mixer1(q1_actor, glob_t)                    # (bs,)
@@ -567,6 +747,18 @@ class FACMACTrainer:
             self._polyak(self.mixer1, self.mixer1_target)
             self._polyak(self.mixer2, self.mixer2_target)
 
+        # OM supervised güncelleme (PPO'dan bağımsız)
+        if self.om_mode and len(self.om_replay) >= 32:
+            batch_om = min(len(self.om_replay), 128)
+            hist_np, labels_np = self.om_replay.sample(batch_om)
+            hist_t  = torch.FloatTensor(hist_np).to(self.device)
+            label_t = torch.LongTensor(labels_np).to(self.device)
+            om_loss = self.cent_om.supervised_loss(hist_t, label_t)
+            self.opt_om.zero_grad()
+            om_loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.cent_om.parameters(), 0.5)
+            self.opt_om.step()
+
         return float(loss_critic.item()), loss_actor_val
 
     # -----------------------------------------------------------------------
@@ -576,18 +768,25 @@ class FACMACTrainer:
     def _run_episode(self) -> dict:
         obs_dict   = self.env.reset()
         self.heuristic.reset()
+        if self.om_mode:
+            self.enemy_hist.reset()
         if self.pool is not None:
             self.pool.reset()
         ep_rewards = {aid: 0.0 for aid in self.blue_ids}
         ep_kills   = 0
         ep_steps   = 0
         done       = False
-        obs_arr    = self._build_obs_array(obs_dict)
+        base_arr   = self._build_obs_array(obs_dict)       # (N, 50) — env obs
+        obs_arr    = self._build_extended_obs(base_arr)    # (N, 60) — actor input
 
         while not done:
-            states      = self.env.get_all_states()
-            acts_arr    = self._select_actions(obs_arr)
-            cont_actions = {self.blue_ids[i]: acts_arr[i]
+            states   = self.env.get_all_states()
+            ctrl_arr = self._select_actions(obs_arr)            # (N, 4) — ctrl only
+            fire_arr = self._rule_based_fire(base_arr, states)  # (N,)   — 0/1 (base obs)
+            acts_5d  = np.concatenate(
+                [ctrl_arr, fire_arr[:, np.newaxis]], axis=-1
+            )                                                    # (N, 5) — env için
+            cont_actions = {self.blue_ids[i]: acts_5d[i]
                             for i in range(len(self.blue_ids))}
             red_acts     = self._red_actions(obs_dict, states)
             action_dict  = {**cont_actions, **red_acts}
@@ -595,15 +794,17 @@ class FACMACTrainer:
             next_obs_dict, rew_dict, done_dict, info_dict = self.env.step(action_dict)
             done = bool(done_dict.get("__all__", False))
 
-            next_obs_arr  = self._build_obs_array(next_obs_dict)
-            glob_obs      = self._build_global_obs(obs_arr)
-            next_glob_obs = self._build_global_obs(next_obs_arr)
+            next_base_arr = self._build_obs_array(next_obs_dict)
+            next_obs_arr  = self._build_extended_obs(next_base_arr)
+            glob_obs      = self._build_global_obs(obs_arr)       # (120,)
+            next_glob_obs = self._build_global_obs(next_obs_arr)  # (120,)
             rewards_arr   = np.zeros(N_AGENTS, dtype=np.float32)
             for i, aid in enumerate(self.blue_ids):
                 rewards_arr[i] = rew_dict.get(aid, 0.0)
 
+            # Buffer 60D extended obs + 4D ctrl saklar
             self.buffer.add(
-                obs_arr, glob_obs, acts_arr, rewards_arr,
+                obs_arr, glob_obs, ctrl_arr, rewards_arr,
                 next_obs_arr, next_glob_obs, done,
             )
 
@@ -621,6 +822,7 @@ class FACMACTrainer:
 
             ep_steps     += 1
             self.total_steps += 1
+            base_arr = next_base_arr
             obs_arr  = next_obs_arr
             obs_dict = next_obs_dict
 
@@ -630,8 +832,12 @@ class FACMACTrainer:
         if self.pool is not None:
             self.pool.record_outcome(is_win)
 
+        mean_rew = float(np.mean(list(ep_rewards.values())))
+        if self.om_mode:
+            self._update_role_reinforce(mean_rew)
+
         return {
-            "reward":  float(np.mean(list(ep_rewards.values()))),
+            "reward":  mean_rew,
             "kills":   float(ep_kills),
             "is_win":  is_win,
             "steps":   ep_steps,
@@ -713,6 +919,19 @@ class FACMACTrainer:
                 if self.pool is not None:
                     pool_str = f" | {self.pool.log_status()}"
 
+                # Intent / rol istatistikleri
+                if self._intent_acc:
+                    intent_mat  = np.stack(self._intent_acc[-500:])   # (N, 3)
+                    intent_mean = intent_mat.mean(axis=0)             # agg, def, eva
+                    role_mat    = np.stack(self._role_acc[-500:])     # (N, 4)
+                    role_idx    = role_mat.argmax(axis=1)
+                    role_names  = ["sniper", "pursuit", "defensive", "support"]
+                    role_dist   = {n: float((role_idx == i).mean())
+                                   for i, n in enumerate(role_names)}
+                else:
+                    intent_mean = np.array([0.0, 0.0, 0.0])
+                    role_dist   = {n: 0.0 for n in ["sniper", "pursuit", "defensive", "support"]}
+
                 print(
                     f"[Ep {self.episode_count:6d}|Faz-{self.curriculum.phase}] "
                     f"step={self.total_steps:,} | "
@@ -724,8 +943,15 @@ class FACMACTrainer:
                     f"noise={ep_info['noise']:.3f} | "
                     f"{sps}sps{pool_str}"
                 )
+                print(
+                    f"          intent: agg={intent_mean[0]:.2f} def={intent_mean[1]:.2f} "
+                    f"eva={intent_mean[2]:.2f} | "
+                    f"role: sniper={role_dist['sniper']:.2f} pursuit={role_dist['pursuit']:.2f} "
+                    f"def={role_dist['defensive']:.2f} sup={role_dist['support']:.2f}"
+                )
                 print(f"  {self.curriculum.status_str()}")
-                self._write_csv(win_rate, kill_mean, rew_mean, lc_mean, la_mean)
+                self._write_csv(win_rate, kill_mean, rew_mean, lc_mean, la_mean,
+                                intent_mean, role_dist)
 
             if self.episode_count % self.save_interval == 0:
                 self._save_checkpoint()
@@ -738,12 +964,13 @@ class FACMACTrainer:
     # -----------------------------------------------------------------------
 
     def _save_checkpoint(self, final: bool = False, tag: str = "") -> None:
+        pfx = self.ckpt_prefix
         if final:
-            name = "facmac_final.pt"
+            name = f"{pfx}_final.pt"
         elif tag:
-            name = f"facmac_{tag}.pt"
+            name = f"{pfx}_{tag}.pt"
         else:
-            name = f"facmac_ep{self.episode_count}.pt"
+            name = f"{pfx}_ep{self.episode_count}.pt"
         path = self.ckpt_dir / name
         torch.save({
             "episode":           self.episode_count,
@@ -762,20 +989,78 @@ class FACMACTrainer:
             "opt_critic":        self.opt_critic.state_dict(),
             "noise_sigma":       self.noise_sigma_,
         }, path)
+        if self.om_mode:
+            ck = torch.load(path, map_location="cpu", weights_only=False)
+            ck["cent_om"]   = self.cent_om.state_dict()
+            ck["cent_role"] = self.cent_role.state_dict()
+            ck["opt_role"]  = self.opt_role.state_dict()
+            torch.save(ck, path)
         print(f"  [FACMAC-TD3] Checkpoint: {path}")
+
+    def _load_actor_weights(self, actor_sd: dict) -> None:
+        """FACMACActor(50D) veya FACMACActorOM(60D) checkpoint'ten yükler."""
+        if 'fc1_base.weight' in actor_sd:
+            # Yeni FACMACActorOM formatı — direkt yükle
+            self.actor.load_state_dict(actor_sd, strict=False)
+        else:
+            # Eski FACMACActor(50D) formatı — key remap ile transfer
+            remap = {
+                'net.0.weight': 'fc1_base.weight',
+                'net.0.bias':   'fc1_base.bias',
+                'net.2.weight': 'fc2.weight',
+                'net.2.bias':   'fc2.bias',
+                'ctrl_head.weight': 'ctrl_head.weight',
+                'ctrl_head.bias':   'ctrl_head.bias',
+            }
+            new_sd = {remap[k]: v for k, v in actor_sd.items() if k in remap}
+            self.actor.load_state_dict(new_sd, strict=False)
+            print("[FACMAC-TD3] Actor: FACMACActor(50D) → FACMACActorOM(60D) transfer; "
+                  "fc1_intent/fc1_role sıfırdan başlıyor")
 
     def _load_checkpoint(self, path: str) -> None:
         ck = torch.load(path, map_location=self.device, weights_only=False)
-        self.actor.load_state_dict(ck["actor"])
-        self.actor_target.load_state_dict(ck["actor_target"])
-        self.critic.load_state_dict(ck["critic"])
-        self.critic_target.load_state_dict(ck["critic_target"])
-        self.mixer1.load_state_dict(ck["mixer1"])
-        self.mixer1_target.load_state_dict(ck["mixer1_target"])
-        self.mixer2.load_state_dict(ck["mixer2"])
-        self.mixer2_target.load_state_dict(ck["mixer2_target"])
-        self.opt_actor.load_state_dict(ck["opt_actor"])
-        self.opt_critic.load_state_dict(ck["opt_critic"])
+        self._load_actor_weights(ck["actor"])
+        actor_tgt_sd = ck.get("actor_target", ck["actor"])
+        # actor_target için aynı remap
+        if 'fc1_base.weight' in actor_tgt_sd:
+            self.actor_target.load_state_dict(actor_tgt_sd, strict=False)
+        else:
+            remap = {'net.0.weight': 'fc1_base.weight', 'net.0.bias': 'fc1_base.bias',
+                     'net.2.weight': 'fc2.weight', 'net.2.bias': 'fc2.bias',
+                     'ctrl_head.weight': 'ctrl_head.weight', 'ctrl_head.bias': 'ctrl_head.bias'}
+            self.actor_target.load_state_dict(
+                {remap[k]: v for k, v in actor_tgt_sd.items() if k in remap}, strict=False
+            )
+        def _safe_load(module, sd):
+            cur = module.state_dict()
+            ok  = {k: v for k, v in sd.items()
+                   if k in cur and v.shape == cur[k].shape}
+            module.load_state_dict(ok, strict=False)
+
+        _safe_load(self.critic,        ck["critic"])
+        _safe_load(self.critic_target, ck["critic_target"])
+        _safe_load(self.mixer1,        ck["mixer1"])
+        _safe_load(self.mixer1_target, ck["mixer1_target"])
+        _safe_load(self.mixer2,        ck["mixer2"])
+        _safe_load(self.mixer2_target, ck["mixer2_target"])
+        if self.om_mode:
+            if "cent_om" in ck:
+                self.cent_om.load_state_dict(ck["cent_om"])
+            if "cent_role" in ck:
+                try:
+                    self.cent_role.load_state_dict(ck["cent_role"])
+                except RuntimeError:
+                    print("[FACMAC] cent_role mimari değişti — sıfırdan başlıyor (joint pair)")
+            if "opt_role" in ck:
+                try:
+                    self.opt_role.load_state_dict(ck["opt_role"])
+                except (ValueError, KeyError):
+                    print("[FACMAC] opt_role state uyuşmadı — sıfırdan")
+        try:
+            self.opt_actor.load_state_dict(ck["opt_actor"])
+            self.opt_critic.load_state_dict(ck["opt_critic"])
+        except (ValueError, KeyError):
+            print("[FACMAC-TD3] Optimizer state uyuşmadı — sıfırdan devam")
         self.episode_count   = ck.get("episode", 0)
         self.total_steps     = ck.get("total_steps", 0)
         self.noise_sigma_    = ck.get("noise_sigma", self.noise_sigma)
@@ -787,15 +1072,25 @@ class FACMACTrainer:
             with open(self.log_path, "w", newline="") as f:
                 csv.writer(f).writerow(
                     ["episode", "phase", "win_rate", "kill_per_ep", "mean_reward",
-                     "loss_critic", "loss_actor"]
+                     "loss_critic", "loss_actor",
+                     "intent_agg", "intent_def", "intent_eva",
+                     "role_sniper", "role_pursuit", "role_defensive", "role_support"]
                 )
 
-    def _write_csv(self, win_rate, kill_mean, rew_mean, lc, la) -> None:
+    def _write_csv(self, win_rate, kill_mean, rew_mean, lc, la,
+                   intent_mean=None, role_dist=None) -> None:
+        if intent_mean is None:
+            intent_mean = np.zeros(3)
+        if role_dist is None:
+            role_dist = {"sniper": 0.0, "pursuit": 0.0, "defensive": 0.0, "support": 0.0}
         with open(self.log_path, "a", newline="") as f:
             csv.writer(f).writerow([
                 self.episode_count, self.curriculum.phase,
                 f"{win_rate:.4f}", f"{kill_mean:.4f}",
                 f"{rew_mean:.4f}", f"{lc:.6f}", f"{la:.6f}",
+                f"{intent_mean[0]:.4f}", f"{intent_mean[1]:.4f}", f"{intent_mean[2]:.4f}",
+                f"{role_dist['sniper']:.4f}", f"{role_dist['pursuit']:.4f}",
+                f"{role_dist['defensive']:.4f}", f"{role_dist['support']:.4f}",
             ])
 
 
@@ -809,8 +1104,28 @@ def main():
     parser.add_argument("--resume",      default=None, type=str)
     parser.add_argument("--start-phase", default=1, type=int,
                         help="Başlangıç curriculum fazı (1-4)")
-    parser.add_argument("--test",        action="store_true", help="10 episode test modu")
+    parser.add_argument("--mode",              default="facmac_om",
+                        choices=["facmac", "facmac_om"],
+                        help="facmac: OM olmadan | facmac_om: OM+Rol (varsayılan)")
+    parser.add_argument("--checkpoint-prefix", default=None, type=str,
+                        help="Checkpoint dosya adı öneki (varsayılan: mod bazlı otomatik)")
+    parser.add_argument("--seed",           default=None, type=int, help="Global random seed")
+    parser.add_argument("--total-episodes", default=None, type=int, help="Eğitim episode sayısı override")
+    parser.add_argument("--no-pool", action="store_true",
+                        help="Pool devre dışı — yalnızca heuristic rakip")
+    parser.add_argument("--test",    action="store_true", help="10 episode test modu")
     args = parser.parse_args()
+    # Prefix otomatik belirleme — explicit override varsa kullan
+    if args.checkpoint_prefix is None:
+        args.checkpoint_prefix = "facmac_base" if args.mode == "facmac" else "facmac_om"
+    # Seed
+    if args.seed is not None:
+        import random
+        random.seed(args.seed)
+        np.random.seed(args.seed)
+        torch.manual_seed(args.seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(args.seed)
 
     cfg_path = ROOT / args.config
     with open(cfg_path, encoding="utf-8") as f:

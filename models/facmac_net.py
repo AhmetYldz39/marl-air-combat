@@ -3,14 +3,15 @@ facmac_net.py
 =============
 FACMAC ağ bileşenleri.
 
-  FACMACActor  : obs(50D) → ctrl(4D, clamp) + fire(Bernoulli head)
-  FACMACTwinCritic : [obs(50D) + action(5D)] → (Q1, Q2) scalar, TD3 twin critic
+  FACMACActor    : obs(50D) → ctrl(4D, clamp) — fire kural-tabanlı (ağ dışı)
+  FACMACActorOM  : obs(60D) → ctrl(4D) — OM+Role split input; base(50)+intent(6)+role(4)
+  FACMACTwinCritic : [obs(obs_dim) + action(action_dim)] → (Q1, Q2) scalar, TD3 twin critic
   QMixNet      : models/qmix_net.py'den import edilir (değişmeden kullanılır)
 """
 
 import torch
 import torch.nn as nn
-from torch.distributions import Bernoulli
+import torch.nn.functional as F
 
 
 class FACMACActor(nn.Module):
@@ -18,10 +19,9 @@ class FACMACActor(nn.Module):
     Decentralized FACMAC actor — yürütme sırasında sadece kendi obs'unu kullanır.
 
     Çıkış:
-        ctrl      (4D) : aileron, elevator, rudder → clamp(-1,1)
-                         throttle                  → clamp(0,1)
-        fire_head (1D) : ayrı Bernoulli logit head
-                         bias = -0.85 → sigmoid(-0.85) ≈ 0.30 başlangıç ateş olasılığı
+        ctrl (4D) : aileron, elevator, rudder → clamp(-1,1)
+                    throttle                  → clamp(0,1)
+    Fire kural-tabanlı: WEZ içi + cooldown==0 → fire=1, değilse fire=0
     """
 
     def __init__(self, obs_dim: int = 50, hidden: int = 256):
@@ -31,58 +31,80 @@ class FACMACActor(nn.Module):
             nn.Linear(hidden,  hidden), nn.ReLU(),
         )
         self.ctrl_head = nn.Linear(hidden, 4)   # aileron, elevator, rudder, throttle
-        self.fire_head = nn.Linear(hidden, 1)   # fire logit
-        nn.init.constant_(self.fire_head.bias, -0.85)
 
     # -----------------------------------------------------------------------
 
     def _features(self, obs: torch.Tensor) -> torch.Tensor:
         return self.net(obs)
 
-    def forward(self, obs: torch.Tensor):
-        """
-        Döndürür:
-            ctrl_out   : (..., 4) — clamp uygulanmış, differentiable
-            fire_prob  : (..., 1) — sigmoid(logit), differentiable
-            fire_logit : (..., 1) — ham logit (Bernoulli dist için)
-        """
+    def forward(self, obs: torch.Tensor) -> torch.Tensor:
+        """Döndürür: (..., 4) — clamp uygulanmış ctrl"""
         h    = self._features(obs)
         ctrl = self.ctrl_head(h)
-        ctrl_out = torch.cat([
+        return torch.cat([
             ctrl[..., :3].clamp(-1.0, 1.0),   # aileron, elevator, rudder
             ctrl[..., 3:4].clamp(0.0,  1.0),  # throttle
         ], dim=-1)
-        fire_logit = self.fire_head(h)          # (..., 1)
-        fire_prob  = torch.sigmoid(fire_logit)
-        return ctrl_out, fire_prob, fire_logit
 
     def act(self, obs: torch.Tensor, deterministic: bool = False):
-        """
-        Rollout için: ctrl + Bernoulli(fire) sampling.
-
-        Döndürür:
-            action        : (..., 5)  — [ctrl4 | fire1]
-            log_prob_fire : (..., 1)  — fire aksiyonu log-olasılığı
-        """
-        ctrl, fire_prob, fire_logit = self.forward(obs)
-        dist = Bernoulli(logits=fire_logit)
-        if deterministic:
-            fire = (fire_prob >= 0.5).float()
-        else:
-            fire = dist.sample()
-        log_prob_fire = dist.log_prob(fire)     # (..., 1)
-        action = torch.cat([ctrl, fire], dim=-1)
-        return action, log_prob_fire
+        """Rollout için: 4D ctrl döndürür. Fire harici kural tarafından belirlenir."""
+        return self.forward(obs), None
 
     def action_for_grad(self, obs: torch.Tensor) -> torch.Tensor:
-        """
-        Actor update için differentiable aksiyon.
-        fire = sigmoid(logit)  — sample edilmez, gradient akabilir.
+        """Actor update için differentiable 4D aksiyon."""
+        return self.forward(obs)
 
-        Döndürür: (..., 5)
-        """
-        ctrl, fire_prob, _ = self.forward(obs)
-        return torch.cat([ctrl, fire_prob], dim=-1)
+
+class FACMACActorOM(nn.Module):
+    """
+    FACMAC actor — Centralized OM + Role split giriş.
+
+    Obs yapısı (60D):
+      [0:50]  fc1_base   — base obs (facmac_ep2000.pt net.0'dan transfer)
+      [50:56] fc1_intent — OM intent 6D (sıfır init)
+      [56:60] fc1_role   — rol ataması 4D (sıfır init)
+
+    Transfer: fc1_base ← net.0, fc2 ← net.2, ctrl_head ← ctrl_head (FACMACActor'dan)
+    """
+
+    def __init__(self, base_obs_dim: int = 50,
+                 intent_dim: int = 6, role_dim: int = 4,
+                 hidden: int = 256):
+        super().__init__()
+        self.base_obs_dim = base_obs_dim
+        self._s0 = base_obs_dim
+        self._s1 = base_obs_dim + intent_dim
+
+        self.fc1_base   = nn.Linear(base_obs_dim, hidden)
+        self.fc1_intent = nn.Linear(intent_dim,   hidden, bias=False)
+        self.fc1_role   = nn.Linear(role_dim,     hidden, bias=False)
+        self.fc2        = nn.Linear(hidden, hidden)
+        self.ctrl_head  = nn.Linear(hidden, 4)
+
+        nn.init.zeros_(self.fc1_intent.weight)
+        nn.init.zeros_(self.fc1_role.weight)
+
+    def _features(self, obs: torch.Tensor) -> torch.Tensor:
+        feat = F.relu(
+            self.fc1_base(obs[..., :self._s0]) +
+            self.fc1_intent(obs[..., self._s0:self._s1]) +
+            self.fc1_role(obs[..., self._s1:])
+        )
+        return F.relu(self.fc2(feat))
+
+    def forward(self, obs: torch.Tensor) -> torch.Tensor:
+        h    = self._features(obs)
+        ctrl = self.ctrl_head(h)
+        return torch.cat([
+            ctrl[..., :3].clamp(-1.0, 1.0),
+            ctrl[..., 3:4].clamp(0.0,  1.0),
+        ], dim=-1)
+
+    def act(self, obs: torch.Tensor, deterministic: bool = False):
+        return self.forward(obs), None
+
+    def action_for_grad(self, obs: torch.Tensor) -> torch.Tensor:
+        return self.forward(obs)
 
 
 class FACMACTwinCritic(nn.Module):
@@ -94,7 +116,7 @@ class FACMACTwinCritic(nn.Module):
     Çıkış  : (Q1, Q2) — her biri (...,) scalar
     """
 
-    def __init__(self, obs_dim: int = 50, action_dim: int = 5, hidden: int = 256):
+    def __init__(self, obs_dim: int = 50, action_dim: int = 4, hidden: int = 256):
         super().__init__()
         in_dim = obs_dim + action_dim
 

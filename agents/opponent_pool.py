@@ -206,7 +206,9 @@ class OpponentPool:
         return paths[idx]
 
     # Blue actor'e yeni modül eklenince buraya prefix ekle
-    _SKIP_PREFIXES = ("fc1_new", "role_selector", "gat_comm", "opponent_model")
+    _SKIP_PREFIXES = ("fc1_new", "fc1_intent", "fc1_role",
+                      "role_selector", "gat_comm", "opponent_model",
+                      "cent_om", "cent_role")
 
     def _load_actor(self, path: str):
         """

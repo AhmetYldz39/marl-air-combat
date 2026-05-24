@@ -20,9 +20,45 @@ sys.path.insert(0, str(ROOT))
 
 import torch
 from envs.dogfight_env import DogfightEnv, BLUE, RED
-from envs.aircraft_model import STATE_ALIVE
+from envs.aircraft_model import STATE_ALIVE, STATE_X, STATE_Y, STATE_H, STATE_PSI, STATE_AMMO
 from agents.heuristic_agent import MultiHeuristicPolicy
-from models.facmac_net import FACMACActor
+from models.facmac_net import FACMACActor, FACMACActorOM
+from models.om_net import (
+    CentralizedOpponentModel, CentralizedRoleAssigner,
+    EnemyHistoryBuffer, build_team_state, INTENT_DEFENSIVE,
+)
+from envs.geometry_utils import antenna_train_angle, distance_3d
+
+_WEZ_RANGE_MIN = 300.0
+_WEZ_RANGE_MAX = 8000.0
+_WEZ_ANGLE_MAX = np.radians(30.0)
+
+
+def _rule_based_fire(blue_ids, red_ids, obs_dict, states, obs_dim):
+    """WEZ içi + cooldown==0 ise fire=1."""
+    fire = {}
+    for aid in blue_ids:
+        obs = obs_dict.get(aid, np.zeros(obs_dim, dtype=np.float32))
+        fire[aid] = 0.0
+        if obs[16] > 1e-4:   # cooldown_norm > 0
+            continue
+        b = states.get(aid)
+        if b is None or b[STATE_ALIVE] < 0.5 or b[STATE_AMMO] < 0.5:
+            continue
+        b_pos = b[[STATE_X, STATE_Y, STATE_H]]
+        for rid in red_ids:
+            r = states.get(rid)
+            if r is None or r[STATE_ALIVE] < 0.5:
+                continue
+            r_pos = r[[STATE_X, STATE_Y, STATE_H]]
+            dist  = distance_3d(b_pos, r_pos)
+            if dist < _WEZ_RANGE_MIN or dist > _WEZ_RANGE_MAX:
+                continue
+            ata = antenna_train_angle(b_pos, r_pos, b[STATE_PSI])
+            if abs(ata) <= _WEZ_ANGLE_MAX:
+                fire[aid] = 1.0
+                break
+    return fire
 
 
 def wilson_ci(k: int, n: int, z: float = 1.96):
@@ -48,19 +84,43 @@ def run_eval(config: dict, checkpoint_path: str, n_episodes: int,
     team_map = {a: ("blue" if "blue" in a else "red") for a in all_ids}
 
     # ── FACMAC actor ─────────────────────────────────────────────────────────
-    fcfg    = config.get("facmac", {})
-    obs_dim = int(config.get("obs_dim", 50))
-    hidden  = int(fcfg.get("hidden", 256))
+    fcfg       = config.get("facmac", {})
+    base_obs_dim = 50
+    hidden     = int(fcfg.get("hidden", 256))
 
-    ckpt  = torch.load(checkpoint_path, map_location=device, weights_only=False)
-    actor = FACMACActor(obs_dim=obs_dim, hidden=hidden).to(device)
-    actor.load_state_dict(ckpt["actor"])
+    ckpt       = torch.load(checkpoint_path, map_location=device, weights_only=False)
+    actor_sd   = ckpt["actor"]
+    use_om     = 'fc1_base.weight' in actor_sd   # yeni FACMACActorOM formatı
+
+    if use_om:
+        actor = FACMACActorOM(base_obs_dim=base_obs_dim, hidden=hidden).to(device)
+        actor.load_state_dict(actor_sd, strict=False)
+        # OM bileşenleri
+        cent_om   = CentralizedOpponentModel().to(device)
+        cent_role = CentralizedRoleAssigner().to(device)
+        if 'cent_om' in ckpt:
+            cent_om.load_state_dict(ckpt['cent_om'])
+        if 'cent_role' in ckpt:
+            cent_role.load_state_dict(ckpt['cent_role'], strict=False)
+        cent_om.eval(); cent_role.eval()
+        enemy_hist = EnemyHistoryBuffer()
+        obs_dim    = 60
+    else:
+        actor   = FACMACActor(obs_dim=base_obs_dim, hidden=hidden).to(device)
+        remap   = {'net.0.weight': 'net.0.weight', 'net.0.bias': 'net.0.bias',
+                   'net.2.weight': 'net.2.weight', 'net.2.bias': 'net.2.bias',
+                   'ctrl_head.weight': 'ctrl_head.weight', 'ctrl_head.bias': 'ctrl_head.bias'}
+        actor.load_state_dict({k: v for k, v in actor_sd.items() if k in remap}, strict=False)
+        obs_dim    = base_obs_dim
+        cent_om    = None
+        enemy_hist = None
+
     actor.eval()
 
     print(f"[Eval] FACMAC checkpoint : {checkpoint_path}")
     print(f"[Eval] Saved at          : ep={ckpt.get('episode','?')}, "
           f"step={ckpt.get('total_steps','?'):,}")
-    print(f"[Eval] Device            : {device}")
+    print(f"[Eval] Device            : {device} | obs_dim={obs_dim} | OM={use_om}")
     print(f"[Eval] Episodes          : {n_episodes} | seed={seed} | "
           f"deterministic={deterministic}")
 
@@ -78,20 +138,57 @@ def run_eval(config: dict, checkpoint_path: str, n_episodes: int,
     for ep in range(n_episodes):
         obs_dict = env.reset()
         opp.reset()
+        if enemy_hist is not None:
+            enemy_hist.reset()
         done     = {"__all__": False}
         ep_kills = 0
         ep_len   = 0
 
         while not done["__all__"]:
-            with torch.no_grad():
-                blue_actions = {}
-                for aid in blue_ids:
-                    o     = obs_dict.get(aid, np.zeros(obs_dim, dtype=np.float32))
-                    obs_t = torch.FloatTensor(o[:obs_dim]).unsqueeze(0).to(device)
-                    action, _ = actor.act(obs_t, deterministic=deterministic)
-                    blue_actions[aid] = action.squeeze(0).cpu().numpy()
+            # OM obs 확장 (60D) 또는 base obs (50D)
+            states = env.get_all_states()
+            if use_om and cent_om is not None:
+                base_arr = np.stack([
+                    obs_dict.get(aid, np.zeros(base_obs_dim, dtype=np.float32))[:base_obs_dim]
+                    for aid in blue_ids
+                ], axis=0)
+                hist_960 = enemy_hist.update(base_arr)
+                with torch.no_grad():
+                    hist_t    = torch.from_numpy(hist_960).unsqueeze(0).to(device)
+                    intent_np = cent_om.intent_flat(hist_t).squeeze(0).cpu().numpy()
+                ts_np = build_team_state([states.get(bid) for bid in blue_ids])
+                with torch.no_grad():
+                    x_role = torch.from_numpy(
+                        np.concatenate([intent_np, ts_np]).astype(np.float32)
+                    ).unsqueeze(0).to(device)
+                    role_0, role_1 = cent_role.assign(x_role)
+                roles = [role_0.squeeze(0).cpu().numpy(),
+                         role_1.squeeze(0).cpu().numpy()]
+                obs_60d = {
+                    aid: np.concatenate([
+                        obs_dict.get(aid, np.zeros(base_obs_dim, np.float32))[:base_obs_dim],
+                        intent_np, roles[i]
+                    ])
+                    for i, aid in enumerate(blue_ids)
+                }
+                obs_for_actor = obs_60d
+            else:
+                obs_for_actor = obs_dict
 
-            states      = env.get_all_states()
+            with torch.no_grad():
+                ctrl_actions = {}
+                for aid in blue_ids:
+                    o     = obs_for_actor.get(aid, np.zeros(obs_dim, dtype=np.float32))
+                    obs_t = torch.FloatTensor(o[:obs_dim]).unsqueeze(0).to(device)
+                    ctrl, _ = actor.act(obs_t, deterministic=deterministic)
+                    ctrl_actions[aid] = ctrl.squeeze(0).cpu().numpy()   # 4D
+
+            fire_dict = _rule_based_fire(blue_ids, red_ids, obs_dict, states, base_obs_dim)
+            blue_actions = {
+                aid: np.append(ctrl_actions[aid], fire_dict[aid])
+                for aid in blue_ids
+            }
+
             all_opp     = opp.act(states)
             red_actions = {rid: all_opp[rid] for rid in red_ids if rid in all_opp}
 
