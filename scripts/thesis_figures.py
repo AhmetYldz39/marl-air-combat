@@ -2444,7 +2444,7 @@ def make_role_assigner_figure():
     CA    = "#2C5F8A"; C_LA   = "#DBEAFE"
     CE    = "#E8896A"; C_LE   = "#FDE8D8"
     C_GRN = "#276749"; C_LGRN = "#C6F6D5"
-    C_RD  = "#C53030"
+    C_RD  = "#C53030"; C_LRD  = "#FED7D7"
     C_GOLD = "#D4A017"; C_LGOLD = "#FEF3C7"
     GR    = "#718096"; DARK   = "#1F2937"
     W_IN, H_IN, DPI = 12.0, 8.0, 200
@@ -2752,8 +2752,8 @@ def make_qmix_figure():
                 fontweight="bold", color=C_GRN, zorder=4)
         ax.text(5.35, 2.95,
                 r"$\arg\max_{\mathbf{a}}\; Q_{\mathrm{tot}}(\mathbf{o}, \mathbf{a})"
-                r"\;=\;\Bigl(\arg\max_{a^1} Q_1(o^1, a^1),\;"
-                r"\arg\max_{a^2} Q_2(o^2, a^2)\Bigr)$",
+                r"\;=\;\left(\arg\max_{a^1} Q_1(o^1, a^1),\;"
+                r"\arg\max_{a^2} Q_2(o^2, a^2)\right)$",
                 ha="center", va="top", fontsize=10.5,
                 color=DARK, zorder=4)
         ax.text(5.35, 2.42,
@@ -2898,7 +2898,7 @@ def make_td3_figure():
              r"$\theta^- \leftarrow \tau\theta + (1-\tau)\theta^-$,   $\tau = 0.005$"
              "\n"
              r"$y \leftarrow \mathrm{clamp}(y,\;-2000,\;+2000)$"
-             "\nBound = 3× max theoretical $Q_{\mathrm{tot}} \\approx 709$",
+             "\nBound = 3× max theoretical $Q_{\\mathrm{tot}} \\approx 709$",
              C_GRN, C_LGRN, C_GRN),
         ]
 
