@@ -6,7 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="7a9103f8-00b5-45ba-a8b7-85f53568ba1f" name="Changes" comment="Train code fix">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/configs/config.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/config.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/evaluation/eval.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluation/eval.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/evaluation/eval_facmac.py" beforeDir="false" afterPath="$PROJECT_DIR$/evaluation/eval_facmac.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

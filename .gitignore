@@ -9,5 +9,10 @@ CLAUDE.md
 # Python virtual environment
 venv/
 
+# Paper - thesis documents
+docs/
+chapters/
+findings/
+
 # Boş/hatalı dosya
 null

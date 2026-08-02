@@ -133,6 +133,11 @@ def run_eval(config: dict, checkpoint_path: str, n_episodes: int,
     lengths      = []
     double_kills = 0
 
+    # Intent / role takibi (yalnızca OM modeli için)
+    intent_steps = []
+    role0_steps  = []
+    role1_steps  = []
+
     env.seed(seed)
 
     for ep in range(n_episodes):
@@ -164,6 +169,10 @@ def run_eval(config: dict, checkpoint_path: str, n_episodes: int,
                     role_0, role_1 = cent_role.assign(x_role)
                 roles = [role_0.squeeze(0).cpu().numpy(),
                          role_1.squeeze(0).cpu().numpy()]
+                # intent/role takibi
+                intent_steps.append(intent_np.copy())
+                role0_steps.append(roles[0].copy())
+                role1_steps.append(roles[1].copy())
                 obs_60d = {
                     aid: np.concatenate([
                         obs_dict.get(aid, np.zeros(base_obs_dim, np.float32))[:base_obs_dim],
@@ -230,7 +239,7 @@ def run_eval(config: dict, checkpoint_path: str, n_episodes: int,
     dkr          = double_kills / n
     mean_len     = float(np.mean(lengths))
 
-    return dict(
+    out = dict(
         checkpoint       = checkpoint_path,
         n_episodes       = n,
         seed             = seed,
@@ -248,6 +257,14 @@ def run_eval(config: dict, checkpoint_path: str, n_episodes: int,
         draws            = draws,
     )
 
+    # Intent / role istatistikleri (yalnızca OM modellerinde)
+    if intent_steps:
+        out["intent_mean"] = np.mean(intent_steps, axis=0).round(4).tolist()
+        out["role0_mean"]  = np.mean(role0_steps,  axis=0).round(4).tolist()
+        out["role1_mean"]  = np.mean(role1_steps,  axis=0).round(4).tolist()
+
+    return out
+
 
 def print_summary(r: dict):
     print("\n" + "=" * 58)
@@ -261,6 +278,16 @@ def print_summary(r: dict):
     print(f"  Loss rate       : {r['loss_rate']:.1%}")
     print(f"  Mean ep length  : {r['mean_ep_len']:.0f} steps")
     print(f"  Wins/Draws/Loss : {r['wins']}/{r['draws']}/{r['losses']}")
+    if "intent_mean" in r:
+        im = r["intent_mean"]
+        r0 = r["role0_mean"]
+        r1 = r["role1_mean"]
+        print(f"  Intent (red_0)  : agg={im[0]:.3f} def={im[1]:.3f} eva={im[2]:.3f}")
+        print(f"  Intent (red_1)  : agg={im[3]:.3f} def={im[4]:.3f} eva={im[5]:.3f}")
+        print(f"  Role (blue_0)   : sniper={r0[0]:.3f} pursuit={r0[1]:.3f} "
+              f"def={r0[2]:.3f} sup={r0[3]:.3f}")
+        print(f"  Role (blue_1)   : sniper={r1[0]:.3f} pursuit={r1[1]:.3f} "
+              f"def={r1[2]:.3f} sup={r1[3]:.3f}")
     print("=" * 58)
 
 

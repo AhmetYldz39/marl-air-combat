@@ -62,6 +62,29 @@ from models.om_net import (
 
 _BASE_OBS_DIM = 50   # tüm checkpoint türleri için base obs boyutu
 
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+class _LegacySequentialRoleAssigner(nn.Module):
+    """
+    MAPPO ep44000 gibi eski sequential cent_role formatı için uyumluluk katmanı.
+    mlp0: [intent(6)+team_state(6)] = 12D → role0(4)
+    mlp1: [intent(6)+team_state(6)+role0(4)] = 16D → role1(4)
+    """
+    def __init__(self):
+        super().__init__()
+        self.mlp0 = nn.Sequential(nn.Linear(12, 64), nn.ReLU(), nn.Linear(64, 4))
+        self.mlp1 = nn.Sequential(nn.Linear(16, 64), nn.ReLU(), nn.Linear(64, 4))
+
+    @torch.no_grad()
+    def assign(self, x: "torch.Tensor"):
+        logit0 = self.mlp0(x)
+        role0  = F.one_hot(logit0.argmax(dim=-1), 4).float()
+        logit1 = self.mlp1(torch.cat([x, role0], dim=-1))
+        role1  = F.one_hot(logit1.argmax(dim=-1), 4).float()
+        return role0, role1
+
 # ---------------------------------------------------------------------------
 # Faz 1 Geçiş Kriterleri
 # ---------------------------------------------------------------------------
@@ -128,13 +151,18 @@ class Evaluator:
             self.gat_comm.eval()
             # OM bileşenleri (yeni checkpoint'lerde)
             if self._use_om:
-                self.cent_om   = CentralizedOpponentModel().to(self.device)
-                self.cent_role = CentralizedRoleAssigner().to(self.device)
+                self.cent_om = CentralizedOpponentModel().to(self.device)
                 if 'cent_om' in ckpt:
                     self.cent_om.load_state_dict(ckpt['cent_om'])
-                if 'cent_role' in ckpt:
-                    self.cent_role.load_state_dict(ckpt['cent_role'])
-                self.cent_om.eval(); self.cent_role.eval()
+                self.cent_om.eval()
+                # cent_role: eski sequential (mlp0/mlp1) veya yeni joint-pair mimarisi
+                role_sd = ckpt.get('cent_role', {})
+                if 'mlp0.0.weight' in role_sd:
+                    self.cent_role = _LegacySequentialRoleAssigner().to(self.device)
+                else:
+                    self.cent_role = CentralizedRoleAssigner().to(self.device)
+                self.cent_role.load_state_dict(role_sd, strict=False)
+                self.cent_role.eval()
                 self.enemy_hist = EnemyHistoryBuffer()
             else:
                 self.cent_om    = None
@@ -195,6 +223,13 @@ class Evaluator:
         survival_list   = []
         oob_list        = []
 
+        # Intent/role takibi (yalnızca OM modeli için)
+        intent_steps = []
+        role0_steps  = []
+        role1_steps  = []
+        self._last_intent = None
+        self._last_roles  = None
+
         ep_details = []
 
         for ep in range(n_episodes):
@@ -212,6 +247,11 @@ class Evaluator:
                 # GAT / GAT+OM obs uzantısı
                 if self._use_gat:
                     obs_dict = self._extend_obs(obs_dict)
+                    if self._use_om and self._last_intent is not None:
+                        intent_steps.append(self._last_intent)
+                        role0_steps.append(self._last_roles[0])
+                        if len(self._last_roles) > 1:
+                            role1_steps.append(self._last_roles[1])
                 # MAPPO aksiyonları
                 actions = self._get_actions(obs_dict, deterministic)
 
@@ -307,6 +347,13 @@ class Evaluator:
             "episodes": ep_details,
         }
 
+        # Intent / role istatistikleri (yalnızca OM modellerinde)
+        if intent_steps:
+            results["intent_mean"] = np.mean(intent_steps, axis=0).round(4).tolist()
+            results["role0_mean"]  = np.mean(role0_steps,  axis=0).round(4).tolist()
+            results["role1_mean"]  = (np.mean(role1_steps, axis=0).round(4).tolist()
+                                      if role1_steps else [0.0] * 4)
+
         return results
 
     # -----------------------------------------------------------------------
@@ -380,6 +427,19 @@ class Evaluator:
         print(f"  Mean ep length  : {results['mean_ep_len']:.0f} adım")
         print(f"  Survival rate   : {results['survival_rate']:.1%}")
         print(f"  OOB rate        : {results['oob_rate']:.1%}")
+
+        # Intent / role (OM modellerinde)
+        if "intent_mean" in results:
+            im = results["intent_mean"]
+            r0 = results["role0_mean"]
+            r1 = results["role1_mean"]
+            print()
+            print(f"  Intent (red_0)  : agg={im[0]:.3f} def={im[1]:.3f} eva={im[2]:.3f}")
+            print(f"  Intent (red_1)  : agg={im[3]:.3f} def={im[4]:.3f} eva={im[5]:.3f}")
+            print(f"  Role (blue_0)   : sniper={r0[0]:.3f} pursuit={r0[1]:.3f} "
+                  f"def={r0[2]:.3f} sup={r0[3]:.3f}")
+            print(f"  Role (blue_1)   : sniper={r1[0]:.3f} pursuit={r1[1]:.3f} "
+                  f"def={r1[2]:.3f} sup={r1[3]:.3f}")
 
         if show_criteria:
             passed, report = Evaluator.check_phase_criteria(results)
@@ -492,9 +552,14 @@ class Evaluator:
                 ).unsqueeze(0).to(self.device)
                 role_0, role_1 = self.cent_role.assign(x_role)
             roles = [role_0.squeeze(0).cpu().numpy(), role_1.squeeze(0).cpu().numpy()]
+            # intent/role takibi için kaydet
+            self._last_intent = intent_np.copy()
+            self._last_roles  = [r.copy() for r in roles]
         else:
             intent_np = np.zeros(6,  dtype=np.float32)
             roles     = [np.zeros(4, dtype=np.float32)] * len(self.train_ids)
+            self._last_intent = None
+            self._last_roles  = None
 
         extended = {}
         for i, aid in enumerate(self.train_ids):

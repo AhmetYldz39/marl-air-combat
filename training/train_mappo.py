@@ -664,6 +664,25 @@ class MAPPOTrainer:
                 self._role_inp_buf:  list = []
                 self._role_pair_buf: list = []          # REINFORCE için pair indeksleri
                 self._return_history = deque(maxlen=200)  # REINFORCE baseline
+                # Per-episode rol koşullu reward bileşen akümülatörleri
+                self._rc_sniper_buf:  list = []  # sniper_pos + sniper_patience
+                self._rc_def_buf:     list = []  # def_survival + evasion
+                self._rc_support_buf: list = []  # support terimi
+                # REINFORCE diagnostic CSV (per-episode logging)
+                _ts = time.strftime("%Y%m%d_%H%M%S")
+                _diag_path = Path("logs") / f"reinforce_diag_{_ts}.csv"
+                _diag_path.parent.mkdir(parents=True, exist_ok=True)
+                self._diag_file   = open(_diag_path, "w", newline="", encoding="utf-8")
+                self._diag_writer = csv.DictWriter(
+                    self._diag_file,
+                    fieldnames=["ep", "ret_norm", "logit_entropy",
+                                "distinct_pairs", "n_steps",
+                                "rc_sniper_sum", "rc_def_sum", "rc_support_sum",
+                                "rc_total_sum", "rc_variance", "ep_return"],
+                )
+                self._diag_writer.writeheader()
+                self._diag_file.flush()
+                print(f"[MAPPO] REINFORCE diagnostics → {_diag_path}")
 
             # opt_actor: gat_comm + fc1_new + fc1_intent + fc1_role + tail (fc1_old başta dondurulmuş)
             _actor_params = (list(self.gat_comm.parameters()) +
@@ -753,6 +772,22 @@ class MAPPOTrainer:
         ep_reward = {aid: 0.0 for aid in self.train_ids}
         ep_steps  = 0
 
+        # ── Run başlangıç config dump ─────────────────────────────────────
+        try:
+            import subprocess as _sp
+            _git_hash = _sp.check_output(
+                ["git", "rev-parse", "--short", "HEAD"],
+                cwd=str(PROJECT_ROOT), stderr=_sp.DEVNULL
+            ).decode().strip()
+        except Exception:
+            _git_hash = "unknown"
+        print(f"\n{'='*70}")
+        print(f"[MAPPO] RUN CONFIG DUMP — git={_git_hash}")
+        print(f"{'='*70}")
+        print(yaml.dump(self.config, allow_unicode=True, default_flow_style=False,
+                        sort_keys=True), flush=True)
+        print(f"{'='*70}\n")
+
         print(f"\n[MAPPO] Eğitim başlıyor — toplam {self.total_steps:,} adım\n", flush=True)
         t_start = time.time()
         self._train_start_step = self.global_step  # epsilon decay için referans
@@ -798,10 +833,33 @@ class MAPPOTrainer:
                         role_support_probs[aid] = float(role_np[3])
                         role_vecs[aid]          = role_np
 
-                # Adım
+                # Adım — --no-role-reward aktifse rol reward'ı env'e iletme
+                _step_role_sp = None if getattr(self, "no_role_reward", False) else role_support_probs
+                _step_role_v  = None if getattr(self, "no_role_reward", False) else role_vecs
                 next_obs, rew_dict, done_dict, info_dict = \
-                    self.env.step(action_dict, role_support_probs=role_support_probs,
-                                  role_vecs=role_vecs)
+                    self.env.step(action_dict, role_support_probs=_step_role_sp,
+                                  role_vecs=_step_role_v)
+
+                # RC reward bileşenlerini biriktir (rol reward aktif/pasif fark etmez — her zaman ölç)
+                if self.om_mode and role_vecs:
+                    _rw = self.env._rewards
+                    for aid in self.train_ids:
+                        if aid not in role_vecs or aid not in info_dict:
+                            continue
+                        rv   = role_vecs[aid]
+                        snw  = float(rv[0])   # sniper ağırlığı
+                        dew  = float(rv[2])   # defensive ağırlığı
+                        sup  = float(rv[3])   # support olasılığı
+                        inf  = info_dict[aid]
+                        rm   = _rw[aid]
+                        rc_s = (rm.w_sniper_position  * snw * inf.get("r_sniper_pos", 0.0) +
+                                rm.w_sniper_patience   * snw * inf.get("r_sniper_patience", 0.0))
+                        rc_d = (rm.w_defensive_survival * dew * inf.get("r_survival", 0.0) +
+                                rm.w_evasion             * dew * inf.get("r_evasion", 0.0))
+                        rc_u = rm.w_support * sup * inf.get("r_support", 0.0)
+                        self._rc_sniper_buf.append(rc_s)
+                        self._rc_def_buf.append(rc_d)
+                        self._rc_support_buf.append(rc_u)
 
                 # Buffer'a ekle — genişletilmiş obs saklanır (phase2: 76D, diğer: 50D)
                 max_n      = self.env._max_n_per_team
@@ -1117,8 +1175,38 @@ class MAPPOTrainer:
         nn.utils.clip_grad_norm_(self.cent_role.parameters(), 0.5)
         self.opt_role.step()
 
+        # REINFORCE per-episode diagnostics
+        if getattr(self, "_diag_writer", None) is not None:
+            _rc_s = self._rc_sniper_buf
+            _rc_d = self._rc_def_buf
+            _rc_u = self._rc_support_buf
+            rc_sniper_sum  = round(float(sum(_rc_s)), 5)
+            rc_def_sum     = round(float(sum(_rc_d)), 5)
+            rc_support_sum = round(float(sum(_rc_u)), 5)
+            rc_total_sum   = round(rc_sniper_sum + rc_def_sum + rc_support_sum, 5)
+            # Per-step varyans: tüm RC katkıların adım adım değişkenliği
+            _rc_all = [s + d + u for s, d, u in zip(_rc_s, _rc_d, _rc_u)]
+            rc_var = round(float(np.var(_rc_all)) if _rc_all else 0.0, 6)
+            self._diag_writer.writerow({
+                "ep":             self.episode_count,
+                "ret_norm":       round(float(ret_norm), 5),
+                "logit_entropy":  round(float(entropy.item()), 5),
+                "distinct_pairs": len(set(self._role_pair_buf)),
+                "n_steps":        len(self._role_pair_buf),
+                "rc_sniper_sum":  rc_sniper_sum,
+                "rc_def_sum":     rc_def_sum,
+                "rc_support_sum": rc_support_sum,
+                "rc_total_sum":   rc_total_sum,
+                "rc_variance":    rc_var,
+                "ep_return":      round(float(episode_return), 4),
+            })
+            self._diag_file.flush()
+
         self._role_pair_buf.clear()
         self._role_inp_buf.clear()
+        self._rc_sniper_buf.clear()
+        self._rc_def_buf.clear()
+        self._rc_support_buf.clear()
 
     def _update(self):
         """GAE + PPO clip loss + value loss + entropy."""
@@ -1413,7 +1501,10 @@ class MAPPOTrainer:
         x_role_np = np.concatenate([intent_np, ts_np]).astype(np.float32)
         with torch.no_grad():
             x_role  = torch.from_numpy(x_role_np).unsqueeze(0).to(self.device)
-            role_0, role_1 = self.cent_role(x_role, hard=True, tau=0.5)
+            if getattr(self, "argmax_role", False):
+                role_0, role_1 = self.cent_role.assign(x_role)
+            else:
+                role_0, role_1 = self.cent_role(x_role, hard=True, tau=0.5)
         role_0_np = role_0.squeeze(0).cpu().numpy()  # (4,) one-hot
         role_1_np = role_1.squeeze(0).cpu().numpy()
 
@@ -1748,6 +1839,15 @@ def parse_args():
                    help="Faz-1 MAPPO checkpoint'ten GAT mimarisine transfer")
     p.add_argument("--start-phase", type=int, default=None,
                    help="Curriculum fazını manuel olarak set et (1/2/3/4)")
+    p.add_argument("--no-pool", action="store_true",
+                   help="Self-play pool'u devre dışı bırak (sadece sabit heuristic rakip). "
+                        "Run A/B kontrol deneyleri için.")
+    p.add_argument("--no-role-reward", action="store_true",
+                   help="Rol vektörünü env.step'e iletme — reward fonksiyonu rol-bağımsız olur. "
+                        "Run C (H6 testi) için.")
+    p.add_argument("--argmax-role", action="store_true",
+                   help="Per-step Gumbel yerine deterministik argmax rol ataması (FACMAC assign() yolu). "
+                        "Run B (H1 testi) için. --no-role-reward ile birlikte kullanılır.")
     return p.parse_args()
 
 
@@ -1798,6 +1898,28 @@ def main():
               f"({CurriculumManager.PHASE_NAMES.get(args.start_phase)})")
         print(f"[MAPPO] n_agents={trainer.n_agents}, buffer yeniden olusturuldu "
               f"(obs_dim={trainer.obs_dim}, global_obs={trainer.global_obs_dim})")
+
+    # --no-pool: pool snapshot almayı durdur, sadece sabit heuristic oyna
+    if getattr(args, "no_pool", False):
+        if hasattr(trainer, "pool_update_interval"):
+            trainer.pool_update_interval = 999_999
+        if hasattr(trainer, "pool") and trainer.pool is not None:
+            trainer.pool.max_pool_size = 0   # yeni snapshot kabul etme
+        print("[MAPPO] --no-pool aktif: self-play pool devre disi, sadece heuristic rakip.")
+
+    # --no-role-reward: rol vektörünü reward'a iletme (FACMAC konfigürasyonunu eşleştirir)
+    if getattr(args, "no_role_reward", False):
+        trainer.no_role_reward = True
+        print("[MAPPO] --no-role-reward aktif: rol koşullu reward devre disi (Run C / H6 testi).")
+    else:
+        trainer.no_role_reward = False
+
+    # --argmax-role: per-step Gumbel → deterministik argmax (FACMAC assign() yolu)
+    if getattr(args, "argmax_role", False):
+        trainer.argmax_role = True
+        print("[MAPPO] --argmax-role aktif: deterministik rol ataması (Run B / H1 testi).")
+    else:
+        trainer.argmax_role = False
 
     trainer.train()
 
