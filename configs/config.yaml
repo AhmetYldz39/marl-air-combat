@@ -272,9 +272,6 @@ training:
   batch_size:         512
   minibatch_size:     128
 
-  # QMIX (karşılaştırma için)
-  qmix_mixing_embed:  32
-  qmix_hypernet_embed: 64
 
   # MADDPG (karşılaştırma için)
   maddpg_tau:         0.005         # soft update katsayısı
