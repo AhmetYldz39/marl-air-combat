@@ -161,6 +161,15 @@ tabloda karıştırılamaz.**
 `docs/evals/v1.0/`, commit `3b70591`, `git_dirty=false`, `ENV_VERSION 1.0.0`.
 Tez ve bildiri için kullanılacak sayılar bunlardır.
 
+> **Commit hash'leri hakkında.** JSON'lardaki `git_commit` değerleri (`3b70591`;
+> rol serisi ve CUDA ekinde `53d7a52`, `a94b944`, `8850f25`) özel geliştirme
+> geçmişine aittir ve bu depoda bulunmaz. İçerik olarak eşdeğer public commit:
+> **`0ecf910`**. Ortam, modeller, ajanlar ve config `3b70591` ile birebir aynıdır;
+> `eval/runner.py` ve `eval/compare.py` yalnızca sonradan eklenen isteğe bağlı
+> özellikler içerir (rol müdahale modları, cihaz karşılaştırması, provenance
+> alanları). `0ecf910` ile altı modelin her biri için n=200 koşu, kanonik
+> dosyaların ilk 200 episode'uyla bit-aynı sonuç verdi.
+
 | # | Model | Win% | 95% Wilson CI | Kill/ep | Draw% | W/D/L |
 |---|---|---|---|---|---|---|
 | 01 | MAPPO baseline | 47.80% | [45.62, 49.99] | 1.0700 | 50.20% | 956/1004/40 |
@@ -353,7 +362,7 @@ hizalama ayrıklığa rağmen yok eder. **Ayrıklık gerekli ama yeterli değil.
 Bu koşulların hepsi olağan büyüklükte ve en yüksek kazanma oranlarında —
 **davranış ile sonuç ayrışıyor.**
 
-Ayrıntı: [`../PAPER_DELTA_v0.1.md`](../PAPER_DELTA_v0.1.md) §A4d–A4e.
+Ayrıntı: PAPER_DELTA_v0.1.md §A4d–A4e (dahili belge, yayımlanmadı).
 
 ---
 
