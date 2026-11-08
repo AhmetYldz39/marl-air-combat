@@ -1,18 +1,78 @@
-# Training outputs
-checkpoints/
+# ── Training outputs ──────────────────────────────────────────────────────────
+# Only the six checkpoints of the canonical table are tracked.
+checkpoints/*
+!checkpoints/mappo_final.pt
+!checkpoints/mappo_gat_ep37000.pt
+!checkpoints/mappo_gat_ep44000.pt
+!checkpoints/qmix_ep2000.pt
+!checkpoints/facmac_base_ep2000.pt
+!checkpoints/facmac_omr_ep27000.pt
 logs/
 
-# Claude Code config
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+*.so
+*.dylib
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+
+# ── IDE / editor ──────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ── LaTeX build artifacts ──────────────────────────────────────────────────────
+docs/conference_paper/*.aux
+docs/conference_paper/*.bbl
+docs/conference_paper/*.blg
+docs/conference_paper/*.log
+docs/conference_paper/*.out
+docs/conference_paper/*.synctex.gz
+docs/conference_paper/*.fdb_latexmk
+docs/conference_paper/*.fls
+# Standalone figure builds (F1/, F2/ — the figures ship as .tex via \input)
+docs/conference_paper/*/*.aux
+docs/conference_paper/*/*.log
+docs/conference_paper/*/*.out
+docs/conference_paper/*/*_standalone.pdf
+
+# ── Copyrighted third-party files — not for redistribution ───────────────────
+docs/related_works/
+docs/conference_paper/IEEEAerospaceCLS.cls
+docs/conference_paper/Latex_Example_2027/
+docs/conference_paper/conference_paper.rar
+docs/conference_paper/*.rar
+docs/*.rar
+
+# ── Internal working docs — not for public repo ───────────────────────────────
+docs/hypothesis/
+findings/
+chapters/
+
+# ── Claude Code internal files ────────────────────────────────────────────────
 .claude/
 CLAUDE.md
 
-# Python virtual environment
-venv/
+# ── OS artefacts ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
 
-# Paper - thesis documents
-docs/
-chapters/
-findings/
+# ── Jupyter ───────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
 
-# Boş/hatalı dosya
-null
+# ── NOTE: docs/evals/ is intentionally tracked (benchmark source of truth)
+# ── NOTE: docs/prerelease_audit.md and docs/ENV_CHANGELOG.md are tracked
