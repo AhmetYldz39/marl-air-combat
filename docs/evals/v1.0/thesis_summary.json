@@ -1,0 +1,1401 @@
+{
+ "schema": "thesis_summary/1",
+ "generated_utc": "2026-11-08T18:59:01+00:00",
+ "generator": "scripts/make_thesis_summary.py",
+ "generator_git": {
+  "commit": "8410e16",
+  "dirty": false,
+  "dirty_files": []
+ },
+ "conventions": {
+  "rates": "oran (0–1); yüzde değil",
+  "delta": "b − a",
+  "mcnemar": "süreklilik düzeltmeli (Edwards), compare.mcnemar",
+  "bootstrap": "paired, episode indeksleri, 10000 örnek, seed 42",
+  "holm": "yalnızca compare.CONFIRMATORY_FAMILY (5 karşılaştırma)",
+  "asymmetry": "|mean(k0) − mean(k1)| (compare.agent_level_asymmetry)",
+  "role_mean_stepwise": "adım-düzeyi ortalama rol vektörü; episode oranı değil"
+ },
+ "canonical_config": {
+  "n": 2000,
+  "seed": 42,
+  "device": "cpu",
+  "num_threads": 1,
+  "env_version": "1.0.0",
+  "opponent": "heuristic-v1",
+  "git_commit": "3b70591"
+ },
+ "models": {
+  "01": {
+   "name": "MAPPO baseline",
+   "algorithm": "mappo",
+   "n": 2000,
+   "seed": 42,
+   "seeding": "legacy",
+   "deterministic": true,
+   "win_rate": 0.478,
+   "win_ci95_wilson": [
+    0.456171,
+    0.499913
+   ],
+   "W": 956,
+   "D": 1004,
+   "L": 40,
+   "kill_per_ep": 1.07,
+   "draw_rate": 0.502,
+   "loss_rate": 0.02,
+   "oob_rate": 0.0,
+   "runtime": {
+    "device": "cpu",
+    "num_threads": 1,
+    "torch_version": "2.6.0+cu124",
+    "reconstructed": false
+   },
+   "env_version": "1.0.0",
+   "opponent": "heuristic-v1",
+   "git_commit": "3b70591",
+   "git_dirty": false,
+   "checkpoint": {
+    "path": "checkpoints/mappo_final.pt",
+    "sha256": "d6bc1d3be3f005fd4eeec5a91451fd8686a4aac1988856140366eeee340cb2ff"
+   },
+   "source": "docs/evals/v1.0/01_mappo_baseline_2000ep.json",
+   "wilson_recomputed_matches_json": true
+  },
+  "02": {
+   "name": "MAPPO+GAT",
+   "algorithm": "mappo_gat",
+   "n": 2000,
+   "seed": 42,
+   "seeding": "legacy",
+   "deterministic": true,
+   "win_rate": 0.6875,
+   "win_ci95_wilson": [
+    0.666843,
+    0.707439
+   ],
+   "W": 1375,
+   "D": 595,
+   "L": 30,
+   "kill_per_ep": 1.5165,
+   "draw_rate": 0.2975,
+   "loss_rate": 0.015,
+   "oob_rate": 0.0,
+   "runtime": {
+    "device": "cpu",
+    "num_threads": 1,
+    "torch_version": "2.6.0+cu124",
+    "reconstructed": false
+   },
+   "env_version": "1.0.0",
+   "opponent": "heuristic-v1",
+   "git_commit": "3b70591",
+   "git_dirty": false,
+   "checkpoint": {
+    "path": "checkpoints/mappo_gat_ep37000.pt",
+    "sha256": "e5d11384dd3e9c1ca71333ad7f719825c1ba725136d7c3dee06e9e1e7ffd1536"
+   },
+   "source": "docs/evals/v1.0/02_mappo_gat_2000ep.json",
+   "wilson_recomputed_matches_json": true
+  },
+  "03": {
+   "name": "MAPPO+GAT+OM+Role",
+   "algorithm": "mappo_gat_om",
+   "n": 2000,
+   "seed": 42,
+   "seeding": "legacy",
+   "deterministic": true,
+   "win_rate": 0.714,
+   "win_ci95_wilson": [
+    0.6938,
+    0.73338
+   ],
+   "W": 1428,
+   "D": 531,
+   "L": 41,
+   "kill_per_ep": 1.56,
+   "draw_rate": 0.2655,
+   "loss_rate": 0.0205,
+   "oob_rate": 0.0,
+   "runtime": {
+    "device": "cpu",
+    "num_threads": 1,
+    "torch_version": "2.6.0+cu124",
+    "reconstructed": false
+   },
+   "env_version": "1.0.0",
+   "opponent": "heuristic-v1",
+   "git_commit": "3b70591",
+   "git_dirty": false,
+   "checkpoint": {
+    "path": "checkpoints/mappo_gat_ep44000.pt",
+    "sha256": "a01bf76d160f0f6265beb4280435ab6ba7b56e4a9bab6596dcd731dcf2eb666f"
+   },
+   "source": "docs/evals/v1.0/03_mappo_gat_om_role_2000ep.json",
+   "role0_mean_stepwise": [
+    0.22380000352859497,
+    0.4456999897956848,
+    0.0038999998942017555,
+    0.3264999985694885
+   ],
+   "role1_mean_stepwise": [
+    0.02459999918937683,
+    0.8747000098228455,
+    0.00019999999494757503,
+    0.10050000250339508
+   ],
+   "intent_mean_stepwise": [
+    0.18799999356269836,
+    0.4020000100135803,
+    0.4099000096321106,
+    0.218299999833107,
+    0.43639999628067017,
+    0.34529998898506165
+   ],
+   "wilson_recomputed_matches_json": true
+  },
+  "04": {
+   "name": "QMIX",
+   "algorithm": "qmix",
+   "n": 2000,
+   "seed": 42,
+   "seeding": "legacy",
+   "deterministic": true,
+   "win_rate": 0.6405,
+   "win_ci95_wilson": [
+    0.619219,
+    0.661243
+   ],
+   "W": 1281,
+   "D": 668,
+   "L": 51,
+   "kill_per_ep": 1.4215,
+   "draw_rate": 0.334,
+   "loss_rate": 0.0255,
+   "oob_rate": 0.0,
+   "runtime": {
+    "device": "cpu",
+    "num_threads": 1,
+    "torch_version": "2.6.0+cu124",
+    "reconstructed": false
+   },
+   "env_version": "1.0.0",
+   "opponent": "heuristic-v1",
+   "git_commit": "3b70591",
+   "git_dirty": false,
+   "checkpoint": {
+    "path": "checkpoints/qmix_ep2000.pt",
+    "sha256": "65f2a6de7ab05946371fd1c057e9adec6d3d57db012374c537b2e837fb230a99"
+   },
+   "source": "docs/evals/v1.0/04_qmix_ep2000_2000ep.json",
+   "wilson_recomputed_matches_json": true
+  },
+  "05": {
+   "name": "Pure FACMAC",
+   "algorithm": "facmac",
+   "n": 2000,
+   "seed": 42,
+   "seeding": "legacy",
+   "deterministic": true,
+   "win_rate": 0.8375,
+   "win_ci95_wilson": [
+    0.820687,
+    0.853019
+   ],
+   "W": 1675,
+   "D": 310,
+   "L": 15,
+   "kill_per_ep": 1.7565,
+   "draw_rate": 0.155,
+   "loss_rate": 0.0075,
+   "oob_rate": 0.0,
+   "runtime": {
+    "device": "cpu",
+    "num_threads": 1,
+    "torch_version": "2.6.0+cu124",
+    "reconstructed": false
+   },
+   "env_version": "1.0.0",
+   "opponent": "heuristic-v1",
+   "git_commit": "3b70591",
+   "git_dirty": false,
+   "checkpoint": {
+    "path": "checkpoints/facmac_base_ep2000.pt",
+    "sha256": "a641461aa7bc73ee27cb9aa696148e7dec6355948651613a95044eb183b01f35"
+   },
+   "source": "docs/evals/v1.0/05_facmac_base_2000ep.json",
+   "wilson_recomputed_matches_json": true
+  },
+  "06": {
+   "name": "FACMAC+OM+R",
+   "algorithm": "facmac_omr",
+   "n": 2000,
+   "seed": 42,
+   "seeding": "legacy",
+   "deterministic": true,
+   "win_rate": 0.8605,
+   "win_ci95_wilson": [
+    0.844623,
+    0.874995
+   ],
+   "W": 1721,
+   "D": 265,
+   "L": 14,
+   "kill_per_ep": 1.8045,
+   "draw_rate": 0.1325,
+   "loss_rate": 0.007,
+   "oob_rate": 0.0,
+   "runtime": {
+    "device": "cpu",
+    "num_threads": 1,
+    "torch_version": "2.6.0+cu124",
+    "reconstructed": false
+   },
+   "env_version": "1.0.0",
+   "opponent": "heuristic-v1",
+   "git_commit": "3b70591",
+   "git_dirty": false,
+   "checkpoint": {
+    "path": "checkpoints/facmac_omr_ep27000.pt",
+    "sha256": "6a826b2efe01998e169b715140bf4accc9e46c8ae1d363eea20d1cb582921f84"
+   },
+   "source": "docs/evals/v1.0/06_facmac_omr_2000ep.json",
+   "role0_mean_stepwise": [
+    0.26330000162124634,
+    0.1632000058889389,
+    0.10080000013113022,
+    0.4726000130176544
+   ],
+   "role1_mean_stepwise": [
+    0.05480000004172325,
+    0.42410001158714294,
+    0.3050999939441681,
+    0.2160000056028366
+   ],
+   "intent_mean_stepwise": [
+    0.1768999993801117,
+    0.4052000045776367,
+    0.4178999960422516,
+    0.19769999384880066,
+    0.41280001401901245,
+    0.3894999921321869
+   ],
+   "wilson_recomputed_matches_json": true
+  }
+ },
+ "confirmatory_family": {
+  "MAPPO → MAPPO+GAT": {
+   "a": "01",
+   "b": "02",
+   "win_rate_a": 0.478,
+   "win_rate_b": 0.6875,
+   "delta_win": 0.2095,
+   "delta_win_ci95_paired_bootstrap": [
+    0.1895,
+    0.2295
+   ],
+   "matched_table": {
+    "b11": 914,
+    "b10": 42,
+    "b01": 461,
+    "b00": 583
+   },
+   "outcome_flips": 503,
+   "mcnemar_chi2": 347.3638,
+   "p_raw": 1.5893220099005427e-77,
+   "source": [
+    "docs/evals/v1.0/01_mappo_baseline_2000ep.json",
+    "docs/evals/v1.0/02_mappo_gat_2000ep.json"
+   ],
+   "p_holm": 7.946610049502714e-77
+  },
+  "MAPPO+GAT → MAPPO+GAT+OM+Role": {
+   "a": "02",
+   "b": "03",
+   "win_rate_a": 0.6875,
+   "win_rate_b": 0.714,
+   "delta_win": 0.0265,
+   "delta_win_ci95_paired_bootstrap": [
+    0.009988,
+    0.0435
+   ],
+   "matched_table": {
+    "b11": 1253,
+    "b10": 122,
+    "b01": 175,
+    "b00": 450
+   },
+   "outcome_flips": 297,
+   "mcnemar_chi2": 9.1044,
+   "p_raw": 0.0025499854009063683,
+   "source": [
+    "docs/evals/v1.0/02_mappo_gat_2000ep.json",
+    "docs/evals/v1.0/03_mappo_gat_om_role_2000ep.json"
+   ],
+   "p_holm": 0.0050999708018127365
+  },
+  "QMIX → MAPPO+GAT": {
+   "a": "04",
+   "b": "02",
+   "win_rate_a": 0.6405,
+   "win_rate_b": 0.6875,
+   "delta_win": 0.047,
+   "delta_win_ci95_paired_bootstrap": [
+    0.03,
+    0.064
+   ],
+   "matched_table": {
+    "b11": 1180,
+    "b10": 101,
+    "b01": 195,
+    "b00": 524
+   },
+   "outcome_flips": 296,
+   "mcnemar_chi2": 29.2196,
+   "p_raw": 6.462236945966353e-08,
+   "source": [
+    "docs/evals/v1.0/04_qmix_ep2000_2000ep.json",
+    "docs/evals/v1.0/02_mappo_gat_2000ep.json"
+   ],
+   "p_holm": 1.9386710837899062e-07
+  },
+  "FACMAC → FACMAC+OM+R": {
+   "a": "05",
+   "b": "06",
+   "win_rate_a": 0.8375,
+   "win_rate_b": 0.8605,
+   "delta_win": 0.023,
+   "delta_win_ci95_paired_bootstrap": [
+    0.0065,
+    0.04
+   ],
+   "matched_table": {
+    "b11": 1551,
+    "b10": 124,
+    "b01": 170,
+    "b00": 155
+   },
+   "outcome_flips": 294,
+   "mcnemar_chi2": 6.8878,
+   "p_raw": 0.008678819439219767,
+   "source": [
+    "docs/evals/v1.0/05_facmac_base_2000ep.json",
+    "docs/evals/v1.0/06_facmac_omr_2000ep.json"
+   ],
+   "p_holm": 0.008678819439219767
+  },
+  "MAPPO+GAT → FACMAC": {
+   "a": "02",
+   "b": "05",
+   "win_rate_a": 0.6875,
+   "win_rate_b": 0.8375,
+   "delta_win": 0.15,
+   "delta_win_ci95_paired_bootstrap": [
+    0.131,
+    0.169
+   ],
+   "matched_table": {
+    "b11": 1313,
+    "b10": 62,
+    "b01": 362,
+    "b00": 263
+   },
+   "outcome_flips": 424,
+   "mcnemar_chi2": 210.8514,
+   "p_raw": 8.955975842870909e-48,
+   "source": [
+    "docs/evals/v1.0/02_mappo_gat_2000ep.json",
+    "docs/evals/v1.0/05_facmac_base_2000ep.json"
+   ],
+   "p_holm": 3.5823903371483635e-47
+  }
+ },
+ "exploratory_structural": {
+  "FACMAC+OM+R → rol sıfırlanmış (06→08)": {
+   "win_rate_a": 0.8605,
+   "win_rate_b": 0.838,
+   "delta_win": -0.0225,
+   "delta_win_ci95_paired_bootstrap": [
+    -0.0405,
+    -0.005
+   ],
+   "matched_table": {
+    "b11": 1537,
+    "b10": 184,
+    "b01": 139,
+    "b00": 140
+   },
+   "outcome_flips": 323,
+   "mcnemar_chi2": 5.9938,
+   "p_raw": 0.01435617786645953,
+   "asymmetry_a": 0.3385,
+   "asymmetry_b": 0.0895,
+   "delta_asymmetry": -0.249,
+   "delta_asymmetry_ci95_paired_bootstrap": [
+    -0.332,
+    -0.1645
+   ],
+   "holm": "uygulanmaz (keşifsel aile)",
+   "source": [
+    "docs/evals/v1.0/06_facmac_omr_2000ep.json",
+    "docs/evals/v1.0/08_structural_role_zeroed_facmac_2000ep.json"
+   ]
+  },
+  "MAPPO+GAT+OM+Role → rol sıfırlanmış (03→09)": {
+   "win_rate_a": 0.714,
+   "win_rate_b": 0.7305,
+   "delta_win": 0.0165,
+   "delta_win_ci95_paired_bootstrap": [
+    0.0,
+    0.032512
+   ],
+   "matched_table": {
+    "b11": 1306,
+    "b10": 122,
+    "b01": 155,
+    "b00": 417
+   },
+   "outcome_flips": 277,
+   "mcnemar_chi2": 3.6968,
+   "p_raw": 0.05451853379017903,
+   "asymmetry_a": 0.023,
+   "asymmetry_b": 0.0635,
+   "delta_asymmetry": 0.0405,
+   "delta_asymmetry_ci95_paired_bootstrap": [
+    -0.038,
+    0.1025
+   ],
+   "holm": "uygulanmaz (keşifsel aile)",
+   "source": [
+    "docs/evals/v1.0/03_mappo_gat_om_role_2000ep.json",
+    "docs/evals/v1.0/09_structural_role_zeroed_mappo_2000ep.json"
+   ]
+  },
+  "Pure FACMAC → FACMAC+OM+R rol sıfırlanmış (05→08)": {
+   "win_rate_a": 0.8375,
+   "win_rate_b": 0.838,
+   "delta_win": 0.0005,
+   "delta_win_ci95_paired_bootstrap": [
+    -0.0185,
+    0.02
+   ],
+   "matched_table": {
+    "b11": 1488,
+    "b10": 187,
+    "b01": 188,
+    "b00": 137
+   },
+   "outcome_flips": 375,
+   "mcnemar_chi2": 0.0,
+   "p_raw": 1.0,
+   "asymmetry_a": 0.0945,
+   "asymmetry_b": 0.0895,
+   "delta_asymmetry": -0.005,
+   "delta_asymmetry_ci95_paired_bootstrap": [
+    -0.0945,
+    0.086012
+   ],
+   "holm": "uygulanmaz (keşifsel aile)",
+   "source": [
+    "docs/evals/v1.0/05_facmac_base_2000ep.json",
+    "docs/evals/v1.0/08_structural_role_zeroed_facmac_2000ep.json"
+   ]
+  }
+ },
+ "role_intervention_series": {
+  "family": "keşifsel (Holm uygulanmaz)",
+  "facmac_rows": [
+   {
+    "code": "C0",
+    "key": "C0",
+    "definition": "atayıcı çıktısı (one-hot)",
+    "role_mode_json": "learned",
+    "role_scale_json": 1.0,
+    "model": "FACMAC+OM+R",
+    "file": "docs/evals/role_experiment/C_learned_2000ep.json",
+    "n": 2000,
+    "win_rate": 0.8605,
+    "win_ci95_wilson": [
+     0.844623,
+     0.874995
+    ],
+    "W": 1721,
+    "D": 265,
+    "L": 14,
+    "kill_per_ep": 1.8045,
+    "asymmetry": 0.3385,
+    "asymmetry_ci95_bootstrap": [
+     0.273,
+     0.404012
+    ],
+    "kill_share": {
+     "agent0": 0.406207,
+     "agent1": 0.593793,
+     "kills_agent0": 1466,
+     "kills_agent1": 2143
+    },
+    "preregistration": "T2.9",
+    "git_commit": "53d7a52",
+    "git_dirty": false,
+    "device": "cpu"
+   },
+   {
+    "code": "C1",
+    "key": "C1",
+    "definition": "sıfır vektör",
+    "role_mode_json": "zeroed",
+    "role_scale_json": 1.0,
+    "model": "FACMAC+OM+R",
+    "file": "docs/evals/role_experiment/C_zeroed_2000ep.json",
+    "n": 2000,
+    "win_rate": 0.838,
+    "win_ci95_wilson": [
+     0.821206,
+     0.853498
+    ],
+    "W": 1676,
+    "D": 310,
+    "L": 14,
+    "kill_per_ep": 1.7795,
+    "asymmetry": 0.0895,
+    "asymmetry_ci95_bootstrap": [
+     0.0225,
+     0.158
+    ],
+    "kill_share": {
+     "agent0": 0.474852,
+     "agent1": 0.525148,
+     "kills_agent0": 1690,
+     "kills_agent1": 1869
+    },
+    "preregistration": "T2.9",
+    "git_commit": "53d7a52",
+    "git_dirty": false,
+    "device": "cpu"
+   },
+   {
+    "code": "C2",
+    "key": "C2",
+    "definition": "sabit, ajana göre farklı (a0=support, a1=pursuit)",
+    "role_mode_json": "fixed_distinct",
+    "role_scale_json": 1.0,
+    "model": "FACMAC+OM+R",
+    "file": "docs/evals/role_experiment/C_fixed_distinct_2000ep.json",
+    "n": 2000,
+    "win_rate": 0.8535,
+    "win_ci95_wilson": [
+     0.837325,
+     0.86832
+    ],
+    "W": 1707,
+    "D": 279,
+    "L": 14,
+    "kill_per_ep": 1.808,
+    "asymmetry": 0.437,
+    "asymmetry_ci95_bootstrap": [
+     0.3705,
+     0.506
+    ],
+    "kill_share": {
+     "agent0": 0.379148,
+     "agent1": 0.620852,
+     "kills_agent0": 1371,
+     "kills_agent1": 2245
+    },
+    "preregistration": "T2.9",
+    "git_commit": "53d7a52",
+    "git_dirty": false,
+    "device": "cpu"
+   },
+   {
+    "code": "C3",
+    "key": "C3",
+    "definition": "sabit, iki ajana aynı (pursuit)",
+    "role_mode_json": "fixed_identical",
+    "role_scale_json": 1.0,
+    "model": "FACMAC+OM+R",
+    "file": "docs/evals/role_experiment/C_fixed_identical_2000ep.json",
+    "n": 2000,
+    "win_rate": 0.869,
+    "win_ci95_wilson": [
+     0.853503,
+     0.883083
+    ],
+    "W": 1738,
+    "D": 252,
+    "L": 10,
+    "kill_per_ep": 1.8295,
+    "asymmetry": 0.0515,
+    "asymmetry_ci95_bootstrap": [
+     0.0035,
+     0.121
+    ],
+    "kill_share": {
+     "agent0": 0.485925,
+     "agent1": 0.514075,
+     "kills_agent0": 1778,
+     "kills_agent1": 1881
+    },
+    "preregistration": "T2.9",
+    "git_commit": "53d7a52",
+    "git_dirty": false,
+    "device": "cpu"
+   },
+   {
+    "code": "C4",
+    "key": "C4",
+    "definition": "atayıcı çıktısı ajanlar arasında takas",
+    "role_mode_json": "shuffled",
+    "role_scale_json": 1.0,
+    "model": "FACMAC+OM+R",
+    "file": "docs/evals/role_experiment/C_shuffled_2000ep.json",
+    "n": 2000,
+    "win_rate": 0.854,
+    "win_ci95_wilson": [
+     0.837846,
+     0.868797
+    ],
+    "W": 1708,
+    "D": 277,
+    "L": 15,
+    "kill_per_ep": 1.797,
+    "asymmetry": 0.126,
+    "asymmetry_ci95_bootstrap": [
+     0.057,
+     0.195
+    ],
+    "kill_share": {
+     "agent0": 0.535058,
+     "agent1": 0.464942,
+     "kills_agent0": 1923,
+     "kills_agent1": 1671
+    },
+    "preregistration": "T2.9",
+    "git_commit": "53d7a52",
+    "git_dirty": false,
+    "device": "cpu"
+   },
+   {
+    "code": "C5",
+    "key": "C5",
+    "definition": "uniform [0.25]*4, iki ajana aynı",
+    "role_mode_json": "uniform",
+    "role_scale_json": 1.0,
+    "model": "FACMAC+OM+R",
+    "file": "docs/evals/role_experiment/C5_uniform_2000ep.json",
+    "n": 2000,
+    "win_rate": 0.8645,
+    "win_ci95_wilson": [
+     0.848799,
+     0.878803
+    ],
+    "W": 1729,
+    "D": 258,
+    "L": 13,
+    "kill_per_ep": 1.816,
+    "asymmetry": 0.055,
+    "asymmetry_ci95_bootstrap": [
+     0.0035,
+     0.1245
+    ],
+    "kill_share": {
+     "agent0": 0.484857,
+     "agent1": 0.515143,
+     "kills_agent0": 1761,
+     "kills_agent1": 1871
+    },
+    "preregistration": "T2.10",
+    "git_commit": "a94b944",
+    "git_dirty": false,
+    "device": "cpu"
+   },
+   {
+    "code": "C6",
+    "key": "C6@0.5",
+    "definition": "sabit, iki ajana aynı (pursuit) × ε (ε=0.5)",
+    "role_mode_json": "fixed_identical",
+    "role_scale_json": 0.5,
+    "model": "FACMAC+OM+R",
+    "file": "docs/evals/role_experiment/C6_scaled_eps0.5_2000ep.json",
+    "n": 2000,
+    "win_rate": 0.8675,
+    "win_ci95_wilson": [
+     0.851934,
+     0.881657
+    ],
+    "W": 1735,
+    "D": 255,
+    "L": 10,
+    "kill_per_ep": 1.8255,
+    "asymmetry": 0.0615,
+    "asymmetry_ci95_bootstrap": [
+     0.005,
+     0.131512
+    ],
+    "kill_share": {
+     "agent0": 0.483155,
+     "agent1": 0.516845,
+     "kills_agent0": 1764,
+     "kills_agent1": 1887
+    },
+    "preregistration": "T2.10",
+    "git_commit": "a94b944",
+    "git_dirty": false,
+    "device": "cpu"
+   },
+   {
+    "code": "C6",
+    "key": "C6@0.1",
+    "definition": "sabit, iki ajana aynı (pursuit) × ε (ε=0.1)",
+    "role_mode_json": "fixed_identical",
+    "role_scale_json": 0.1,
+    "model": "FACMAC+OM+R",
+    "file": "docs/evals/role_experiment/C6_scaled_eps0.1_2000ep.json",
+    "n": 2000,
+    "win_rate": 0.842,
+    "win_ci95_wilson": [
+     0.825361,
+     0.857328
+    ],
+    "W": 1684,
+    "D": 298,
+    "L": 18,
+    "kill_per_ep": 1.786,
+    "asymmetry": 0.105,
+    "asymmetry_ci95_bootstrap": [
+     0.0365,
+     0.1725
+    ],
+    "kill_share": {
+     "agent0": 0.470605,
+     "agent1": 0.529395,
+     "kills_agent0": 1681,
+     "kills_agent1": 1891
+    },
+    "preregistration": "T2.10",
+    "git_commit": "a94b944",
+    "git_dirty": false,
+    "device": "cpu"
+   },
+   {
+    "code": "C6",
+    "key": "C6@0.01",
+    "definition": "sabit, iki ajana aynı (pursuit) × ε (ε=0.01)",
+    "role_mode_json": "fixed_identical",
+    "role_scale_json": 0.01,
+    "model": "FACMAC+OM+R",
+    "file": "docs/evals/role_experiment/C6_scaled_eps0.01_2000ep.json",
+    "n": 2000,
+    "win_rate": 0.8305,
+    "win_ci95_wilson": [
+     0.813426,
+     0.846306
+    ],
+    "W": 1661,
+    "D": 324,
+    "L": 15,
+    "kill_per_ep": 1.7735,
+    "asymmetry": 0.0215,
+    "asymmetry_ci95_bootstrap": [
+     0.0015,
+     0.091
+    ],
+    "kill_share": {
+     "agent0": 0.493939,
+     "agent1": 0.506061,
+     "kills_agent0": 1752,
+     "kills_agent1": 1795
+    },
+    "preregistration": "T2.10",
+    "git_commit": "a94b944",
+    "git_dirty": false,
+    "device": "cpu"
+   }
+  ],
+  "mappo_rows": [
+   {
+    "code": "C0",
+    "key": "C0",
+    "definition": "atayıcı çıktısı (one-hot)",
+    "role_mode_json": "learned",
+    "role_scale_json": 1.0,
+    "model": "MAPPO+GAT+OM+Role",
+    "file": "docs/evals/v1.0/03_mappo_gat_om_role_2000ep.json",
+    "n": 2000,
+    "win_rate": 0.714,
+    "win_ci95_wilson": [
+     0.6938,
+     0.73338
+    ],
+    "W": 1428,
+    "D": 531,
+    "L": 41,
+    "kill_per_ep": 1.56,
+    "asymmetry": 0.023,
+    "asymmetry_ci95_bootstrap": [
+     0.0015,
+     0.083
+    ],
+    "kill_share": {
+     "agent0": 0.492628,
+     "agent1": 0.507372,
+     "kills_agent0": 1537,
+     "kills_agent1": 1583
+    },
+    "preregistration": "T2.9",
+    "git_commit": "3b70591",
+    "git_dirty": false,
+    "device": "cpu"
+   },
+   {
+    "code": "C1",
+    "key": "C1",
+    "definition": "sıfır vektör",
+    "role_mode_json": "zeroed",
+    "role_scale_json": 1.0,
+    "model": "MAPPO+GAT+OM+Role",
+    "file": "docs/evals/v1.0/09_structural_role_zeroed_mappo_2000ep.json",
+    "n": 2000,
+    "win_rate": 0.7305,
+    "win_ci95_wilson": [
+     0.710626,
+     0.74949
+    ],
+    "W": 1461,
+    "D": 500,
+    "L": 39,
+    "kill_per_ep": 1.5725,
+    "asymmetry": 0.0635,
+    "asymmetry_ci95_bootstrap": [
+     0.008,
+     0.1245
+    ],
+    "kill_share": {
+     "agent0": 0.479809,
+     "agent1": 0.520191,
+     "kills_agent0": 1509,
+     "kills_agent1": 1636
+    },
+    "preregistration": "T2.9",
+    "git_commit": "3b70591",
+    "git_dirty": false,
+    "device": "cpu"
+   }
+  ],
+  "contrasts": {
+   "C0 → C1": {
+    "win_rate_a": 0.8605,
+    "win_rate_b": 0.838,
+    "delta_win": -0.0225,
+    "delta_win_ci95_paired_bootstrap": [
+     -0.0405,
+     -0.005
+    ],
+    "matched_table": {
+     "b11": 1537,
+     "b10": 184,
+     "b01": 139,
+     "b00": 140
+    },
+    "outcome_flips": 323,
+    "mcnemar_chi2": 5.9938,
+    "p_raw": 0.01435617786645953,
+    "delta_asymmetry": -0.249,
+    "delta_asymmetry_ci95_paired_bootstrap": [
+     -0.332,
+     -0.1645
+    ]
+   },
+   "C0 → C2": {
+    "win_rate_a": 0.8605,
+    "win_rate_b": 0.8535,
+    "delta_win": -0.007,
+    "delta_win_ci95_paired_bootstrap": [
+     -0.023,
+     0.009
+    ],
+    "matched_table": {
+     "b11": 1577,
+     "b10": 144,
+     "b01": 130,
+     "b00": 149
+    },
+    "outcome_flips": 274,
+    "mcnemar_chi2": 0.6168,
+    "p_raw": 0.4322432757255163,
+    "delta_asymmetry": 0.0985,
+    "delta_asymmetry_ci95_paired_bootstrap": [
+     0.024,
+     0.173
+    ]
+   },
+   "C0 → C3": {
+    "win_rate_a": 0.8605,
+    "win_rate_b": 0.869,
+    "delta_win": 0.0085,
+    "delta_win_ci95_paired_bootstrap": [
+     -0.008,
+     0.025
+    ],
+    "matched_table": {
+     "b11": 1589,
+     "b10": 132,
+     "b01": 149,
+     "b00": 130
+    },
+    "outcome_flips": 281,
+    "mcnemar_chi2": 0.911,
+    "p_raw": 0.3398407394232733,
+    "delta_asymmetry": -0.287,
+    "delta_asymmetry_ci95_paired_bootstrap": [
+     -0.360513,
+     -0.205
+    ]
+   },
+   "C0 → C4": {
+    "win_rate_a": 0.8605,
+    "win_rate_b": 0.854,
+    "delta_win": -0.0065,
+    "delta_win_ci95_paired_bootstrap": [
+     -0.023,
+     0.0095
+    ],
+    "matched_table": {
+     "b11": 1574,
+     "b10": 147,
+     "b01": 134,
+     "b00": 145
+    },
+    "outcome_flips": 281,
+    "mcnemar_chi2": 0.5125,
+    "p_raw": 0.4740778096902406,
+    "delta_asymmetry": -0.2125,
+    "delta_asymmetry_ci95_paired_bootstrap": [
+     -0.3165,
+     -0.1085
+    ]
+   },
+   "C0 → C5": {
+    "win_rate_a": 0.8605,
+    "win_rate_b": 0.8645,
+    "delta_win": 0.004,
+    "delta_win_ci95_paired_bootstrap": [
+     -0.0125,
+     0.021
+    ],
+    "matched_table": {
+     "b11": 1584,
+     "b10": 137,
+     "b01": 145,
+     "b00": 134
+    },
+    "outcome_flips": 282,
+    "mcnemar_chi2": 0.1738,
+    "p_raw": 0.6767925648835518,
+    "delta_asymmetry": -0.2835,
+    "delta_asymmetry_ci95_paired_bootstrap": [
+     -0.356513,
+     -0.2035
+    ]
+   },
+   "C0 → C6@0.5": {
+    "win_rate_a": 0.8605,
+    "win_rate_b": 0.8675,
+    "delta_win": 0.007,
+    "delta_win_ci95_paired_bootstrap": [
+     -0.0095,
+     0.024
+    ],
+    "matched_table": {
+     "b11": 1589,
+     "b10": 132,
+     "b01": 146,
+     "b00": 133
+    },
+    "outcome_flips": 278,
+    "mcnemar_chi2": 0.6079,
+    "p_raw": 0.4355744337137902,
+    "delta_asymmetry": -0.277,
+    "delta_asymmetry_ci95_paired_bootstrap": [
+     -0.355,
+     -0.194
+    ]
+   },
+   "C0 → C6@0.1": {
+    "win_rate_a": 0.8605,
+    "win_rate_b": 0.842,
+    "delta_win": -0.0185,
+    "delta_win_ci95_paired_bootstrap": [
+     -0.0355,
+     -0.0015
+    ],
+    "matched_table": {
+     "b11": 1553,
+     "b10": 168,
+     "b01": 131,
+     "b00": 148
+    },
+    "outcome_flips": 299,
+    "mcnemar_chi2": 4.3344,
+    "p_raw": 0.037348521030110174,
+    "delta_asymmetry": -0.2335,
+    "delta_asymmetry_ci95_paired_bootstrap": [
+     -0.317513,
+     -0.1505
+    ]
+   },
+   "C0 → C6@0.01": {
+    "win_rate_a": 0.8605,
+    "win_rate_b": 0.8305,
+    "delta_win": -0.03,
+    "delta_win_ci95_paired_bootstrap": [
+     -0.0475,
+     -0.0125
+    ],
+    "matched_table": {
+     "b11": 1529,
+     "b10": 192,
+     "b01": 132,
+     "b00": 147
+    },
+    "outcome_flips": 324,
+    "mcnemar_chi2": 10.7438,
+    "p_raw": 0.0010462772920053409,
+    "delta_asymmetry": -0.317,
+    "delta_asymmetry_ci95_paired_bootstrap": [
+     -0.3775,
+     -0.2265
+    ]
+   },
+   "C3 → C5": {
+    "win_rate_a": 0.869,
+    "win_rate_b": 0.8645,
+    "delta_win": -0.0045,
+    "delta_win_ci95_paired_bootstrap": [
+     -0.021,
+     0.0125
+    ],
+    "matched_table": {
+     "b11": 1588,
+     "b10": 150,
+     "b01": 141,
+     "b00": 121
+    },
+    "outcome_flips": 291,
+    "mcnemar_chi2": 0.2199,
+    "p_raw": 0.6390922910425467,
+    "delta_asymmetry": 0.0035,
+    "delta_asymmetry_ci95_paired_bootstrap": [
+     -0.075,
+     0.0805
+    ]
+   },
+   "C1 → C5": {
+    "win_rate_a": 0.838,
+    "win_rate_b": 0.8645,
+    "delta_win": 0.0265,
+    "delta_win_ci95_paired_bootstrap": [
+     0.009,
+     0.044
+    ],
+    "matched_table": {
+     "b11": 1545,
+     "b10": 131,
+     "b01": 184,
+     "b00": 140
+    },
+    "outcome_flips": 315,
+    "mcnemar_chi2": 8.5841,
+    "p_raw": 0.0033910592918003114,
+    "delta_asymmetry": -0.0345,
+    "delta_asymmetry_ci95_paired_bootstrap": [
+     -0.108513,
+     0.0475
+    ]
+   },
+   "C5 → C6@0.5 (L2-eşleşmiş)": {
+    "win_rate_a": 0.8645,
+    "win_rate_b": 0.8675,
+    "delta_win": 0.003,
+    "delta_win_ci95_paired_bootstrap": [
+     -0.014,
+     0.02
+    ],
+    "matched_table": {
+     "b11": 1589,
+     "b10": 140,
+     "b01": 146,
+     "b00": 125
+    },
+    "outcome_flips": 286,
+    "mcnemar_chi2": 0.0874,
+    "p_raw": 0.7674926513236701,
+    "delta_asymmetry": 0.0065,
+    "delta_asymmetry_ci95_paired_bootstrap": [
+     -0.072,
+     0.0825
+    ]
+   },
+   "MAPPO C0 → C1": {
+    "win_rate_a": 0.714,
+    "win_rate_b": 0.7305,
+    "delta_win": 0.0165,
+    "delta_win_ci95_paired_bootstrap": [
+     0.0,
+     0.032512
+    ],
+    "matched_table": {
+     "b11": 1306,
+     "b10": 122,
+     "b01": 155,
+     "b00": 417
+    },
+    "outcome_flips": 277,
+    "mcnemar_chi2": 3.6968,
+    "p_raw": 0.05451853379017903,
+    "delta_asymmetry": 0.0405,
+    "delta_asymmetry_ci95_paired_bootstrap": [
+     -0.038,
+     0.1025
+    ]
+   }
+  },
+  "paper_six_conditions_map": {
+   "learned": "C0",
+   "zeroed": "C1",
+   "fixed distinct": "C2",
+   "fixed identical": "C3",
+   "permuted": "C4",
+   "magnitude-scaled": "C6 (ε=0.5, 0.1, 0.01)"
+  },
+  "not_in_paper_six": [
+   "C5 (uniform) — metinde ayrıca anılıyor"
+  ],
+  "preregistration_documents": {
+   "T2.9": "T2.9 için ayrı bir ön-kayıt belgesi yok; C2/C3 tasarım seçimleri koşulardan önce commit 53d7a52 mesajında sabitlenmiştir (sonuç tahmini içermez).",
+   "T2.10": "docs/PREREGISTRATION_T2.10.md (commit a94b944)"
+  }
+ },
+ "head_to_head": {
+  "n_total": 4000,
+  "FACMAC+OM+R": {
+   "checkpoint_sha256": "6a826b2efe01998e169b715140bf4accc9e46c8ae1d363eea20d1cb582921f84",
+   "win_rate_two_sided": 0.7155,
+   "win_rate_as_blue": 0.733,
+   "win_rate_as_red": 0.698,
+   "side_effect_pp": 3.5
+  },
+  "MAPPO+GAT": {
+   "checkpoint_sha256": "e5d11384dd3e9c1ca71333ad7f719825c1ba725136d7c3dee06e9e1e7ffd1536",
+   "win_rate_two_sided": 0.1495,
+   "win_rate_as_blue": 0.1655,
+   "win_rate_as_red": 0.1335,
+   "side_effect_pp": 3.2
+  },
+  "draw_rate_two_sided": 0.135,
+  "07a": {
+   "W": 1466,
+   "D": 267,
+   "L": 267,
+   "blue": "facmac_omr",
+   "red": "checkpoint:mappo_gat"
+  },
+  "07b": {
+   "W": 331,
+   "D": 273,
+   "L": 1396,
+   "blue": "mappo_gat",
+   "red": "checkpoint:facmac_omr"
+  },
+  "device": "cpu",
+  "source": [
+   "docs/evals/v1.0/07a_facmac_blue_vs_mappo_2000ep.json",
+   "docs/evals/v1.0/07b_mappo_blue_vs_facmac_2000ep.json"
+  ]
+ },
+ "cpu_vs_cuda": {
+  "01": {
+   "name": "MAPPO baseline",
+   "win_cpu": 0.478,
+   "win_cuda": 0.4835,
+   "delta_cuda_minus_cpu": 0.0055,
+   "delta_ci95_paired_bootstrap": [
+    -0.0115,
+    0.0225
+   ],
+   "mcnemar_p": 0.5630515150259174,
+   "outcome_flips": 299,
+   "cuda_git_commit": "53d7a52",
+   "cuda_git_dirty": false,
+   "source": [
+    "docs/evals/v1.0/01_mappo_baseline_2000ep.json",
+    "docs/evals/robustness_cuda/01_mappo_baseline_2000ep.json"
+   ]
+  },
+  "02": {
+   "name": "MAPPO+GAT",
+   "win_cpu": 0.6875,
+   "win_cuda": 0.695,
+   "delta_cuda_minus_cpu": 0.0075,
+   "delta_ci95_paired_bootstrap": [
+    -0.0075,
+    0.0225
+   ],
+   "mcnemar_p": 0.35905330529352414,
+   "outcome_flips": 233,
+   "cuda_git_commit": "53d7a52",
+   "cuda_git_dirty": false,
+   "source": [
+    "docs/evals/v1.0/02_mappo_gat_2000ep.json",
+    "docs/evals/robustness_cuda/02_mappo_gat_2000ep.json"
+   ]
+  },
+  "03": {
+   "name": "MAPPO+GAT+OM+Role",
+   "win_cpu": 0.714,
+   "win_cuda": 0.7215,
+   "delta_cuda_minus_cpu": 0.0075,
+   "delta_ci95_paired_bootstrap": [
+    -0.007,
+    0.022
+   ],
+   "mcnemar_p": 0.3396828557638896,
+   "outcome_flips": 215,
+   "cuda_git_commit": "53d7a52",
+   "cuda_git_dirty": false,
+   "source": [
+    "docs/evals/v1.0/03_mappo_gat_om_role_2000ep.json",
+    "docs/evals/robustness_cuda/03_mappo_gat_om_role_2000ep.json"
+   ]
+  },
+  "04": {
+   "name": "QMIX",
+   "win_cpu": 0.6405,
+   "win_cuda": 0.6405,
+   "delta_cuda_minus_cpu": 0.0,
+   "delta_ci95_paired_bootstrap": [
+    -0.0015,
+    0.0015
+   ],
+   "mcnemar_p": 1.0,
+   "outcome_flips": 2,
+   "cuda_git_commit": "53d7a52",
+   "cuda_git_dirty": false,
+   "source": [
+    "docs/evals/v1.0/04_qmix_ep2000_2000ep.json",
+    "docs/evals/robustness_cuda/04_qmix_ep2000_2000ep.json"
+   ]
+  },
+  "05": {
+   "name": "Pure FACMAC",
+   "win_cpu": 0.8375,
+   "win_cuda": 0.8285,
+   "delta_cuda_minus_cpu": -0.009,
+   "delta_ci95_paired_bootstrap": [
+    -0.0225,
+    0.005
+   ],
+   "mcnemar_p": 0.2293319423916475,
+   "outcome_flips": 200,
+   "cuda_git_commit": "8850f25",
+   "cuda_git_dirty": false,
+   "source": [
+    "docs/evals/v1.0/05_facmac_base_2000ep.json",
+    "docs/evals/robustness_cuda/05_facmac_base_2000ep.json"
+   ]
+  },
+  "06": {
+   "name": "FACMAC+OM+R",
+   "win_cpu": 0.8605,
+   "win_cuda": 0.8485,
+   "delta_cuda_minus_cpu": -0.012,
+   "delta_ci95_paired_bootstrap": [
+    -0.0275,
+    0.0035
+   ],
+   "mcnemar_p": 0.15057597282484683,
+   "outcome_flips": 256,
+   "cuda_git_commit": "8850f25",
+   "cuda_git_dirty": false,
+   "source": [
+    "docs/evals/v1.0/06_facmac_omr_2000ep.json",
+    "docs/evals/robustness_cuda/06_facmac_omr_2000ep.json"
+   ]
+  }
+ },
+ "mechanism": {
+  "kill_share_learned_06": {
+   "agent0": 0.406207,
+   "agent1": 0.593793,
+   "kills_agent0": 1466,
+   "kills_agent1": 2143,
+   "source": "docs/evals/v1.0/06_facmac_omr_2000ep.json"
+  },
+  "kill_share_zeroed_08": {
+   "agent0": 0.474852,
+   "agent1": 0.525148,
+   "kills_agent0": 1690,
+   "kills_agent1": 1869,
+   "source": "docs/evals/v1.0/08_structural_role_zeroed_facmac_2000ep.json"
+  },
+  "oob_rate": {
+   "01": {
+    "name": "MAPPO baseline",
+    "oob_rate": 0.0
+   },
+   "02": {
+    "name": "MAPPO+GAT",
+    "oob_rate": 0.0
+   },
+   "03": {
+    "name": "MAPPO+GAT+OM+Role",
+    "oob_rate": 0.0
+   },
+   "04": {
+    "name": "QMIX",
+    "oob_rate": 0.0
+   },
+   "05": {
+    "name": "Pure FACMAC",
+    "oob_rate": 0.0
+   },
+   "06": {
+    "name": "FACMAC+OM+R",
+    "oob_rate": 0.0
+   }
+  },
+  "role_predictive_power": {
+   "status": "kanonik JSON'larda yok",
+   "note": "Pursuit/defensive öngörü gücü değerleri yalnızca PAPER_DELTA_v0.1.md §A2c metninde geçiyor; kaynak enstrümanlı koşular logs/role_attr_06_normal.json ve logs/role_attr_08_ablate.json (git-ignored). Tanım belgelenmediği için bu script sayı üretmez."
+  }
+ },
+ "provenance": {
+  "files_sha256": {
+   "docs/evals/robustness_cuda/01_mappo_baseline_2000ep.json": "c7d8c1560b13b5c33f6c5b65ec87ac78b8b63ede8b7a80917ce5d5402c009ef2",
+   "docs/evals/robustness_cuda/02_mappo_gat_2000ep.json": "b2d1d9c8c44fb2629d52310061a707acad7536f6f113bf2c6dc2f41918d60e5b",
+   "docs/evals/robustness_cuda/03_mappo_gat_om_role_2000ep.json": "6a85a04cc163d1f1a9eec1319023ec2a31d6f7bb47bebd027e278e2b765110cd",
+   "docs/evals/robustness_cuda/04_qmix_ep2000_2000ep.json": "6e0a69d6b4bf7f137d6f9095afd865264fe845f73f9cac82aec95d9fbea71d16",
+   "docs/evals/robustness_cuda/05_facmac_base_2000ep.json": "3a88ec4fd5914227d240f18366d8166293c34c9ba1c0ffd33239743c3a8e0452",
+   "docs/evals/robustness_cuda/06_facmac_omr_2000ep.json": "38a29be630adbd05d926b33ae78350067cf41233c70540e3229fa00cc510f23e",
+   "docs/evals/role_experiment/C5_uniform_2000ep.json": "8158f8b483686f3df4ffda456b72fc25d2332f1c33fbe01f1f502a30bdd2e926",
+   "docs/evals/role_experiment/C6_scaled_eps0.01_2000ep.json": "528018967fd7750ae4751cba5d58178f963293154f1f1dc381218036a98248a8",
+   "docs/evals/role_experiment/C6_scaled_eps0.1_2000ep.json": "a1559ebad6df240988fdec761b29f8a54570c207b3b11f83a346a6b193d14242",
+   "docs/evals/role_experiment/C6_scaled_eps0.5_2000ep.json": "ac944abd9f123c736a38f0d06801d3c7a45a718c74165b63f7c07cd76fa41ece",
+   "docs/evals/role_experiment/C_fixed_distinct_2000ep.json": "eb739d3e48cf48d78db63e81693eefccb708325c55f7bf76b9f1878d41b74fd7",
+   "docs/evals/role_experiment/C_fixed_identical_2000ep.json": "73a83ddf2089992fa2c80ef170b48f889d416feb61fefec8b2685e0239be05a0",
+   "docs/evals/role_experiment/C_learned_2000ep.json": "1ac62f953efd8548d8de8515dc8fe663b3c570e5349dc75c1dcb25d2059b2f97",
+   "docs/evals/role_experiment/C_shuffled_2000ep.json": "af444e55f0317a110eeb9da180148e62b144213acefcfab5f8fe8a253b5fd831",
+   "docs/evals/role_experiment/C_zeroed_2000ep.json": "6878b2050808c7d06ac3ec4eb777acabd42b04a831d1a0ae6b45e05b9a36502a",
+   "docs/evals/v1.0/01_mappo_baseline_2000ep.json": "09d3a975d60d6d819bbb279b34fecdaf61ceef6f9f775679f181727fa3e399d5",
+   "docs/evals/v1.0/02_mappo_gat_2000ep.json": "045855fe235a4b566e6e4545022b03da8b1298bc275b03b1590a27079764b16e",
+   "docs/evals/v1.0/03_mappo_gat_om_role_2000ep.json": "cedd04c6e67d8496549e1e455bbe451848d2090ecc69cd246b596fc4d8e60a09",
+   "docs/evals/v1.0/04_qmix_ep2000_2000ep.json": "edb9437103f827f50597fd2bc21af3fcbe2e09c74222758ee70b76720bdb4eb3",
+   "docs/evals/v1.0/05_facmac_base_2000ep.json": "1d867f58fd894328c0fd743cd62e5f8034657f2110fc18fc272ae5cee147188b",
+   "docs/evals/v1.0/06_facmac_omr_2000ep.json": "4389da8fbdee844f4aeb8dd85604eff6e98ba805ed918d92da9a77068ed16039",
+   "docs/evals/v1.0/07a_facmac_blue_vs_mappo_2000ep.json": "9bb83276020e87cf23921bc913e8b239cdf055122b6a0ec7ef2ad66e88543f3c",
+   "docs/evals/v1.0/07b_mappo_blue_vs_facmac_2000ep.json": "cabc848cdbb5d6852ff32b375841c387511669f864f5352dbc014c30abc85a9c",
+   "docs/evals/v1.0/08_structural_role_zeroed_facmac_2000ep.json": "03c94a12c14b27cb57c4e93c4701e5f1d88ddfd01feb46ca13910a69cbe7132e",
+   "docs/evals/v1.0/09_structural_role_zeroed_mappo_2000ep.json": "f4b78b1fea253f11e7dd0064ecd00f91baae5ea7e426e389d93f73a30bcfadfe"
+  }
+ }
+}
