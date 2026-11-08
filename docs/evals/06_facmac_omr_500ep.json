@@ -1,0 +1,51 @@
+{
+  "checkpoint": "checkpoints/facmac_omr_ep27000.pt",
+  "n_episodes": 500,
+  "seed": 42,
+  "deterministic": true,
+  "win_rate": 0.842,
+  "win_ci95_lo": 0.8074,
+  "win_ci95_hi": 0.8713,
+  "kill_per_ep": 1.78,
+  "second_kill_rate": 0.842,
+  "draw_rate": 0.152,
+  "loss_rate": 0.006,
+  "mean_ep_len": 308.4,
+  "wins": 421,
+  "losses": 3,
+  "draws": 76,
+  "intent_mean": [
+    0.1738000065088272,
+    0.4196000099182129,
+    0.4066999852657318,
+    0.17100000381469727,
+    0.43689998984336853,
+    0.3921000063419342
+  ],
+  "role0_mean": [
+    0.24729999899864197,
+    0.1656000018119812,
+    0.1088000014424324,
+    0.478300005197525
+  ],
+  "role1_mean": [
+    0.04960000142455101,
+    0.4311999976634979,
+    0.2865999937057495,
+    0.23250000178813934
+  ],
+  "runtime": {
+    "device": "cuda",
+    "torch_version": "unknown",
+    "blas_backend": "unknown",
+    "num_threads": "unknown",
+    "cpu_model": "AMD64 Family 25 Model 33 Stepping 0, AuthenticAMD",
+    "os": "Windows-10-10.0.19045-SP0",
+    "python_version": "unknown",
+    "gpu_model": "NVIDIA GeForce RTX 3070 Ti",
+    "cuda_version": "unknown",
+    "reconstructed": true,
+    "thread_pinned": false,
+    "reconstruction_basis": "reconstructed from device-replication experiment; see docs/EVAL_PROTOCOL_AUDIT.md section 2"
+  }
+}

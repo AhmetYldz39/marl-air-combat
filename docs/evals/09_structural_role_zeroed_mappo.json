@@ -1,0 +1,94 @@
+{
+  "normal": {
+    "condition": "normal",
+    "model_type": "mappo",
+    "n_episodes": 200,
+    "win_rate": 0.69,
+    "draw_rate": 0.28,
+    "agents": {
+      "blue_0": {
+        "kill_mean": 0.79,
+        "kill_std": 0.7784,
+        "eng_mean": 6782.1,
+        "wez_mean": 29.09,
+        "fire_mean": 222.04
+      },
+      "blue_1": {
+        "kill_mean": 0.73,
+        "kill_std": 0.7856,
+        "eng_mean": 6852.0,
+        "wez_mean": 25.25,
+        "fire_mean": 221.26
+      }
+    },
+    "kill_imbalance": 0.06,
+    "eng_imbalance": 70.0,
+    "wez_imbalance": 3.84,
+    "kill_corr": -0.5179,
+    "role0_mean": [
+      0.2727000117301941,
+      0.4909000098705292,
+      0.0,
+      0.23639999330043793
+    ],
+    "role1_mean": [
+      0.0,
+      0.9818000197410583,
+      0.0,
+      0.018200000748038292
+    ]
+  },
+  "zeroed": {
+    "condition": "zeroed",
+    "model_type": "mappo",
+    "n_episodes": 200,
+    "win_rate": 0.72,
+    "draw_rate": 0.26,
+    "agents": {
+      "blue_0": {
+        "kill_mean": 0.76,
+        "kill_std": 0.7761,
+        "eng_mean": 6766.8,
+        "wez_mean": 25.82,
+        "fire_mean": 222.03
+      },
+      "blue_1": {
+        "kill_mean": 0.79,
+        "kill_std": 0.8037,
+        "eng_mean": 6838.8,
+        "wez_mean": 23.0,
+        "fire_mean": 225.88
+      }
+    },
+    "kill_imbalance": 0.03,
+    "eng_imbalance": 72.0,
+    "wez_imbalance": 2.81,
+    "kill_corr": -0.5297,
+    "role0_mean": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "role1_mean": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "runtime": {
+    "device": "cuda",
+    "torch_version": "unknown",
+    "blas_backend": "unknown",
+    "num_threads": "unknown",
+    "cpu_model": "AMD64 Family 25 Model 33 Stepping 0, AuthenticAMD",
+    "os": "Windows-10-10.0.19045-SP0",
+    "python_version": "unknown",
+    "gpu_model": "NVIDIA GeForce RTX 3070 Ti",
+    "cuda_version": "unknown",
+    "reconstructed": true,
+    "thread_pinned": false,
+    "reconstruction_basis": "reconstructed from device-replication experiment; see docs/EVAL_PROTOCOL_AUDIT.md section 2"
+  }
+}

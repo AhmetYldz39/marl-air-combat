@@ -1,0 +1,94 @@
+{
+  "normal": {
+    "condition": "normal",
+    "model_type": "facmac",
+    "n_episodes": 200,
+    "win_rate": 0.815,
+    "draw_rate": 0.18,
+    "agents": {
+      "blue_0": {
+        "kill_mean": 0.64,
+        "kill_std": 0.7877,
+        "eng_mean": 6597.4,
+        "wez_mean": 11.79,
+        "fire_mean": 4.78
+      },
+      "blue_1": {
+        "kill_mean": 1.11,
+        "kill_std": 0.8532,
+        "eng_mean": 6665.4,
+        "wez_mean": 17.35,
+        "fire_mean": 6.78
+      }
+    },
+    "kill_imbalance": 0.47,
+    "eng_imbalance": 68.1,
+    "wez_imbalance": 5.57,
+    "kill_corr": -0.767,
+    "role0_mean": [
+      0.0,
+      0.2581000030040741,
+      0.0,
+      0.7419000267982483
+    ],
+    "role1_mean": [
+      0.0,
+      0.7419000267982483,
+      0.0,
+      0.2581000030040741
+    ]
+  },
+  "zeroed": {
+    "condition": "zeroed",
+    "model_type": "facmac",
+    "n_episodes": 200,
+    "win_rate": 0.835,
+    "draw_rate": 0.15,
+    "agents": {
+      "blue_0": {
+        "kill_mean": 0.865,
+        "kill_std": 0.8166,
+        "eng_mean": 6410.1,
+        "wez_mean": 14.8,
+        "fire_mean": 6.25
+      },
+      "blue_1": {
+        "kill_mean": 0.925,
+        "kill_std": 0.8242,
+        "eng_mean": 6476.8,
+        "wez_mean": 17.61,
+        "fire_mean": 8.9
+      }
+    },
+    "kill_imbalance": 0.06,
+    "eng_imbalance": 66.6,
+    "wez_imbalance": 2.81,
+    "kill_corr": -0.8099,
+    "role0_mean": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "role1_mean": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "runtime": {
+    "device": "cuda",
+    "torch_version": "unknown",
+    "blas_backend": "unknown",
+    "num_threads": "unknown",
+    "cpu_model": "AMD64 Family 25 Model 33 Stepping 0, AuthenticAMD",
+    "os": "Windows-10-10.0.19045-SP0",
+    "python_version": "unknown",
+    "gpu_model": "NVIDIA GeForce RTX 3070 Ti",
+    "cuda_version": "unknown",
+    "reconstructed": true,
+    "thread_pinned": false,
+    "reconstruction_basis": "reconstructed from device-replication experiment; see docs/EVAL_PROTOCOL_AUDIT.md section 2"
+  }
+}

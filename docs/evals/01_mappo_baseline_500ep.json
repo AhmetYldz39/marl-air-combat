@@ -1,0 +1,4033 @@
+{
+  "n_episodes": 500,
+  "deterministic": true,
+  "win_rate": 0.464,
+  "loss_rate": 0.016,
+  "draw_rate": 0.52,
+  "kill_per_ep": 1.056,
+  "mean_reward": -1381.750481190743,
+  "mean_ep_len": 644.792,
+  "survival_rate": 0.967,
+  "oob_rate": 0.0,
+  "wins": 232,
+  "losses": 8,
+  "draws": 260,
+  "kill_std": 0.9321287464722885,
+  "reward_std": 1410.8862668759502,
+  "episodes": [
+    {
+      "episode": 1,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -2169.756,
+      "steps": 785,
+      "survived": 2
+    },
+    {
+      "episode": 2,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -681.278,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 3,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3855.836,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 4,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -4052.949,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 5,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 144.553,
+      "steps": 241,
+      "survived": 2
+    },
+    {
+      "episode": 6,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -4500.004,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 7,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -965.663,
+      "steps": 464,
+      "survived": 2
+    },
+    {
+      "episode": 8,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -4457.73,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 9,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3991.833,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 10,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2560.635,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 11,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 265.377,
+      "steps": 109,
+      "survived": 2
+    },
+    {
+      "episode": 12,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -4132.363,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 13,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -756.136,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 14,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3992.739,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 15,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2956.355,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 16,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -4272.495,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 17,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2415.103,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 18,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2694.613,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 19,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1239.882,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 20,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -725.686,
+      "steps": 208,
+      "survived": 2
+    },
+    {
+      "episode": 21,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -4376.937,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 22,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -1886.195,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 23,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 185.866,
+      "steps": 23,
+      "survived": 2
+    },
+    {
+      "episode": 24,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 393.607,
+      "steps": 75,
+      "survived": 2
+    },
+    {
+      "episode": 25,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -515.744,
+      "steps": 359,
+      "survived": 2
+    },
+    {
+      "episode": 26,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -4545.728,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 27,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -786.295,
+      "steps": 199,
+      "survived": 2
+    },
+    {
+      "episode": 28,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -602.634,
+      "steps": 230,
+      "survived": 2
+    },
+    {
+      "episode": 29,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 163.924,
+      "steps": 505,
+      "survived": 2
+    },
+    {
+      "episode": 30,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1240.871,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 31,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2143.988,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 32,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1701.354,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 33,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -3320.028,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 34,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 369.626,
+      "steps": 74,
+      "survived": 2
+    },
+    {
+      "episode": 35,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1864.449,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 36,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 233.896,
+      "steps": 111,
+      "survived": 1
+    },
+    {
+      "episode": 37,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -618.616,
+      "steps": 250,
+      "survived": 2
+    },
+    {
+      "episode": 38,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -3623.37,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 39,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3651.323,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 40,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1838.521,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 41,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 321.904,
+      "steps": 45,
+      "survived": 2
+    },
+    {
+      "episode": 42,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1903.61,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 43,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -758.343,
+      "steps": 393,
+      "survived": 2
+    },
+    {
+      "episode": 44,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -446.018,
+      "steps": 441,
+      "survived": 2
+    },
+    {
+      "episode": 45,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1180.805,
+      "steps": 491,
+      "survived": 2
+    },
+    {
+      "episode": 46,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2825.562,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 47,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -664.124,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 48,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -20.691,
+      "steps": 368,
+      "survived": 2
+    },
+    {
+      "episode": 49,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1748.479,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 50,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 16.072,
+      "steps": 122,
+      "survived": 2
+    },
+    {
+      "episode": 51,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -1743.241,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 52,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1123.156,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 53,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 361.024,
+      "steps": 438,
+      "survived": 2
+    },
+    {
+      "episode": 54,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 163.32,
+      "steps": 183,
+      "survived": 2
+    },
+    {
+      "episode": 55,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2835.328,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 56,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2718.221,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 57,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 175.752,
+      "steps": 19,
+      "survived": 2
+    },
+    {
+      "episode": 58,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1356.68,
+      "steps": 626,
+      "survived": 2
+    },
+    {
+      "episode": 59,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1199.236,
+      "steps": 590,
+      "survived": 1
+    },
+    {
+      "episode": 60,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1454.648,
+      "steps": 543,
+      "survived": 2
+    },
+    {
+      "episode": 61,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -4520.878,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 62,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -506.481,
+      "steps": 313,
+      "survived": 2
+    },
+    {
+      "episode": 63,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 9.343,
+      "steps": 100,
+      "survived": 2
+    },
+    {
+      "episode": 64,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3424.281,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 65,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3841.988,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 66,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -688.192,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 67,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -3106.538,
+      "steps": 972,
+      "survived": 2
+    },
+    {
+      "episode": 68,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3170.943,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 69,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -4319.77,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 70,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -849.114,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 71,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -276.134,
+      "steps": 111,
+      "survived": 2
+    },
+    {
+      "episode": 72,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -433.143,
+      "steps": 321,
+      "survived": 2
+    },
+    {
+      "episode": 73,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 32.086,
+      "steps": 133,
+      "survived": 2
+    },
+    {
+      "episode": 74,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1884.165,
+      "steps": 797,
+      "survived": 2
+    },
+    {
+      "episode": 75,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 26.668,
+      "steps": 308,
+      "survived": 2
+    },
+    {
+      "episode": 76,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -66.983,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 77,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 312.922,
+      "steps": 59,
+      "survived": 2
+    },
+    {
+      "episode": 78,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2595.716,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 79,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2718.767,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 80,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3770.708,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 81,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -774.997,
+      "steps": 518,
+      "survived": 2
+    },
+    {
+      "episode": 82,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 141.283,
+      "steps": 143,
+      "survived": 2
+    },
+    {
+      "episode": 83,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -466.246,
+      "steps": 269,
+      "survived": 2
+    },
+    {
+      "episode": 84,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2938.38,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 85,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -61.014,
+      "steps": 99,
+      "survived": 2
+    },
+    {
+      "episode": 86,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 155.418,
+      "steps": 73,
+      "survived": 2
+    },
+    {
+      "episode": 87,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -689.423,
+      "steps": 299,
+      "survived": 2
+    },
+    {
+      "episode": 88,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2680.362,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 89,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 169.918,
+      "steps": 80,
+      "survived": 2
+    },
+    {
+      "episode": 90,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -354.9,
+      "steps": 278,
+      "survived": 2
+    },
+    {
+      "episode": 91,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3768.758,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 92,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3009.865,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 93,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 217.105,
+      "steps": 24,
+      "survived": 2
+    },
+    {
+      "episode": 94,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3081.425,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 95,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -393.129,
+      "steps": 190,
+      "survived": 2
+    },
+    {
+      "episode": 96,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2776.607,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 97,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1922.205,
+      "steps": 660,
+      "survived": 2
+    },
+    {
+      "episode": 98,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -4186.425,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 99,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3489.516,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 100,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -570.854,
+      "steps": 816,
+      "survived": 2
+    },
+    {
+      "episode": 101,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3979.484,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 102,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -701.552,
+      "steps": 291,
+      "survived": 2
+    },
+    {
+      "episode": 103,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2412.424,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 104,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2856.568,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 105,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2263.496,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 106,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 154.011,
+      "steps": 46,
+      "survived": 2
+    },
+    {
+      "episode": 107,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2710.236,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 108,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1867.034,
+      "steps": 624,
+      "survived": 2
+    },
+    {
+      "episode": 109,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1988.747,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 110,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2467.485,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 111,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 123.032,
+      "steps": 250,
+      "survived": 2
+    },
+    {
+      "episode": 112,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1677.575,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 113,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1397.088,
+      "steps": 595,
+      "survived": 2
+    },
+    {
+      "episode": 114,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 209.842,
+      "steps": 31,
+      "survived": 2
+    },
+    {
+      "episode": 115,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 168.407,
+      "steps": 50,
+      "survived": 2
+    },
+    {
+      "episode": 116,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1537.432,
+      "steps": 398,
+      "survived": 2
+    },
+    {
+      "episode": 117,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 151.987,
+      "steps": 86,
+      "survived": 2
+    },
+    {
+      "episode": 118,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -3700.197,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 119,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2902.668,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 120,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1296.752,
+      "steps": 555,
+      "survived": 2
+    },
+    {
+      "episode": 121,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1131.313,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 122,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2378.224,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 123,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -194.458,
+      "steps": 307,
+      "survived": 2
+    },
+    {
+      "episode": 124,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 260.943,
+      "steps": 81,
+      "survived": 2
+    },
+    {
+      "episode": 125,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3353.21,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 126,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 297.784,
+      "steps": 82,
+      "survived": 2
+    },
+    {
+      "episode": 127,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -4023.377,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 128,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -270.567,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 129,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -3174.334,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 130,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -683.86,
+      "steps": 326,
+      "survived": 2
+    },
+    {
+      "episode": 131,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 196.272,
+      "steps": 23,
+      "survived": 2
+    },
+    {
+      "episode": 132,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2992.183,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 133,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3595.786,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 134,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2266.826,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 135,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -2454.05,
+      "steps": 894,
+      "survived": 2
+    },
+    {
+      "episode": 136,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -4009.159,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 137,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 289.001,
+      "steps": 70,
+      "survived": 2
+    },
+    {
+      "episode": 138,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -575.32,
+      "steps": 262,
+      "survived": 2
+    },
+    {
+      "episode": 139,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 546.65,
+      "steps": 184,
+      "survived": 2
+    },
+    {
+      "episode": 140,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 134.729,
+      "steps": 146,
+      "survived": 2
+    },
+    {
+      "episode": 141,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1595.282,
+      "steps": 499,
+      "survived": 2
+    },
+    {
+      "episode": 142,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1943.92,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 143,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 142.919,
+      "steps": 12,
+      "survived": 2
+    },
+    {
+      "episode": 144,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 148.893,
+      "steps": 120,
+      "survived": 2
+    },
+    {
+      "episode": 145,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -20.09,
+      "steps": 615,
+      "survived": 2
+    },
+    {
+      "episode": 146,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 181.471,
+      "steps": 37,
+      "survived": 2
+    },
+    {
+      "episode": 147,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 296.829,
+      "steps": 76,
+      "survived": 2
+    },
+    {
+      "episode": 148,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1047.606,
+      "steps": 316,
+      "survived": 2
+    },
+    {
+      "episode": 149,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -325.637,
+      "steps": 218,
+      "survived": 2
+    },
+    {
+      "episode": 150,
+      "winner": "red",
+      "kills": 0,
+      "reward": -53.545,
+      "steps": 89,
+      "survived": 0
+    },
+    {
+      "episode": 151,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -542.975,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 152,
+      "winner": "red",
+      "kills": 0,
+      "reward": 88.292,
+      "steps": 37,
+      "survived": 0
+    },
+    {
+      "episode": 153,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2932.853,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 154,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -3061.037,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 155,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3217.665,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 156,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 457.413,
+      "steps": 77,
+      "survived": 2
+    },
+    {
+      "episode": 157,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -511.309,
+      "steps": 303,
+      "survived": 2
+    },
+    {
+      "episode": 158,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3572.846,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 159,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -2678.635,
+      "steps": 916,
+      "survived": 2
+    },
+    {
+      "episode": 160,
+      "winner": "red",
+      "kills": 0,
+      "reward": 5.761,
+      "steps": 34,
+      "survived": 0
+    },
+    {
+      "episode": 161,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -823.967,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 162,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 30.096,
+      "steps": 131,
+      "survived": 2
+    },
+    {
+      "episode": 163,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -557.493,
+      "steps": 277,
+      "survived": 2
+    },
+    {
+      "episode": 164,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 45.791,
+      "steps": 159,
+      "survived": 2
+    },
+    {
+      "episode": 165,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 138.285,
+      "steps": 12,
+      "survived": 2
+    },
+    {
+      "episode": 166,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3849.251,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 167,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3281.224,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 168,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 221.067,
+      "steps": 68,
+      "survived": 2
+    },
+    {
+      "episode": 169,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -384.168,
+      "steps": 181,
+      "survived": 2
+    },
+    {
+      "episode": 170,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 380.615,
+      "steps": 45,
+      "survived": 2
+    },
+    {
+      "episode": 171,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1657.271,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 172,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 160.332,
+      "steps": 231,
+      "survived": 2
+    },
+    {
+      "episode": 173,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1923.937,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 174,
+      "winner": "draw",
+      "kills": 0,
+      "reward": 897.898,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 175,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3231.541,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 176,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -1361.373,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 177,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2301.38,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 178,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1157.942,
+      "steps": 412,
+      "survived": 2
+    },
+    {
+      "episode": 179,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1482.02,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 180,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2414.631,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 181,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2824.406,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 182,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -478.966,
+      "steps": 451,
+      "survived": 2
+    },
+    {
+      "episode": 183,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -594.178,
+      "steps": 674,
+      "survived": 2
+    },
+    {
+      "episode": 184,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -224.427,
+      "steps": 135,
+      "survived": 2
+    },
+    {
+      "episode": 185,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -394.675,
+      "steps": 266,
+      "survived": 2
+    },
+    {
+      "episode": 186,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 80.806,
+      "steps": 155,
+      "survived": 2
+    },
+    {
+      "episode": 187,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3297.369,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 188,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -748.577,
+      "steps": 1000,
+      "survived": 1
+    },
+    {
+      "episode": 189,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -1970.704,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 190,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3615.29,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 191,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -58.98,
+      "steps": 136,
+      "survived": 2
+    },
+    {
+      "episode": 192,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1799.404,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 193,
+      "winner": "draw",
+      "kills": 0,
+      "reward": 1773.073,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 194,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -671.024,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 195,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2305.45,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 196,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 214.958,
+      "steps": 35,
+      "survived": 2
+    },
+    {
+      "episode": 197,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -48.21,
+      "steps": 379,
+      "survived": 2
+    },
+    {
+      "episode": 198,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -705.144,
+      "steps": 246,
+      "survived": 2
+    },
+    {
+      "episode": 199,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 282.554,
+      "steps": 51,
+      "survived": 2
+    },
+    {
+      "episode": 200,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 143.379,
+      "steps": 67,
+      "survived": 2
+    },
+    {
+      "episode": 201,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -267.356,
+      "steps": 138,
+      "survived": 2
+    },
+    {
+      "episode": 202,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1839.365,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 203,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 99.605,
+      "steps": 86,
+      "survived": 2
+    },
+    {
+      "episode": 204,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1485.159,
+      "steps": 740,
+      "survived": 2
+    },
+    {
+      "episode": 205,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -3032.428,
+      "steps": 736,
+      "survived": 2
+    },
+    {
+      "episode": 206,
+      "winner": "draw",
+      "kills": 0,
+      "reward": 348.795,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 207,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1127.173,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 208,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2371.038,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 209,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -1904.544,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 210,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2367.992,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 211,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2408.442,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 212,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -714.301,
+      "steps": 198,
+      "survived": 2
+    },
+    {
+      "episode": 213,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3931.179,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 214,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1804.307,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 215,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2377.725,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 216,
+      "winner": "red",
+      "kills": 1,
+      "reward": 198.18,
+      "steps": 55,
+      "survived": 0
+    },
+    {
+      "episode": 217,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 204.374,
+      "steps": 19,
+      "survived": 2
+    },
+    {
+      "episode": 218,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3373.644,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 219,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -4577.264,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 220,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -267.884,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 221,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -4123.656,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 222,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3701.156,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 223,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1400.779,
+      "steps": 611,
+      "survived": 2
+    },
+    {
+      "episode": 224,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 178.902,
+      "steps": 77,
+      "survived": 2
+    },
+    {
+      "episode": 225,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1089.302,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 226,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -177.556,
+      "steps": 422,
+      "survived": 2
+    },
+    {
+      "episode": 227,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3320.378,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 228,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -32.354,
+      "steps": 105,
+      "survived": 2
+    },
+    {
+      "episode": 229,
+      "winner": "red",
+      "kills": 0,
+      "reward": 117.802,
+      "steps": 45,
+      "survived": 0
+    },
+    {
+      "episode": 230,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3003.305,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 231,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1492.181,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 232,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 142.955,
+      "steps": 12,
+      "survived": 2
+    },
+    {
+      "episode": 233,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -748.944,
+      "steps": 421,
+      "survived": 2
+    },
+    {
+      "episode": 234,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3679.205,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 235,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1078.344,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 236,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -548.936,
+      "steps": 448,
+      "survived": 2
+    },
+    {
+      "episode": 237,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 29.776,
+      "steps": 85,
+      "survived": 2
+    },
+    {
+      "episode": 238,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 131.572,
+      "steps": 12,
+      "survived": 2
+    },
+    {
+      "episode": 239,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 49.368,
+      "steps": 111,
+      "survived": 2
+    },
+    {
+      "episode": 240,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3006.565,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 241,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2334.54,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 242,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -3151.132,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 243,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -418.618,
+      "steps": 247,
+      "survived": 2
+    },
+    {
+      "episode": 244,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 249.706,
+      "steps": 129,
+      "survived": 2
+    },
+    {
+      "episode": 245,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3251.762,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 246,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -5230.553,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 247,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -479.014,
+      "steps": 286,
+      "survived": 2
+    },
+    {
+      "episode": 248,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -3592.584,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 249,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -634.783,
+      "steps": 480,
+      "survived": 1
+    },
+    {
+      "episode": 250,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1084.068,
+      "steps": 295,
+      "survived": 2
+    },
+    {
+      "episode": 251,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1102.816,
+      "steps": 570,
+      "survived": 1
+    },
+    {
+      "episode": 252,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2457.662,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 253,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -9.506,
+      "steps": 234,
+      "survived": 2
+    },
+    {
+      "episode": 254,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2128.48,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 255,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3497.627,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 256,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1705.251,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 257,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 106.522,
+      "steps": 12,
+      "survived": 2
+    },
+    {
+      "episode": 258,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -637.167,
+      "steps": 251,
+      "survived": 2
+    },
+    {
+      "episode": 259,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -905.671,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 260,
+      "winner": "red",
+      "kills": 0,
+      "reward": -1713.483,
+      "steps": 614,
+      "survived": 0
+    },
+    {
+      "episode": 261,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -681.044,
+      "steps": 308,
+      "survived": 2
+    },
+    {
+      "episode": 262,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2938.015,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 263,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 214.996,
+      "steps": 124,
+      "survived": 2
+    },
+    {
+      "episode": 264,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 162.867,
+      "steps": 25,
+      "survived": 2
+    },
+    {
+      "episode": 265,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -215.38,
+      "steps": 228,
+      "survived": 2
+    },
+    {
+      "episode": 266,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 198.731,
+      "steps": 18,
+      "survived": 2
+    },
+    {
+      "episode": 267,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 157.027,
+      "steps": 12,
+      "survived": 2
+    },
+    {
+      "episode": 268,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 145.406,
+      "steps": 15,
+      "survived": 2
+    },
+    {
+      "episode": 269,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2420.71,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 270,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 4.683,
+      "steps": 161,
+      "survived": 2
+    },
+    {
+      "episode": 271,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 205.587,
+      "steps": 102,
+      "survived": 2
+    },
+    {
+      "episode": 272,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1996.909,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 273,
+      "winner": "draw",
+      "kills": 0,
+      "reward": 205.715,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 274,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1234.042,
+      "steps": 355,
+      "survived": 2
+    },
+    {
+      "episode": 275,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2878.871,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 276,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -772.058,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 277,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1313.517,
+      "steps": 580,
+      "survived": 2
+    },
+    {
+      "episode": 278,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -98.808,
+      "steps": 580,
+      "survived": 2
+    },
+    {
+      "episode": 279,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2666.293,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 280,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1105.76,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 281,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1518.79,
+      "steps": 523,
+      "survived": 2
+    },
+    {
+      "episode": 282,
+      "winner": "red",
+      "kills": 1,
+      "reward": 236.077,
+      "steps": 231,
+      "survived": 0
+    },
+    {
+      "episode": 283,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2171.031,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 284,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 475.88,
+      "steps": 150,
+      "survived": 1
+    },
+    {
+      "episode": 285,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1269.853,
+      "steps": 387,
+      "survived": 2
+    },
+    {
+      "episode": 286,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2927.729,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 287,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2502.968,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 288,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1267.917,
+      "steps": 776,
+      "survived": 2
+    },
+    {
+      "episode": 289,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -233.489,
+      "steps": 120,
+      "survived": 2
+    },
+    {
+      "episode": 290,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -710.586,
+      "steps": 377,
+      "survived": 2
+    },
+    {
+      "episode": 291,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 155.008,
+      "steps": 50,
+      "survived": 2
+    },
+    {
+      "episode": 292,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -198.057,
+      "steps": 269,
+      "survived": 2
+    },
+    {
+      "episode": 293,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -876.054,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 294,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2870.197,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 295,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -906.813,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 296,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -3323.432,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 297,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -3734.816,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 298,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 275.672,
+      "steps": 270,
+      "survived": 2
+    },
+    {
+      "episode": 299,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -990.494,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 300,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1090.727,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 301,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1953.478,
+      "steps": 1000,
+      "survived": 1
+    },
+    {
+      "episode": 302,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3162.528,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 303,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2978.707,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 304,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1026.413,
+      "steps": 381,
+      "survived": 2
+    },
+    {
+      "episode": 305,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1452.03,
+      "steps": 824,
+      "survived": 1
+    },
+    {
+      "episode": 306,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3120.014,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 307,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2320.531,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 308,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 175.579,
+      "steps": 28,
+      "survived": 2
+    },
+    {
+      "episode": 309,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2224.116,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 310,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3040.771,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 311,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 168.538,
+      "steps": 12,
+      "survived": 2
+    },
+    {
+      "episode": 312,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 178.777,
+      "steps": 34,
+      "survived": 2
+    },
+    {
+      "episode": 313,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 165.566,
+      "steps": 12,
+      "survived": 2
+    },
+    {
+      "episode": 314,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -79.425,
+      "steps": 176,
+      "survived": 2
+    },
+    {
+      "episode": 315,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1731.988,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 316,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -941.888,
+      "steps": 316,
+      "survived": 2
+    },
+    {
+      "episode": 317,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1856.862,
+      "steps": 853,
+      "survived": 2
+    },
+    {
+      "episode": 318,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 232.408,
+      "steps": 31,
+      "survived": 2
+    },
+    {
+      "episode": 319,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2120.448,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 320,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -810.272,
+      "steps": 423,
+      "survived": 2
+    },
+    {
+      "episode": 321,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 300.146,
+      "steps": 213,
+      "survived": 2
+    },
+    {
+      "episode": 322,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -337.962,
+      "steps": 221,
+      "survived": 2
+    },
+    {
+      "episode": 323,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 242.463,
+      "steps": 138,
+      "survived": 2
+    },
+    {
+      "episode": 324,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3439.305,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 325,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -4962.658,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 326,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3133.67,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 327,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -865.854,
+      "steps": 425,
+      "survived": 2
+    },
+    {
+      "episode": 328,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3354.032,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 329,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 358.406,
+      "steps": 93,
+      "survived": 2
+    },
+    {
+      "episode": 330,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -277.78,
+      "steps": 95,
+      "survived": 2
+    },
+    {
+      "episode": 331,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1748.932,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 332,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -436.626,
+      "steps": 440,
+      "survived": 2
+    },
+    {
+      "episode": 333,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3445.95,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 334,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 585.287,
+      "steps": 131,
+      "survived": 2
+    },
+    {
+      "episode": 335,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -984.358,
+      "steps": 321,
+      "survived": 2
+    },
+    {
+      "episode": 336,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1422.748,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 337,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -1849.941,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 338,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 142.326,
+      "steps": 14,
+      "survived": 2
+    },
+    {
+      "episode": 339,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 179.722,
+      "steps": 115,
+      "survived": 1
+    },
+    {
+      "episode": 340,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2574.115,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 341,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2462.171,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 342,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -1773.426,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 343,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3361.349,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 344,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -4136.76,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 345,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3375.202,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 346,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -279.775,
+      "steps": 88,
+      "survived": 2
+    },
+    {
+      "episode": 347,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 211.156,
+      "steps": 102,
+      "survived": 2
+    },
+    {
+      "episode": 348,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -3560.129,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 349,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 141.828,
+      "steps": 12,
+      "survived": 2
+    },
+    {
+      "episode": 350,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -81.656,
+      "steps": 275,
+      "survived": 2
+    },
+    {
+      "episode": 351,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1460.649,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 352,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 157.573,
+      "steps": 177,
+      "survived": 1
+    },
+    {
+      "episode": 353,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2449.468,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 354,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3191.592,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 355,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2506.447,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 356,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 209.901,
+      "steps": 76,
+      "survived": 2
+    },
+    {
+      "episode": 357,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -260.268,
+      "steps": 256,
+      "survived": 2
+    },
+    {
+      "episode": 358,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -4332.246,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 359,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1904.766,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 360,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1241.247,
+      "steps": 466,
+      "survived": 2
+    },
+    {
+      "episode": 361,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1926.827,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 362,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -1821.442,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 363,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -353.973,
+      "steps": 239,
+      "survived": 2
+    },
+    {
+      "episode": 364,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 276.397,
+      "steps": 84,
+      "survived": 2
+    },
+    {
+      "episode": 365,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2967.12,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 366,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1018.53,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 367,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3231.718,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 368,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -568.246,
+      "steps": 448,
+      "survived": 1
+    },
+    {
+      "episode": 369,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 254.028,
+      "steps": 25,
+      "survived": 2
+    },
+    {
+      "episode": 370,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2817.533,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 371,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2806.278,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 372,
+      "winner": "draw",
+      "kills": 0,
+      "reward": 593.273,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 373,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 233.973,
+      "steps": 40,
+      "survived": 2
+    },
+    {
+      "episode": 374,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2374.606,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 375,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 38.058,
+      "steps": 103,
+      "survived": 2
+    },
+    {
+      "episode": 376,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -3031.772,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 377,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 65.384,
+      "steps": 71,
+      "survived": 2
+    },
+    {
+      "episode": 378,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -861.749,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 379,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -368.261,
+      "steps": 209,
+      "survived": 2
+    },
+    {
+      "episode": 380,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -708.173,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 381,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2711.202,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 382,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -144.043,
+      "steps": 203,
+      "survived": 2
+    },
+    {
+      "episode": 383,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -589.028,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 384,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2441.069,
+      "steps": 1000,
+      "survived": 1
+    },
+    {
+      "episode": 385,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1160.541,
+      "steps": 684,
+      "survived": 2
+    },
+    {
+      "episode": 386,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -816.346,
+      "steps": 399,
+      "survived": 2
+    },
+    {
+      "episode": 387,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2268.201,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 388,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -1895.425,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 389,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -149.016,
+      "steps": 143,
+      "survived": 2
+    },
+    {
+      "episode": 390,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 168.052,
+      "steps": 72,
+      "survived": 2
+    },
+    {
+      "episode": 391,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 204.178,
+      "steps": 102,
+      "survived": 1
+    },
+    {
+      "episode": 392,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3263.71,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 393,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -93.001,
+      "steps": 145,
+      "survived": 2
+    },
+    {
+      "episode": 394,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2338.85,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 395,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -207.037,
+      "steps": 132,
+      "survived": 2
+    },
+    {
+      "episode": 396,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1141.787,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 397,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1963.592,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 398,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1204.533,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 399,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1686.141,
+      "steps": 758,
+      "survived": 2
+    },
+    {
+      "episode": 400,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1951.107,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 401,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1115.788,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 402,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -99.88,
+      "steps": 207,
+      "survived": 2
+    },
+    {
+      "episode": 403,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -53.146,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 404,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2065.714,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 405,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -300.519,
+      "steps": 275,
+      "survived": 1
+    },
+    {
+      "episode": 406,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3228.724,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 407,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2591.546,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 408,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -1623.358,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 409,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -194.072,
+      "steps": 263,
+      "survived": 1
+    },
+    {
+      "episode": 410,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -1644.524,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 411,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -3359.909,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 412,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 327.923,
+      "steps": 53,
+      "survived": 2
+    },
+    {
+      "episode": 413,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -795.669,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 414,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3138.794,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 415,
+      "winner": "red",
+      "kills": 0,
+      "reward": 10.33,
+      "steps": 12,
+      "survived": 0
+    },
+    {
+      "episode": 416,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2087.812,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 417,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -4508.491,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 418,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2159.202,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 419,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -723.495,
+      "steps": 689,
+      "survived": 2
+    },
+    {
+      "episode": 420,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -447.78,
+      "steps": 213,
+      "survived": 2
+    },
+    {
+      "episode": 421,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2376.38,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 422,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 125.463,
+      "steps": 12,
+      "survived": 2
+    },
+    {
+      "episode": 423,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1586.633,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 424,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2089.792,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 425,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3274.792,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 426,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1526.096,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 427,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1264.318,
+      "steps": 436,
+      "survived": 2
+    },
+    {
+      "episode": 428,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 119.031,
+      "steps": 386,
+      "survived": 2
+    },
+    {
+      "episode": 429,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -2203.251,
+      "steps": 873,
+      "survived": 2
+    },
+    {
+      "episode": 430,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2197.444,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 431,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2322.803,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 432,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -206.959,
+      "steps": 173,
+      "survived": 2
+    },
+    {
+      "episode": 433,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -222.678,
+      "steps": 205,
+      "survived": 2
+    },
+    {
+      "episode": 434,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -2478.359,
+      "steps": 749,
+      "survived": 2
+    },
+    {
+      "episode": 435,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 264.122,
+      "steps": 34,
+      "survived": 2
+    },
+    {
+      "episode": 436,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -1198.647,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 437,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2069.542,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 438,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -1830.553,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 439,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2741.323,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 440,
+      "winner": "draw",
+      "kills": 0,
+      "reward": 1662.5,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 441,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2043.745,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 442,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3760.948,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 443,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -1145.87,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 444,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 33.598,
+      "steps": 266,
+      "survived": 2
+    },
+    {
+      "episode": 445,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -259.822,
+      "steps": 136,
+      "survived": 2
+    },
+    {
+      "episode": 446,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -289.194,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 447,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -2177.125,
+      "steps": 946,
+      "survived": 2
+    },
+    {
+      "episode": 448,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1003.061,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 449,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -32.441,
+      "steps": 130,
+      "survived": 2
+    },
+    {
+      "episode": 450,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1635.788,
+      "steps": 973,
+      "survived": 2
+    },
+    {
+      "episode": 451,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1192.092,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 452,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2483.787,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 453,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 212.498,
+      "steps": 23,
+      "survived": 2
+    },
+    {
+      "episode": 454,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 272.217,
+      "steps": 29,
+      "survived": 2
+    },
+    {
+      "episode": 455,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 369.756,
+      "steps": 69,
+      "survived": 2
+    },
+    {
+      "episode": 456,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1417.07,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 457,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2501.172,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 458,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 437.807,
+      "steps": 202,
+      "survived": 2
+    },
+    {
+      "episode": 459,
+      "winner": "draw",
+      "kills": 0,
+      "reward": 492.574,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 460,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1007.636,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 461,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2291.272,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 462,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3470.342,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 463,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 208.244,
+      "steps": 26,
+      "survived": 2
+    },
+    {
+      "episode": 464,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2064.723,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 465,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 175.479,
+      "steps": 73,
+      "survived": 2
+    },
+    {
+      "episode": 466,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1859.544,
+      "steps": 827,
+      "survived": 1
+    },
+    {
+      "episode": 467,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2530.595,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 468,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -345.921,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 469,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -891.246,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 470,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -1814.642,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 471,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1672.713,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 472,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3854.237,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 473,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1646.088,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 474,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -981.814,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 475,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1777.758,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 476,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 505.515,
+      "steps": 91,
+      "survived": 2
+    },
+    {
+      "episode": 477,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 166.669,
+      "steps": 12,
+      "survived": 2
+    },
+    {
+      "episode": 478,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -558.309,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 479,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3913.953,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 480,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2504.003,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 481,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 79.49,
+      "steps": 75,
+      "survived": 2
+    },
+    {
+      "episode": 482,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -1110.908,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 483,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -1610.093,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 484,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -148.973,
+      "steps": 277,
+      "survived": 2
+    },
+    {
+      "episode": 485,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -561.956,
+      "steps": 226,
+      "survived": 2
+    },
+    {
+      "episode": 486,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 103.0,
+      "steps": 87,
+      "survived": 2
+    },
+    {
+      "episode": 487,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2661.958,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 488,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -2201.975,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 489,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -2369.043,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 490,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 122.985,
+      "steps": 13,
+      "survived": 2
+    },
+    {
+      "episode": 491,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -384.895,
+      "steps": 154,
+      "survived": 2
+    },
+    {
+      "episode": 492,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 241.114,
+      "steps": 34,
+      "survived": 2
+    },
+    {
+      "episode": 493,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 498.858,
+      "steps": 263,
+      "survived": 2
+    },
+    {
+      "episode": 494,
+      "winner": "blue",
+      "kills": 2,
+      "reward": 654.653,
+      "steps": 231,
+      "survived": 2
+    },
+    {
+      "episode": 495,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -1155.184,
+      "steps": 375,
+      "survived": 2
+    },
+    {
+      "episode": 496,
+      "winner": "draw",
+      "kills": 1,
+      "reward": -598.122,
+      "steps": 1000,
+      "survived": 2
+    },
+    {
+      "episode": 497,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -281.984,
+      "steps": 335,
+      "survived": 2
+    },
+    {
+      "episode": 498,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -844.248,
+      "steps": 324,
+      "survived": 1
+    },
+    {
+      "episode": 499,
+      "winner": "blue",
+      "kills": 2,
+      "reward": -946.499,
+      "steps": 698,
+      "survived": 2
+    },
+    {
+      "episode": 500,
+      "winner": "draw",
+      "kills": 0,
+      "reward": -3495.391,
+      "steps": 1000,
+      "survived": 2
+    }
+  ],
+  "runtime": {
+    "device": "cuda",
+    "torch_version": "unknown",
+    "blas_backend": "unknown",
+    "num_threads": "unknown",
+    "cpu_model": "AMD64 Family 25 Model 33 Stepping 0, AuthenticAMD",
+    "os": "Windows-10-10.0.19045-SP0",
+    "python_version": "unknown",
+    "gpu_model": "NVIDIA GeForce RTX 3070 Ti",
+    "cuda_version": "unknown",
+    "reconstructed": true,
+    "thread_pinned": false,
+    "reconstruction_basis": "reconstructed from device-replication experiment; see docs/EVAL_PROTOCOL_AUDIT.md section 2"
+  }
+}

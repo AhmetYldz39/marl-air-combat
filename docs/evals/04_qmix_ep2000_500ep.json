@@ -1,0 +1,30 @@
+{
+  "checkpoint": "checkpoints/qmix_ep2000.pt",
+  "n_episodes": 500,
+  "seed": 42,
+  "win_rate": 0.65,
+  "win_ci95_lo": 0.6072,
+  "win_ci95_hi": 0.6905,
+  "kill_per_ep": 1.418,
+  "second_kill_rate": 0.65,
+  "draw_rate": 0.33,
+  "loss_rate": 0.02,
+  "mean_ep_len": 456.6,
+  "wins": 325,
+  "losses": 10,
+  "draws": 165,
+  "runtime": {
+    "device": "cuda",
+    "torch_version": "unknown",
+    "blas_backend": "unknown",
+    "num_threads": "unknown",
+    "cpu_model": "AMD64 Family 25 Model 33 Stepping 0, AuthenticAMD",
+    "os": "Windows-10-10.0.19045-SP0",
+    "python_version": "unknown",
+    "gpu_model": "NVIDIA GeForce RTX 3070 Ti",
+    "cuda_version": "unknown",
+    "reconstructed": true,
+    "thread_pinned": false,
+    "reconstruction_basis": "reconstructed from device-replication experiment; see docs/EVAL_PROTOCOL_AUDIT.md section 2"
+  }
+}

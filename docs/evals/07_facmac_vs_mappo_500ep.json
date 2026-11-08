@@ -1,0 +1,141 @@
+{
+  "mappo_checkpoint": "checkpoints/mappo_gat_ep37000.pt",
+  "facmac_checkpoint": "checkpoints/facmac_omr_ep27000.pt",
+  "n_episodes": 500,
+  "seed": 42,
+  "device": "cuda",
+  "half_a_mappo_blue": {
+    "n": 250,
+    "mappo_wins": 47,
+    "facmac_wins": 170,
+    "draws": 33,
+    "mappo_win_rate": 0.188,
+    "facmac_win_rate": 0.68,
+    "draw_rate": 0.132,
+    "mappo_win_ci": [
+      0.14442509786439153,
+      0.24101842281937344
+    ],
+    "facmac_win_ci": [
+      0.619825530285745,
+      0.7347262847043906
+    ],
+    "mappo_kill_mean": 0.632,
+    "facmac_kill_mean": 1.504,
+    "mean_ep_len": 267.8,
+    "intent_mean": [
+      0.3342984701407124,
+      0.26395707337627716,
+      0.4017444549369279,
+      0.3604062481448781,
+      0.261768498708695,
+      0.37782524725881406
+    ],
+    "role0_mean": [
+      0.32187179040163755,
+      0.17519977951515467,
+      0.13222201054543256,
+      0.3707064219787717
+    ],
+    "role1_mean": [
+      0.1970789238945581,
+      0.23006306752748787,
+      0.3309469389468431,
+      0.24191107313986868
+    ]
+  },
+  "half_b_facmac_blue": {
+    "n": 250,
+    "mappo_wins": 39,
+    "facmac_wins": 170,
+    "draws": 41,
+    "mappo_win_rate": 0.156,
+    "facmac_win_rate": 0.68,
+    "draw_rate": 0.164,
+    "mappo_win_ci": [
+      0.11626512943648533,
+      0.20614695747125555
+    ],
+    "facmac_win_ci": [
+      0.619825530285745,
+      0.7347262847043906
+    ],
+    "mappo_kill_mean": 0.588,
+    "facmac_kill_mean": 1.476,
+    "mean_ep_len": 306.3,
+    "intent_mean": [
+      0.3423744201531142,
+      0.21622841472949766,
+      0.44139716118139893,
+      0.34353744772344613,
+      0.2531428440940326,
+      0.40331970046669474
+    ],
+    "role0_mean": [
+      0.33877847434952857,
+      0.1510330855115317,
+      0.1442366588814184,
+      0.36595178398117423
+    ],
+    "role1_mean": [
+      0.19418616269296035,
+      0.24558773413999005,
+      0.3353935316987336,
+      0.22483257552981376
+    ]
+  },
+  "combined": {
+    "n": 500,
+    "mappo_wins": 86,
+    "facmac_wins": 340,
+    "draws": 74,
+    "mappo_win_rate": 0.172,
+    "facmac_win_rate": 0.68,
+    "draw_rate": 0.148,
+    "mappo_win_ci": [
+      0.1414536049779883,
+      0.20754814477828426
+    ],
+    "facmac_win_ci": [
+      0.6378721940483771,
+      0.7193829432804977
+    ],
+    "mappo_kill_mean": 0.61,
+    "facmac_kill_mean": 1.49,
+    "mean_ep_len": 287.0,
+    "intent_mean": [
+      0.3383364451469133,
+      0.2400927440528874,
+      0.4215708080591634,
+      0.3519718479341621,
+      0.2574556714013638,
+      0.39057247386275434
+    ],
+    "role0_mean": [
+      0.33032513237558303,
+      0.16311643251334318,
+      0.1382293347134255,
+      0.36832910297997296
+    ],
+    "role1_mean": [
+      0.19563254329375923,
+      0.23782540083373896,
+      0.33317023532278833,
+      0.23337182433484122
+    ]
+  },
+  "runtime": {
+    "device": "cuda",
+    "torch_version": "unknown",
+    "blas_backend": "unknown",
+    "num_threads": "unknown",
+    "cpu_model": "AMD64 Family 25 Model 33 Stepping 0, AuthenticAMD",
+    "os": "Windows-10-10.0.19045-SP0",
+    "python_version": "unknown",
+    "gpu_model": "NVIDIA GeForce RTX 3070 Ti",
+    "cuda_version": "unknown",
+    "reconstructed": true,
+    "thread_pinned": false,
+    "reconstruction_basis": "reconstructed from device-replication experiment; see docs/EVAL_PROTOCOL_AUDIT.md section 2"
+  }
+}

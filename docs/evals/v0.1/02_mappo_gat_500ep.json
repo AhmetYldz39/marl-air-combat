@@ -1,0 +1,4550 @@
+{
+  "schema_version": "1.0",
+  "package_version": "0.1.0",
+  "env_version": "1.0.0",
+  "git_commit": "abcd886",
+  "timestamp_utc": "2026-09-07T18:53:47.596813+00:00",
+  "scenario": "2v2_normal",
+  "opponent": "heuristic-v1",
+  "checkpoint": {
+    "path": "checkpoints/mappo_gat_ep37000.pt",
+    "sha256": "e5d11384dd3e9c1ca71333ad7f719825c1ba725136d7c3dee06e9e1e7ffd1536"
+  },
+  "algorithm": "mappo_gat",
+  "n_episodes": 500,
+  "seed": 42,
+  "deterministic": true,
+  "metrics": {
+    "win_rate": 0.66,
+    "win_ci95": [
+      0.617398,
+      0.700162
+    ],
+    "loss_rate": 0.014,
+    "draw_rate": 0.326,
+    "kill_per_ep": 1.482,
+    "kill_std": 0.778252,
+    "mean_ep_len": 445.75,
+    "survival_rate": 0.981,
+    "oob_rate": 0.0,
+    "one_kill_stall_rate": 0.162
+  },
+  "wins": 330,
+  "losses": 7,
+  "draws": 163,
+  "episodes": [
+    {
+      "idx": 0,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 189,
+      "survived": 2,
+      "stream_position": 0
+    },
+    {
+      "idx": 1,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 1
+    },
+    {
+      "idx": 2,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 2
+    },
+    {
+      "idx": 3,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 844,
+      "survived": 2,
+      "stream_position": 3
+    },
+    {
+      "idx": 4,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 138,
+      "survived": 2,
+      "stream_position": 4
+    },
+    {
+      "idx": 5,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 5
+    },
+    {
+      "idx": 6,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 112,
+      "survived": 2,
+      "stream_position": 6
+    },
+    {
+      "idx": 7,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 45,
+      "survived": 2,
+      "stream_position": 7
+    },
+    {
+      "idx": 8,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 8
+    },
+    {
+      "idx": 9,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 9
+    },
+    {
+      "idx": 10,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 40,
+      "survived": 2,
+      "stream_position": 10
+    },
+    {
+      "idx": 11,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 163,
+      "survived": 2,
+      "stream_position": 11
+    },
+    {
+      "idx": 12,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 577,
+      "survived": 2,
+      "stream_position": 12
+    },
+    {
+      "idx": 13,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 13
+    },
+    {
+      "idx": 14,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 184,
+      "survived": 2,
+      "stream_position": 14
+    },
+    {
+      "idx": 15,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 729,
+      "survived": 2,
+      "stream_position": 15
+    },
+    {
+      "idx": 16,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 16
+    },
+    {
+      "idx": 17,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 17
+    },
+    {
+      "idx": 18,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 287,
+      "survived": 2,
+      "stream_position": 18
+    },
+    {
+      "idx": 19,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 343,
+      "survived": 2,
+      "stream_position": 19
+    },
+    {
+      "idx": 20,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 20
+    },
+    {
+      "idx": 21,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 21
+    },
+    {
+      "idx": 22,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 13,
+      "survived": 2,
+      "stream_position": 22
+    },
+    {
+      "idx": 23,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 71,
+      "survived": 2,
+      "stream_position": 23
+    },
+    {
+      "idx": 24,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 97,
+      "survived": 2,
+      "stream_position": 24
+    },
+    {
+      "idx": 25,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 364,
+      "survived": 2,
+      "stream_position": 25
+    },
+    {
+      "idx": 26,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 69,
+      "survived": 2,
+      "stream_position": 26
+    },
+    {
+      "idx": 27,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 93,
+      "survived": 2,
+      "stream_position": 27
+    },
+    {
+      "idx": 28,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 73,
+      "survived": 2,
+      "stream_position": 28
+    },
+    {
+      "idx": 29,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 29
+    },
+    {
+      "idx": 30,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 30
+    },
+    {
+      "idx": 31,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 31
+    },
+    {
+      "idx": 32,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 472,
+      "survived": 2,
+      "stream_position": 32
+    },
+    {
+      "idx": 33,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 55,
+      "survived": 2,
+      "stream_position": 33
+    },
+    {
+      "idx": 34,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 34
+    },
+    {
+      "idx": 35,
+      "ep_seed": null,
+      "outcome": "loss",
+      "kills": 1,
+      "steps": 90,
+      "survived": 0,
+      "stream_position": 35
+    },
+    {
+      "idx": 36,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 241,
+      "survived": 2,
+      "stream_position": 36
+    },
+    {
+      "idx": 37,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 128,
+      "survived": 2,
+      "stream_position": 37
+    },
+    {
+      "idx": 38,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 38
+    },
+    {
+      "idx": 39,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 39
+    },
+    {
+      "idx": 40,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 13,
+      "survived": 2,
+      "stream_position": 40
+    },
+    {
+      "idx": 41,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 41
+    },
+    {
+      "idx": 42,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 150,
+      "survived": 2,
+      "stream_position": 42
+    },
+    {
+      "idx": 43,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 241,
+      "survived": 2,
+      "stream_position": 43
+    },
+    {
+      "idx": 44,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 81,
+      "survived": 2,
+      "stream_position": 44
+    },
+    {
+      "idx": 45,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 459,
+      "survived": 2,
+      "stream_position": 45
+    },
+    {
+      "idx": 46,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 170,
+      "survived": 2,
+      "stream_position": 46
+    },
+    {
+      "idx": 47,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 153,
+      "survived": 2,
+      "stream_position": 47
+    },
+    {
+      "idx": 48,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 48
+    },
+    {
+      "idx": 49,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 158,
+      "survived": 2,
+      "stream_position": 49
+    },
+    {
+      "idx": 50,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 50
+    },
+    {
+      "idx": 51,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 336,
+      "survived": 2,
+      "stream_position": 51
+    },
+    {
+      "idx": 52,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 199,
+      "survived": 2,
+      "stream_position": 52
+    },
+    {
+      "idx": 53,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 91,
+      "survived": 2,
+      "stream_position": 53
+    },
+    {
+      "idx": 54,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 54
+    },
+    {
+      "idx": 55,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 88,
+      "survived": 2,
+      "stream_position": 55
+    },
+    {
+      "idx": 56,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 34,
+      "survived": 2,
+      "stream_position": 56
+    },
+    {
+      "idx": 57,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 229,
+      "survived": 2,
+      "stream_position": 57
+    },
+    {
+      "idx": 58,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 92,
+      "survived": 2,
+      "stream_position": 58
+    },
+    {
+      "idx": 59,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 76,
+      "survived": 2,
+      "stream_position": 59
+    },
+    {
+      "idx": 60,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 106,
+      "survived": 2,
+      "stream_position": 60
+    },
+    {
+      "idx": 61,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 95,
+      "survived": 2,
+      "stream_position": 61
+    },
+    {
+      "idx": 62,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 146,
+      "survived": 2,
+      "stream_position": 62
+    },
+    {
+      "idx": 63,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 63
+    },
+    {
+      "idx": 64,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 64
+    },
+    {
+      "idx": 65,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 65
+    },
+    {
+      "idx": 66,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 139,
+      "survived": 2,
+      "stream_position": 66
+    },
+    {
+      "idx": 67,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 67
+    },
+    {
+      "idx": 68,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 74,
+      "survived": 2,
+      "stream_position": 68
+    },
+    {
+      "idx": 69,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 69
+    },
+    {
+      "idx": 70,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 101,
+      "survived": 2,
+      "stream_position": 70
+    },
+    {
+      "idx": 71,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 259,
+      "survived": 2,
+      "stream_position": 71
+    },
+    {
+      "idx": 72,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 109,
+      "survived": 2,
+      "stream_position": 72
+    },
+    {
+      "idx": 73,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 232,
+      "survived": 2,
+      "stream_position": 73
+    },
+    {
+      "idx": 74,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 128,
+      "survived": 2,
+      "stream_position": 74
+    },
+    {
+      "idx": 75,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 75
+    },
+    {
+      "idx": 76,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 78,
+      "survived": 2,
+      "stream_position": 76
+    },
+    {
+      "idx": 77,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 490,
+      "survived": 2,
+      "stream_position": 77
+    },
+    {
+      "idx": 78,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 78
+    },
+    {
+      "idx": 79,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 304,
+      "survived": 2,
+      "stream_position": 79
+    },
+    {
+      "idx": 80,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 100,
+      "survived": 2,
+      "stream_position": 80
+    },
+    {
+      "idx": 81,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 57,
+      "survived": 2,
+      "stream_position": 81
+    },
+    {
+      "idx": 82,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 90,
+      "survived": 2,
+      "stream_position": 82
+    },
+    {
+      "idx": 83,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 83
+    },
+    {
+      "idx": 84,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 38,
+      "survived": 2,
+      "stream_position": 84
+    },
+    {
+      "idx": 85,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 248,
+      "survived": 2,
+      "stream_position": 85
+    },
+    {
+      "idx": 86,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 34,
+      "survived": 2,
+      "stream_position": 86
+    },
+    {
+      "idx": 87,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 168,
+      "survived": 2,
+      "stream_position": 87
+    },
+    {
+      "idx": 88,
+      "ep_seed": null,
+      "outcome": "loss",
+      "kills": 0,
+      "steps": 174,
+      "survived": 0,
+      "stream_position": 88
+    },
+    {
+      "idx": 89,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 207,
+      "survived": 2,
+      "stream_position": 89
+    },
+    {
+      "idx": 90,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 287,
+      "survived": 2,
+      "stream_position": 90
+    },
+    {
+      "idx": 91,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 765,
+      "survived": 2,
+      "stream_position": 91
+    },
+    {
+      "idx": 92,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 16,
+      "survived": 2,
+      "stream_position": 92
+    },
+    {
+      "idx": 93,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 93
+    },
+    {
+      "idx": 94,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 112,
+      "survived": 2,
+      "stream_position": 94
+    },
+    {
+      "idx": 95,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 226,
+      "survived": 2,
+      "stream_position": 95
+    },
+    {
+      "idx": 96,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 61,
+      "survived": 2,
+      "stream_position": 96
+    },
+    {
+      "idx": 97,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 97
+    },
+    {
+      "idx": 98,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 98
+    },
+    {
+      "idx": 99,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 101,
+      "survived": 2,
+      "stream_position": 99
+    },
+    {
+      "idx": 100,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 228,
+      "survived": 2,
+      "stream_position": 100
+    },
+    {
+      "idx": 101,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 429,
+      "survived": 2,
+      "stream_position": 101
+    },
+    {
+      "idx": 102,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 102
+    },
+    {
+      "idx": 103,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 134,
+      "survived": 2,
+      "stream_position": 103
+    },
+    {
+      "idx": 104,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 660,
+      "survived": 2,
+      "stream_position": 104
+    },
+    {
+      "idx": 105,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 278,
+      "survived": 2,
+      "stream_position": 105
+    },
+    {
+      "idx": 106,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 508,
+      "survived": 2,
+      "stream_position": 106
+    },
+    {
+      "idx": 107,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 106,
+      "survived": 2,
+      "stream_position": 107
+    },
+    {
+      "idx": 108,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 108
+    },
+    {
+      "idx": 109,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 34,
+      "survived": 2,
+      "stream_position": 109
+    },
+    {
+      "idx": 110,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 60,
+      "survived": 2,
+      "stream_position": 110
+    },
+    {
+      "idx": 111,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 111
+    },
+    {
+      "idx": 112,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 38,
+      "survived": 2,
+      "stream_position": 112
+    },
+    {
+      "idx": 113,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 29,
+      "survived": 2,
+      "stream_position": 113
+    },
+    {
+      "idx": 114,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 37,
+      "survived": 2,
+      "stream_position": 114
+    },
+    {
+      "idx": 115,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 138,
+      "survived": 2,
+      "stream_position": 115
+    },
+    {
+      "idx": 116,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 195,
+      "survived": 2,
+      "stream_position": 116
+    },
+    {
+      "idx": 117,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 81,
+      "survived": 2,
+      "stream_position": 117
+    },
+    {
+      "idx": 118,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 118
+    },
+    {
+      "idx": 119,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 192,
+      "survived": 2,
+      "stream_position": 119
+    },
+    {
+      "idx": 120,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 357,
+      "survived": 2,
+      "stream_position": 120
+    },
+    {
+      "idx": 121,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 121
+    },
+    {
+      "idx": 122,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 107,
+      "survived": 2,
+      "stream_position": 122
+    },
+    {
+      "idx": 123,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 432,
+      "survived": 2,
+      "stream_position": 123
+    },
+    {
+      "idx": 124,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 124
+    },
+    {
+      "idx": 125,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 117,
+      "survived": 2,
+      "stream_position": 125
+    },
+    {
+      "idx": 126,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 126
+    },
+    {
+      "idx": 127,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 294,
+      "survived": 2,
+      "stream_position": 127
+    },
+    {
+      "idx": 128,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 128
+    },
+    {
+      "idx": 129,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 129
+    },
+    {
+      "idx": 130,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 32,
+      "survived": 2,
+      "stream_position": 130
+    },
+    {
+      "idx": 131,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 131
+    },
+    {
+      "idx": 132,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 175,
+      "survived": 2,
+      "stream_position": 132
+    },
+    {
+      "idx": 133,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 447,
+      "survived": 2,
+      "stream_position": 133
+    },
+    {
+      "idx": 134,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 214,
+      "survived": 2,
+      "stream_position": 134
+    },
+    {
+      "idx": 135,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 224,
+      "survived": 2,
+      "stream_position": 135
+    },
+    {
+      "idx": 136,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 54,
+      "survived": 2,
+      "stream_position": 136
+    },
+    {
+      "idx": 137,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 55,
+      "survived": 2,
+      "stream_position": 137
+    },
+    {
+      "idx": 138,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 87,
+      "survived": 2,
+      "stream_position": 138
+    },
+    {
+      "idx": 139,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 68,
+      "survived": 2,
+      "stream_position": 139
+    },
+    {
+      "idx": 140,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 121,
+      "survived": 2,
+      "stream_position": 140
+    },
+    {
+      "idx": 141,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 141
+    },
+    {
+      "idx": 142,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 26,
+      "survived": 2,
+      "stream_position": 142
+    },
+    {
+      "idx": 143,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 58,
+      "survived": 2,
+      "stream_position": 143
+    },
+    {
+      "idx": 144,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 342,
+      "survived": 2,
+      "stream_position": 144
+    },
+    {
+      "idx": 145,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 35,
+      "survived": 2,
+      "stream_position": 145
+    },
+    {
+      "idx": 146,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 71,
+      "survived": 2,
+      "stream_position": 146
+    },
+    {
+      "idx": 147,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 94,
+      "survived": 2,
+      "stream_position": 147
+    },
+    {
+      "idx": 148,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 1,
+      "stream_position": 148
+    },
+    {
+      "idx": 149,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 33,
+      "survived": 2,
+      "stream_position": 149
+    },
+    {
+      "idx": 150,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 151,
+      "survived": 2,
+      "stream_position": 150
+    },
+    {
+      "idx": 151,
+      "ep_seed": null,
+      "outcome": "loss",
+      "kills": 0,
+      "steps": 39,
+      "survived": 0,
+      "stream_position": 151
+    },
+    {
+      "idx": 152,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 152
+    },
+    {
+      "idx": 153,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 146,
+      "survived": 2,
+      "stream_position": 153
+    },
+    {
+      "idx": 154,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 154
+    },
+    {
+      "idx": 155,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 187,
+      "survived": 2,
+      "stream_position": 155
+    },
+    {
+      "idx": 156,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 72,
+      "survived": 2,
+      "stream_position": 156
+    },
+    {
+      "idx": 157,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 238,
+      "survived": 2,
+      "stream_position": 157
+    },
+    {
+      "idx": 158,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 77,
+      "survived": 2,
+      "stream_position": 158
+    },
+    {
+      "idx": 159,
+      "ep_seed": null,
+      "outcome": "loss",
+      "kills": 0,
+      "steps": 34,
+      "survived": 0,
+      "stream_position": 159
+    },
+    {
+      "idx": 160,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 160
+    },
+    {
+      "idx": 161,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 379,
+      "survived": 2,
+      "stream_position": 161
+    },
+    {
+      "idx": 162,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 41,
+      "survived": 2,
+      "stream_position": 162
+    },
+    {
+      "idx": 163,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 53,
+      "survived": 2,
+      "stream_position": 163
+    },
+    {
+      "idx": 164,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 138,
+      "survived": 2,
+      "stream_position": 164
+    },
+    {
+      "idx": 165,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 165
+    },
+    {
+      "idx": 166,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 166
+    },
+    {
+      "idx": 167,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 47,
+      "survived": 2,
+      "stream_position": 167
+    },
+    {
+      "idx": 168,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 219,
+      "survived": 2,
+      "stream_position": 168
+    },
+    {
+      "idx": 169,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 82,
+      "survived": 2,
+      "stream_position": 169
+    },
+    {
+      "idx": 170,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 170
+    },
+    {
+      "idx": 171,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 92,
+      "survived": 2,
+      "stream_position": 171
+    },
+    {
+      "idx": 172,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 172
+    },
+    {
+      "idx": 173,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 173
+    },
+    {
+      "idx": 174,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 739,
+      "survived": 2,
+      "stream_position": 174
+    },
+    {
+      "idx": 175,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 175
+    },
+    {
+      "idx": 176,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 459,
+      "survived": 2,
+      "stream_position": 176
+    },
+    {
+      "idx": 177,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 157,
+      "survived": 2,
+      "stream_position": 177
+    },
+    {
+      "idx": 178,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 178
+    },
+    {
+      "idx": 179,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 179
+    },
+    {
+      "idx": 180,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 914,
+      "survived": 2,
+      "stream_position": 180
+    },
+    {
+      "idx": 181,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 190,
+      "survived": 2,
+      "stream_position": 181
+    },
+    {
+      "idx": 182,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 56,
+      "survived": 2,
+      "stream_position": 182
+    },
+    {
+      "idx": 183,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 339,
+      "survived": 2,
+      "stream_position": 183
+    },
+    {
+      "idx": 184,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 12,
+      "survived": 2,
+      "stream_position": 184
+    },
+    {
+      "idx": 185,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 23,
+      "survived": 2,
+      "stream_position": 185
+    },
+    {
+      "idx": 186,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 804,
+      "survived": 2,
+      "stream_position": 186
+    },
+    {
+      "idx": 187,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 208,
+      "survived": 2,
+      "stream_position": 187
+    },
+    {
+      "idx": 188,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 380,
+      "survived": 2,
+      "stream_position": 188
+    },
+    {
+      "idx": 189,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 187,
+      "survived": 2,
+      "stream_position": 189
+    },
+    {
+      "idx": 190,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 108,
+      "survived": 2,
+      "stream_position": 190
+    },
+    {
+      "idx": 191,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 191
+    },
+    {
+      "idx": 192,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 192
+    },
+    {
+      "idx": 193,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 193
+    },
+    {
+      "idx": 194,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 194
+    },
+    {
+      "idx": 195,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 108,
+      "survived": 2,
+      "stream_position": 195
+    },
+    {
+      "idx": 196,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 1,
+      "stream_position": 196
+    },
+    {
+      "idx": 197,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 112,
+      "survived": 2,
+      "stream_position": 197
+    },
+    {
+      "idx": 198,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 49,
+      "survived": 2,
+      "stream_position": 198
+    },
+    {
+      "idx": 199,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 49,
+      "survived": 2,
+      "stream_position": 199
+    },
+    {
+      "idx": 200,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 23,
+      "survived": 2,
+      "stream_position": 200
+    },
+    {
+      "idx": 201,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 201
+    },
+    {
+      "idx": 202,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 330,
+      "survived": 2,
+      "stream_position": 202
+    },
+    {
+      "idx": 203,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 77,
+      "survived": 2,
+      "stream_position": 203
+    },
+    {
+      "idx": 204,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 188,
+      "survived": 2,
+      "stream_position": 204
+    },
+    {
+      "idx": 205,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 205
+    },
+    {
+      "idx": 206,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 206
+    },
+    {
+      "idx": 207,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 164,
+      "survived": 2,
+      "stream_position": 207
+    },
+    {
+      "idx": 208,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 219,
+      "survived": 2,
+      "stream_position": 208
+    },
+    {
+      "idx": 209,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 209
+    },
+    {
+      "idx": 210,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 210
+    },
+    {
+      "idx": 211,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 265,
+      "survived": 2,
+      "stream_position": 211
+    },
+    {
+      "idx": 212,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 212
+    },
+    {
+      "idx": 213,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 147,
+      "survived": 2,
+      "stream_position": 213
+    },
+    {
+      "idx": 214,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 214
+    },
+    {
+      "idx": 215,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 34,
+      "survived": 2,
+      "stream_position": 215
+    },
+    {
+      "idx": 216,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 34,
+      "survived": 2,
+      "stream_position": 216
+    },
+    {
+      "idx": 217,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 217
+    },
+    {
+      "idx": 218,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 218
+    },
+    {
+      "idx": 219,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 219
+    },
+    {
+      "idx": 220,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 279,
+      "survived": 2,
+      "stream_position": 220
+    },
+    {
+      "idx": 221,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 602,
+      "survived": 2,
+      "stream_position": 221
+    },
+    {
+      "idx": 222,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 231,
+      "survived": 2,
+      "stream_position": 222
+    },
+    {
+      "idx": 223,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 23,
+      "survived": 2,
+      "stream_position": 223
+    },
+    {
+      "idx": 224,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 224
+    },
+    {
+      "idx": 225,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 84,
+      "survived": 2,
+      "stream_position": 225
+    },
+    {
+      "idx": 226,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 212,
+      "survived": 2,
+      "stream_position": 226
+    },
+    {
+      "idx": 227,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 227
+    },
+    {
+      "idx": 228,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 1,
+      "stream_position": 228
+    },
+    {
+      "idx": 229,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 229
+    },
+    {
+      "idx": 230,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 230
+    },
+    {
+      "idx": 231,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 56,
+      "survived": 2,
+      "stream_position": 231
+    },
+    {
+      "idx": 232,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 322,
+      "survived": 2,
+      "stream_position": 232
+    },
+    {
+      "idx": 233,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 233
+    },
+    {
+      "idx": 234,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 234
+    },
+    {
+      "idx": 235,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 164,
+      "survived": 2,
+      "stream_position": 235
+    },
+    {
+      "idx": 236,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 302,
+      "survived": 2,
+      "stream_position": 236
+    },
+    {
+      "idx": 237,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 36,
+      "survived": 2,
+      "stream_position": 237
+    },
+    {
+      "idx": 238,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 390,
+      "survived": 2,
+      "stream_position": 238
+    },
+    {
+      "idx": 239,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 239
+    },
+    {
+      "idx": 240,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 240
+    },
+    {
+      "idx": 241,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 362,
+      "survived": 2,
+      "stream_position": 241
+    },
+    {
+      "idx": 242,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 159,
+      "survived": 2,
+      "stream_position": 242
+    },
+    {
+      "idx": 243,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 61,
+      "survived": 2,
+      "stream_position": 243
+    },
+    {
+      "idx": 244,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 244
+    },
+    {
+      "idx": 245,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 245
+    },
+    {
+      "idx": 246,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 335,
+      "survived": 2,
+      "stream_position": 246
+    },
+    {
+      "idx": 247,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 247
+    },
+    {
+      "idx": 248,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 106,
+      "survived": 2,
+      "stream_position": 248
+    },
+    {
+      "idx": 249,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 171,
+      "survived": 2,
+      "stream_position": 249
+    },
+    {
+      "idx": 250,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 196,
+      "survived": 2,
+      "stream_position": 250
+    },
+    {
+      "idx": 251,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 298,
+      "survived": 2,
+      "stream_position": 251
+    },
+    {
+      "idx": 252,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 207,
+      "survived": 2,
+      "stream_position": 252
+    },
+    {
+      "idx": 253,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 253
+    },
+    {
+      "idx": 254,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 254
+    },
+    {
+      "idx": 255,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 255
+    },
+    {
+      "idx": 256,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 34,
+      "survived": 2,
+      "stream_position": 256
+    },
+    {
+      "idx": 257,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 81,
+      "survived": 2,
+      "stream_position": 257
+    },
+    {
+      "idx": 258,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 198,
+      "survived": 2,
+      "stream_position": 258
+    },
+    {
+      "idx": 259,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 423,
+      "survived": 2,
+      "stream_position": 259
+    },
+    {
+      "idx": 260,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 125,
+      "survived": 2,
+      "stream_position": 260
+    },
+    {
+      "idx": 261,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 249,
+      "survived": 2,
+      "stream_position": 261
+    },
+    {
+      "idx": 262,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 104,
+      "survived": 2,
+      "stream_position": 262
+    },
+    {
+      "idx": 263,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 78,
+      "survived": 2,
+      "stream_position": 263
+    },
+    {
+      "idx": 264,
+      "ep_seed": null,
+      "outcome": "loss",
+      "kills": 0,
+      "steps": 34,
+      "survived": 0,
+      "stream_position": 264
+    },
+    {
+      "idx": 265,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 158,
+      "survived": 2,
+      "stream_position": 265
+    },
+    {
+      "idx": 266,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 47,
+      "survived": 2,
+      "stream_position": 266
+    },
+    {
+      "idx": 267,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 33,
+      "survived": 2,
+      "stream_position": 267
+    },
+    {
+      "idx": 268,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 268
+    },
+    {
+      "idx": 269,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 141,
+      "survived": 2,
+      "stream_position": 269
+    },
+    {
+      "idx": 270,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 146,
+      "survived": 2,
+      "stream_position": 270
+    },
+    {
+      "idx": 271,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 271
+    },
+    {
+      "idx": 272,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 272
+    },
+    {
+      "idx": 273,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 65,
+      "survived": 2,
+      "stream_position": 273
+    },
+    {
+      "idx": 274,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 274
+    },
+    {
+      "idx": 275,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 275
+    },
+    {
+      "idx": 276,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 118,
+      "survived": 2,
+      "stream_position": 276
+    },
+    {
+      "idx": 277,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 595,
+      "survived": 2,
+      "stream_position": 277
+    },
+    {
+      "idx": 278,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 278
+    },
+    {
+      "idx": 279,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 279
+    },
+    {
+      "idx": 280,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 166,
+      "survived": 2,
+      "stream_position": 280
+    },
+    {
+      "idx": 281,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 1,
+      "stream_position": 281
+    },
+    {
+      "idx": 282,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 47,
+      "survived": 2,
+      "stream_position": 282
+    },
+    {
+      "idx": 283,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 197,
+      "survived": 2,
+      "stream_position": 283
+    },
+    {
+      "idx": 284,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 43,
+      "survived": 2,
+      "stream_position": 284
+    },
+    {
+      "idx": 285,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 107,
+      "survived": 2,
+      "stream_position": 285
+    },
+    {
+      "idx": 286,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 286
+    },
+    {
+      "idx": 287,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 828,
+      "survived": 2,
+      "stream_position": 287
+    },
+    {
+      "idx": 288,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 112,
+      "survived": 2,
+      "stream_position": 288
+    },
+    {
+      "idx": 289,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 108,
+      "survived": 2,
+      "stream_position": 289
+    },
+    {
+      "idx": 290,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 120,
+      "survived": 2,
+      "stream_position": 290
+    },
+    {
+      "idx": 291,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 13,
+      "survived": 2,
+      "stream_position": 291
+    },
+    {
+      "idx": 292,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 292
+    },
+    {
+      "idx": 293,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 293
+    },
+    {
+      "idx": 294,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 50,
+      "survived": 2,
+      "stream_position": 294
+    },
+    {
+      "idx": 295,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 295
+    },
+    {
+      "idx": 296,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 28,
+      "survived": 2,
+      "stream_position": 296
+    },
+    {
+      "idx": 297,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 226,
+      "survived": 2,
+      "stream_position": 297
+    },
+    {
+      "idx": 298,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 298
+    },
+    {
+      "idx": 299,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 299
+    },
+    {
+      "idx": 300,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 300
+    },
+    {
+      "idx": 301,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 301
+    },
+    {
+      "idx": 302,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 685,
+      "survived": 2,
+      "stream_position": 302
+    },
+    {
+      "idx": 303,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 154,
+      "survived": 2,
+      "stream_position": 303
+    },
+    {
+      "idx": 304,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 71,
+      "survived": 2,
+      "stream_position": 304
+    },
+    {
+      "idx": 305,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 105,
+      "survived": 2,
+      "stream_position": 305
+    },
+    {
+      "idx": 306,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 186,
+      "survived": 2,
+      "stream_position": 306
+    },
+    {
+      "idx": 307,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 25,
+      "survived": 2,
+      "stream_position": 307
+    },
+    {
+      "idx": 308,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 308
+    },
+    {
+      "idx": 309,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 160,
+      "survived": 2,
+      "stream_position": 309
+    },
+    {
+      "idx": 310,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 262,
+      "survived": 2,
+      "stream_position": 310
+    },
+    {
+      "idx": 311,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 24,
+      "survived": 2,
+      "stream_position": 311
+    },
+    {
+      "idx": 312,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 20,
+      "survived": 2,
+      "stream_position": 312
+    },
+    {
+      "idx": 313,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 167,
+      "survived": 2,
+      "stream_position": 313
+    },
+    {
+      "idx": 314,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 314
+    },
+    {
+      "idx": 315,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 124,
+      "survived": 2,
+      "stream_position": 315
+    },
+    {
+      "idx": 316,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 68,
+      "survived": 2,
+      "stream_position": 316
+    },
+    {
+      "idx": 317,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 12,
+      "survived": 2,
+      "stream_position": 317
+    },
+    {
+      "idx": 318,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 318
+    },
+    {
+      "idx": 319,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 79,
+      "survived": 2,
+      "stream_position": 319
+    },
+    {
+      "idx": 320,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 130,
+      "survived": 2,
+      "stream_position": 320
+    },
+    {
+      "idx": 321,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 147,
+      "survived": 2,
+      "stream_position": 321
+    },
+    {
+      "idx": 322,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 34,
+      "survived": 2,
+      "stream_position": 322
+    },
+    {
+      "idx": 323,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 298,
+      "survived": 2,
+      "stream_position": 323
+    },
+    {
+      "idx": 324,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 324
+    },
+    {
+      "idx": 325,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 325
+    },
+    {
+      "idx": 326,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 192,
+      "survived": 2,
+      "stream_position": 326
+    },
+    {
+      "idx": 327,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 91,
+      "survived": 2,
+      "stream_position": 327
+    },
+    {
+      "idx": 328,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 529,
+      "survived": 2,
+      "stream_position": 328
+    },
+    {
+      "idx": 329,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 127,
+      "survived": 2,
+      "stream_position": 329
+    },
+    {
+      "idx": 330,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 330
+    },
+    {
+      "idx": 331,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 116,
+      "survived": 2,
+      "stream_position": 331
+    },
+    {
+      "idx": 332,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 116,
+      "survived": 2,
+      "stream_position": 332
+    },
+    {
+      "idx": 333,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 262,
+      "survived": 2,
+      "stream_position": 333
+    },
+    {
+      "idx": 334,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 121,
+      "survived": 2,
+      "stream_position": 334
+    },
+    {
+      "idx": 335,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 186,
+      "survived": 2,
+      "stream_position": 335
+    },
+    {
+      "idx": 336,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 123,
+      "survived": 2,
+      "stream_position": 336
+    },
+    {
+      "idx": 337,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 23,
+      "survived": 2,
+      "stream_position": 337
+    },
+    {
+      "idx": 338,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 23,
+      "survived": 2,
+      "stream_position": 338
+    },
+    {
+      "idx": 339,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 703,
+      "survived": 2,
+      "stream_position": 339
+    },
+    {
+      "idx": 340,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 340
+    },
+    {
+      "idx": 341,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 98,
+      "survived": 2,
+      "stream_position": 341
+    },
+    {
+      "idx": 342,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 342
+    },
+    {
+      "idx": 343,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 343
+    },
+    {
+      "idx": 344,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 344
+    },
+    {
+      "idx": 345,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 161,
+      "survived": 2,
+      "stream_position": 345
+    },
+    {
+      "idx": 346,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 24,
+      "survived": 2,
+      "stream_position": 346
+    },
+    {
+      "idx": 347,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 87,
+      "survived": 2,
+      "stream_position": 347
+    },
+    {
+      "idx": 348,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 21,
+      "survived": 2,
+      "stream_position": 348
+    },
+    {
+      "idx": 349,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 134,
+      "survived": 2,
+      "stream_position": 349
+    },
+    {
+      "idx": 350,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 350
+    },
+    {
+      "idx": 351,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 59,
+      "survived": 2,
+      "stream_position": 351
+    },
+    {
+      "idx": 352,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 352
+    },
+    {
+      "idx": 353,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 203,
+      "survived": 2,
+      "stream_position": 353
+    },
+    {
+      "idx": 354,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 373,
+      "survived": 2,
+      "stream_position": 354
+    },
+    {
+      "idx": 355,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 56,
+      "survived": 2,
+      "stream_position": 355
+    },
+    {
+      "idx": 356,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 107,
+      "survived": 2,
+      "stream_position": 356
+    },
+    {
+      "idx": 357,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 357
+    },
+    {
+      "idx": 358,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 358
+    },
+    {
+      "idx": 359,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 76,
+      "survived": 2,
+      "stream_position": 359
+    },
+    {
+      "idx": 360,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 238,
+      "survived": 2,
+      "stream_position": 360
+    },
+    {
+      "idx": 361,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 157,
+      "survived": 2,
+      "stream_position": 361
+    },
+    {
+      "idx": 362,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 583,
+      "survived": 2,
+      "stream_position": 362
+    },
+    {
+      "idx": 363,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 34,
+      "survived": 2,
+      "stream_position": 363
+    },
+    {
+      "idx": 364,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 364
+    },
+    {
+      "idx": 365,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 305,
+      "survived": 2,
+      "stream_position": 365
+    },
+    {
+      "idx": 366,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 366
+    },
+    {
+      "idx": 367,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 74,
+      "survived": 2,
+      "stream_position": 367
+    },
+    {
+      "idx": 368,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 13,
+      "survived": 2,
+      "stream_position": 368
+    },
+    {
+      "idx": 369,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 56,
+      "survived": 2,
+      "stream_position": 369
+    },
+    {
+      "idx": 370,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 438,
+      "survived": 2,
+      "stream_position": 370
+    },
+    {
+      "idx": 371,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 371
+    },
+    {
+      "idx": 372,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 36,
+      "survived": 2,
+      "stream_position": 372
+    },
+    {
+      "idx": 373,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 373
+    },
+    {
+      "idx": 374,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 163,
+      "survived": 2,
+      "stream_position": 374
+    },
+    {
+      "idx": 375,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 334,
+      "survived": 2,
+      "stream_position": 375
+    },
+    {
+      "idx": 376,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 330,
+      "survived": 2,
+      "stream_position": 376
+    },
+    {
+      "idx": 377,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 377
+    },
+    {
+      "idx": 378,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 160,
+      "survived": 2,
+      "stream_position": 378
+    },
+    {
+      "idx": 379,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 379
+    },
+    {
+      "idx": 380,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 380
+    },
+    {
+      "idx": 381,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 84,
+      "survived": 2,
+      "stream_position": 381
+    },
+    {
+      "idx": 382,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 144,
+      "survived": 2,
+      "stream_position": 382
+    },
+    {
+      "idx": 383,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 100,
+      "survived": 2,
+      "stream_position": 383
+    },
+    {
+      "idx": 384,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 65,
+      "survived": 2,
+      "stream_position": 384
+    },
+    {
+      "idx": 385,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 56,
+      "survived": 2,
+      "stream_position": 385
+    },
+    {
+      "idx": 386,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 386
+    },
+    {
+      "idx": 387,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 387
+    },
+    {
+      "idx": 388,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 948,
+      "survived": 2,
+      "stream_position": 388
+    },
+    {
+      "idx": 389,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 103,
+      "survived": 2,
+      "stream_position": 389
+    },
+    {
+      "idx": 390,
+      "ep_seed": null,
+      "outcome": "loss",
+      "kills": 0,
+      "steps": 36,
+      "survived": 0,
+      "stream_position": 390
+    },
+    {
+      "idx": 391,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 921,
+      "survived": 2,
+      "stream_position": 391
+    },
+    {
+      "idx": 392,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 392
+    },
+    {
+      "idx": 393,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 393
+    },
+    {
+      "idx": 394,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 121,
+      "survived": 2,
+      "stream_position": 394
+    },
+    {
+      "idx": 395,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 395
+    },
+    {
+      "idx": 396,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 737,
+      "survived": 2,
+      "stream_position": 396
+    },
+    {
+      "idx": 397,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 397
+    },
+    {
+      "idx": 398,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 76,
+      "survived": 2,
+      "stream_position": 398
+    },
+    {
+      "idx": 399,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 399
+    },
+    {
+      "idx": 400,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 400
+    },
+    {
+      "idx": 401,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 88,
+      "survived": 2,
+      "stream_position": 401
+    },
+    {
+      "idx": 402,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 402
+    },
+    {
+      "idx": 403,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 403
+    },
+    {
+      "idx": 404,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 102,
+      "survived": 2,
+      "stream_position": 404
+    },
+    {
+      "idx": 405,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 158,
+      "survived": 2,
+      "stream_position": 405
+    },
+    {
+      "idx": 406,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 406
+    },
+    {
+      "idx": 407,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 322,
+      "survived": 2,
+      "stream_position": 407
+    },
+    {
+      "idx": 408,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 29,
+      "survived": 2,
+      "stream_position": 408
+    },
+    {
+      "idx": 409,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 217,
+      "survived": 2,
+      "stream_position": 409
+    },
+    {
+      "idx": 410,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 345,
+      "survived": 2,
+      "stream_position": 410
+    },
+    {
+      "idx": 411,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 34,
+      "survived": 2,
+      "stream_position": 411
+    },
+    {
+      "idx": 412,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 458,
+      "survived": 2,
+      "stream_position": 412
+    },
+    {
+      "idx": 413,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 413
+    },
+    {
+      "idx": 414,
+      "ep_seed": null,
+      "outcome": "loss",
+      "kills": 0,
+      "steps": 12,
+      "survived": 0,
+      "stream_position": 414
+    },
+    {
+      "idx": 415,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 415
+    },
+    {
+      "idx": 416,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 416
+    },
+    {
+      "idx": 417,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 417
+    },
+    {
+      "idx": 418,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 189,
+      "survived": 2,
+      "stream_position": 418
+    },
+    {
+      "idx": 419,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 180,
+      "survived": 2,
+      "stream_position": 419
+    },
+    {
+      "idx": 420,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 420
+    },
+    {
+      "idx": 421,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 397,
+      "survived": 1,
+      "stream_position": 421
+    },
+    {
+      "idx": 422,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 422
+    },
+    {
+      "idx": 423,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 106,
+      "survived": 2,
+      "stream_position": 423
+    },
+    {
+      "idx": 424,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 424
+    },
+    {
+      "idx": 425,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 425
+    },
+    {
+      "idx": 426,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 77,
+      "survived": 2,
+      "stream_position": 426
+    },
+    {
+      "idx": 427,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 63,
+      "survived": 2,
+      "stream_position": 427
+    },
+    {
+      "idx": 428,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 140,
+      "survived": 2,
+      "stream_position": 428
+    },
+    {
+      "idx": 429,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 429
+    },
+    {
+      "idx": 430,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 430
+    },
+    {
+      "idx": 431,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 77,
+      "survived": 2,
+      "stream_position": 431
+    },
+    {
+      "idx": 432,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 67,
+      "survived": 2,
+      "stream_position": 432
+    },
+    {
+      "idx": 433,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 24,
+      "survived": 2,
+      "stream_position": 433
+    },
+    {
+      "idx": 434,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 46,
+      "survived": 2,
+      "stream_position": 434
+    },
+    {
+      "idx": 435,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 234,
+      "survived": 2,
+      "stream_position": 435
+    },
+    {
+      "idx": 436,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 195,
+      "survived": 2,
+      "stream_position": 436
+    },
+    {
+      "idx": 437,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 437
+    },
+    {
+      "idx": 438,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 92,
+      "survived": 2,
+      "stream_position": 438
+    },
+    {
+      "idx": 439,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 285,
+      "survived": 2,
+      "stream_position": 439
+    },
+    {
+      "idx": 440,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 440
+    },
+    {
+      "idx": 441,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 441
+    },
+    {
+      "idx": 442,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 479,
+      "survived": 2,
+      "stream_position": 442
+    },
+    {
+      "idx": 443,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 81,
+      "survived": 2,
+      "stream_position": 443
+    },
+    {
+      "idx": 444,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 32,
+      "survived": 2,
+      "stream_position": 444
+    },
+    {
+      "idx": 445,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 445
+    },
+    {
+      "idx": 446,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 446
+    },
+    {
+      "idx": 447,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 447
+    },
+    {
+      "idx": 448,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 28,
+      "survived": 2,
+      "stream_position": 448
+    },
+    {
+      "idx": 449,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 254,
+      "survived": 2,
+      "stream_position": 449
+    },
+    {
+      "idx": 450,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 94,
+      "survived": 2,
+      "stream_position": 450
+    },
+    {
+      "idx": 451,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 451
+    },
+    {
+      "idx": 452,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 13,
+      "survived": 2,
+      "stream_position": 452
+    },
+    {
+      "idx": 453,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 20,
+      "survived": 2,
+      "stream_position": 453
+    },
+    {
+      "idx": 454,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 206,
+      "survived": 2,
+      "stream_position": 454
+    },
+    {
+      "idx": 455,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 455
+    },
+    {
+      "idx": 456,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 456
+    },
+    {
+      "idx": 457,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 316,
+      "survived": 2,
+      "stream_position": 457
+    },
+    {
+      "idx": 458,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 739,
+      "survived": 2,
+      "stream_position": 458
+    },
+    {
+      "idx": 459,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 459
+    },
+    {
+      "idx": 460,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 54,
+      "survived": 2,
+      "stream_position": 460
+    },
+    {
+      "idx": 461,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 65,
+      "survived": 2,
+      "stream_position": 461
+    },
+    {
+      "idx": 462,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 13,
+      "survived": 2,
+      "stream_position": 462
+    },
+    {
+      "idx": 463,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 64,
+      "survived": 2,
+      "stream_position": 463
+    },
+    {
+      "idx": 464,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 57,
+      "survived": 2,
+      "stream_position": 464
+    },
+    {
+      "idx": 465,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 259,
+      "survived": 2,
+      "stream_position": 465
+    },
+    {
+      "idx": 466,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 52,
+      "survived": 2,
+      "stream_position": 466
+    },
+    {
+      "idx": 467,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 42,
+      "survived": 2,
+      "stream_position": 467
+    },
+    {
+      "idx": 468,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 468
+    },
+    {
+      "idx": 469,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 54,
+      "survived": 2,
+      "stream_position": 469
+    },
+    {
+      "idx": 470,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 470
+    },
+    {
+      "idx": 471,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 471
+    },
+    {
+      "idx": 472,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 472
+    },
+    {
+      "idx": 473,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 473
+    },
+    {
+      "idx": 474,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 372,
+      "survived": 2,
+      "stream_position": 474
+    },
+    {
+      "idx": 475,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 177,
+      "survived": 2,
+      "stream_position": 475
+    },
+    {
+      "idx": 476,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 12,
+      "survived": 2,
+      "stream_position": 476
+    },
+    {
+      "idx": 477,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 55,
+      "survived": 2,
+      "stream_position": 477
+    },
+    {
+      "idx": 478,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 478
+    },
+    {
+      "idx": 479,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 479
+    },
+    {
+      "idx": 480,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 95,
+      "survived": 2,
+      "stream_position": 480
+    },
+    {
+      "idx": 481,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 349,
+      "survived": 2,
+      "stream_position": 481
+    },
+    {
+      "idx": 482,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 482
+    },
+    {
+      "idx": 483,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 147,
+      "survived": 2,
+      "stream_position": 483
+    },
+    {
+      "idx": 484,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 183,
+      "survived": 2,
+      "stream_position": 484
+    },
+    {
+      "idx": 485,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 57,
+      "survived": 2,
+      "stream_position": 485
+    },
+    {
+      "idx": 486,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 486
+    },
+    {
+      "idx": 487,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 0,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 487
+    },
+    {
+      "idx": 488,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 159,
+      "survived": 2,
+      "stream_position": 488
+    },
+    {
+      "idx": 489,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 23,
+      "survived": 2,
+      "stream_position": 489
+    },
+    {
+      "idx": 490,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 98,
+      "survived": 2,
+      "stream_position": 490
+    },
+    {
+      "idx": 491,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 200,
+      "survived": 2,
+      "stream_position": 491
+    },
+    {
+      "idx": 492,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 65,
+      "survived": 2,
+      "stream_position": 492
+    },
+    {
+      "idx": 493,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 125,
+      "survived": 2,
+      "stream_position": 493
+    },
+    {
+      "idx": 494,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 107,
+      "survived": 2,
+      "stream_position": 494
+    },
+    {
+      "idx": 495,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 295,
+      "survived": 2,
+      "stream_position": 495
+    },
+    {
+      "idx": 496,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 70,
+      "survived": 2,
+      "stream_position": 496
+    },
+    {
+      "idx": 497,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 43,
+      "survived": 2,
+      "stream_position": 497
+    },
+    {
+      "idx": 498,
+      "ep_seed": null,
+      "outcome": "win",
+      "kills": 2,
+      "steps": 146,
+      "survived": 2,
+      "stream_position": 498
+    },
+    {
+      "idx": 499,
+      "ep_seed": null,
+      "outcome": "draw",
+      "kills": 1,
+      "steps": 1000,
+      "survived": 2,
+      "stream_position": 499
+    }
+  ],
+  "runtime": {
+    "device": "cpu",
+    "torch_version": "2.6.0+cu124",
+    "blas_backend": "mkl+mkldnn",
+    "num_threads": 6,
+    "cpu_model": "AMD64 Family 25 Model 33 Stepping 0, AuthenticAMD",
+    "os": "Windows-10-10.0.19045-SP0",
+    "python_version": "3.12.3",
+    "reconstructed": true,
+    "thread_pinned": false,
+    "reconstruction_basis": "reconstructed from device-replication experiment; see docs/EVAL_PROTOCOL_AUDIT.md section 2"
+  },
+  "seeding": "legacy"
+}
