@@ -1,0 +1,79 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aircombat-bench"
+version = "0.1.0"
+description = "Multi-agent reinforcement learning benchmark for 3-D air combat with 6-DoF F-16 dynamics"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Ahmet Yıldız", email = "ahmetstar150@gmail.com" },
+]
+keywords = ["reinforcement-learning", "multi-agent", "air-combat", "MARL", "simulation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.0",
+    "numpy>=1.24",
+    "pyyaml>=6.0",
+    "scipy>=1.10",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+]
+zoo = [
+    "requests>=2.28",  # for downloading checkpoint assets from GitHub Releases
+]
+pettingzoo = [
+    "pettingzoo>=1.24",
+    "gymnasium>=0.29",
+]
+all = [
+    "pettingzoo>=1.24",
+    "gymnasium>=0.29",
+    "requests>=2.28",
+    "pytest>=7.0",
+    "pytest-cov",
+]
+
+[project.urls]
+Homepage = "https://github.com/AhmetYldz39/aircombat-bench"
+Repository = "https://github.com/AhmetYldz39/aircombat-bench"
+"Bug Tracker" = "https://github.com/AhmetYldz39/aircombat-bench/issues"
+
+[project.scripts]
+aircombat-train-mappo   = "aircombat_bench.algorithms.mappo:main"
+aircombat-train-qmix    = "aircombat_bench.algorithms.qmix:main"
+aircombat-train-facmac  = "aircombat_bench.algorithms.facmac:main"
+aircombat-eval          = "aircombat_bench.eval.runner:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aircombat_bench*"]
+exclude = ["tests*", "benchmark*", "docs*", "findings*", "chapters*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.setuptools.package-data]
+aircombat_bench = [
+    "scenarios/*.yaml",
+    "zoo/manifest.json",
+]

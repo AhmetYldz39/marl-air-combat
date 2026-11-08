@@ -15,7 +15,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from envs.geometry_utils import (
+from aircombat_bench.envs.geometry_utils import (
     relative_position, distance_3d, distance_horizontal,
     bearing_angle, elevation_angle, aspect_angle,
     antenna_train_angle, flight_path_to_heading,

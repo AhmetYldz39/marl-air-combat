@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "aircombat-bench: A Multi-Agent Reinforcement Learning Benchmark for 3-D Air Combat"
+version: "0.1.0"
+date-released: "2026-09-06"
+license: MIT
+repository-code: "https://github.com/AhmetYldz39/aircombat-bench"
+authors:
+  - family-names: "Yıldız"
+    given-names: "Ahmet"
+    email: "ahmetstar150@gmail.com"
+abstract: >
+  aircombat-bench is an open-source benchmark for multi-agent reinforcement
+  learning in 3-D air combat. It provides a 6-DoF F-16 simulation (JSBSim
+  aerodynamic coefficients, RK4 integration), a 2v2 dogfighting environment
+  with a weapons effects zone (WEZ) model, and six trained baselines
+  (MAPPO, MAPPO+GAT, MAPPO+GAT+OM+Role, QMIX, FACMAC, FACMAC+OM+R).
+  All baselines are evaluated at 500 episodes with a fixed seed for
+  reproducibility. The best baseline (FACMAC+OM+R) achieves 84.2% win rate
+  against a rule-based heuristic opponent.
+keywords:
+  - reinforcement learning
+  - multi-agent
+  - air combat
+  - simulation
+  - MAPPO
+  - QMIX
+  - FACMAC
+preferred-citation:
+  type: conference-paper
+  authors:
+    - family-names: "Yıldız"
+      given-names: "Ahmet"
+  title: "Cooperative Multi-Agent Reinforcement Learning for Beyond-Visual-Range Air Combat with Graph Attention Communication and Opponent Modeling"
+  collection-title: "Proceedings of the 2027 IEEE Aerospace Conference"
+  year: 2027
+  publisher:
+    name: "IEEE"

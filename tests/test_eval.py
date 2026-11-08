@@ -54,7 +54,7 @@ TEST_CONFIG["training"]["hidden_dim"] = 64
 # ===========================================================================
 print("\n── 1. eval_heuristic_baseline ───────────────────────────────────")
 # ===========================================================================
-from evaluation.eval import eval_heuristic_baseline, PHASE1_CRITERIA
+from aircombat_bench.eval.runner import eval_heuristic_baseline, PHASE1_CRITERIA
 
 results_b = eval_heuristic_baseline(
     TEST_CONFIG, n_episodes=10, seed=42, verbose=False
@@ -80,7 +80,7 @@ print(f"  [bilgi] win={results_b['wins']}, loss={results_b['losses']}, "
 # ===========================================================================
 print("\n── 2. check_phase_criteria ──────────────────────────────────────")
 # ===========================================================================
-from evaluation.eval import Evaluator
+from aircombat_bench.eval.runner import Evaluator
 
 # Kriterler sağlanıyor
 good_results = {
@@ -159,8 +159,8 @@ if not HAS_TORCH:
     skip("Evaluator.run() testi",    "PyTorch yok")
     skip("Checkpoint yükleme testi", "PyTorch yok")
 else:
-    from training.train_mappo import MAPPOActor, MAPPOTrainer
-    from utils.normalization import Normalizer
+    from aircombat_bench.algorithms.mappo import MAPPOActor, MAPPOTrainer
+    from aircombat_bench.utils.normalization import Normalizer
 
     # Geçici checkpoint oluştur
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -185,7 +185,7 @@ else:
         try:
             ev = Evaluator(cfg, ckpt_path, device="cpu")
             check("Evaluator init OK",          True)
-            check("obs_dim = 49",               ev.obs_dim == 49)
+            check("obs_dim = 50",               ev.obs_dim == 50)
             check("train_ids = blue takımı",    ev.train_ids == ["blue_0", "blue_1"])
         except Exception as e:
             check("Evaluator init OK", False, str(e))

@@ -49,13 +49,13 @@ try:
 except ImportError:
     _TORCH_AVAILABLE = False
 
-from envs.dogfight_env import DogfightEnv, BLUE, RED
-from agents.heuristic_agent import MultiHeuristicPolicy
-from utils.normalization import Normalizer
-from envs.aircraft_model import STATE_X, STATE_Y, STATE_H, STATE_ALIVE
-from envs.geometry_utils import distance_3d, bearing_angle, wrap_to_pi
-from models.gat_comm import GATComm
-from models.om_net import (
+from aircombat_bench.envs.dogfight_env import DogfightEnv, BLUE, RED
+from aircombat_bench.agents.heuristic_agent import MultiHeuristicPolicy
+from aircombat_bench.utils.normalization import Normalizer
+from aircombat_bench.envs.aircraft_model import STATE_X, STATE_Y, STATE_H, STATE_ALIVE
+from aircombat_bench.envs.geometry_utils import distance_3d, bearing_angle, wrap_to_pi
+from aircombat_bench.models.gat_comm import GATComm
+from aircombat_bench.models.om_net import (
     CentralizedOpponentModel, CentralizedRoleAssigner,
     EnemyHistoryBuffer, build_team_state, INTENT_DEFENSIVE,
 )
@@ -135,7 +135,7 @@ class Evaluator:
         self._use_gat = self._use_om or self._gat_old
 
         if self._use_gat:
-            from training.train_mappo import GATMAPPOActor
+            from aircombat_bench.algorithms.mappo import GATMAPPOActor
             self.obs_dim = 78
             self.actor   = GATMAPPOActor(
                 old_obs_dim=50, ext_dim=18, intent_dim=6, role_dim=4,
@@ -168,7 +168,7 @@ class Evaluator:
                 self.cent_om    = None
                 self.enemy_hist = None
         else:
-            from training.train_mappo import MAPPOActor
+            from aircombat_bench.algorithms.mappo import MAPPOActor
             self.obs_dim  = _BASE_OBS_DIM
             self.gat_comm = None
             self.cent_om  = None
@@ -477,7 +477,7 @@ class Evaluator:
     def _get_actions(self, obs_dict: dict,
                      deterministic: bool) -> dict:
         """Eğitilmiş actor ile aksiyon üret."""
-        from training.train_mappo import MAPPOActor
+        from aircombat_bench.algorithms.mappo import MAPPOActor
         actions = {}
         with torch.no_grad():
             for aid in self.train_ids:

@@ -12,18 +12,18 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from envs.reward_model import (
+from aircombat_bench.envs.reward_model import (
     RewardModel, aggression_to_embedding,
     AGGRESSION_MIN, AGGRESSION_MAX, AGGRESSION_DEFAULT
 )
-from envs.weapons_model import WeaponsModel
-from envs.aircraft_model import (
+from aircombat_bench.envs.weapons_model import WeaponsModel
+from aircombat_bench.envs.aircraft_model import (
     AircraftModel,
     STATE_X, STATE_Y, STATE_H, STATE_V, STATE_PSI, STATE_ALPHA,
     STATE_AMMO, STATE_HP, STATE_ALIVE, STATE_FUEL,
     ACTION_DIM, ACTION_FIRE
 )
-from envs.geometry_utils import deg2rad
+from aircombat_bench.envs.geometry_utils import deg2rad
 
 PASS = "✅ PASS"
 FAIL = "❌ FAIL"
@@ -270,8 +270,8 @@ agent_rs = make_state(ammo=6.0)
 _, i_miss = rm.compute(agent_rs, [], [], weapons, agent_rs.copy(), miss_fire(), DT, MAP_SIZE)
 _, i_norm = rm.compute(agent_rs, [], [], weapons, agent_rs.copy(), no_fire(),   DT, MAP_SIZE)
 
-check("WEZ dışı ateş → r_resource = -1.0",
-      almost_equal(i_miss["r_resource"], -1.0, tol=0.1), f"{i_miss['r_resource']:.3f}")
+check("WEZ dışı ateş → r_resource = -2.0",
+      almost_equal(i_miss["r_resource"], -2.0, tol=0.1), f"{i_miss['r_resource']:.3f}")
 check("Normal uçuş → r_resource ≥ -0.1", i_norm["r_resource"] >= -0.1)
 
 

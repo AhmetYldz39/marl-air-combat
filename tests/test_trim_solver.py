@@ -52,7 +52,7 @@ def make_dummy_aircraft():
 
 aircraft = make_dummy_aircraft()
 
-from envs.trim_solver import TrimSolver, TrimResult, _SCIPY_AVAILABLE
+from aircombat_bench.envs.trim_solver import TrimSolver, TrimResult, _SCIPY_AVAILABLE
 print(f"scipy available: {_SCIPY_AVAILABLE}")
 
 solver = TrimSolver(aircraft)

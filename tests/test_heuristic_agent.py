@@ -32,13 +32,13 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from agents.heuristic_agent import (
+from aircombat_bench.agents.heuristic_agent import (
     HeuristicAgent, MultiHeuristicPolicy,
     CRITICAL_H_FLOOR, CRITICAL_ALPHA_MAX, CRITICAL_V_MIN, CRITICAL_MAP_MARGIN,
     EVASION_THREAT_THRESHOLD, PURSUIT_WEZ_ENGAGE,
 )
-from envs.dogfight_env import DogfightEnv, BLUE, RED
-from envs.aircraft_model import (
+from aircombat_bench.envs.dogfight_env import DogfightEnv, BLUE, RED
+from aircombat_bench.envs.aircraft_model import (
     AircraftModel,
     STATE_X, STATE_Y, STATE_H, STATE_V, STATE_ALPHA, STATE_BETA,
     STATE_GAMMA, STATE_PHI, STATE_THETA, STATE_PSI,
@@ -47,7 +47,7 @@ from envs.aircraft_model import (
     ACTION_DA, ACTION_DE, ACTION_DR, ACTION_DT, ACTION_FIRE,
     ACTION_DIM,
 )
-from envs.geometry_utils import deg2rad
+from aircombat_bench.envs.geometry_utils import deg2rad
 
 PASS = "✅ PASS"
 FAIL = "❌ FAIL"
@@ -170,7 +170,7 @@ print("\n── 7. EVASION: yüksek tehdit → break turn ───────�
 s_prey  = mk(x=0.0,    y=0.0,    psi_deg=0.0)    # biz: kuzeye bakıyor
 s_pred  = mk(x=0.0,    y=-1500.0, psi_deg=0.0)   # düşman: tam arkamızda, kuzeye bakıyor
 # Düşmanın bize tehdidi yüksek olmalı (önümüzde, WEZ içinde)
-from envs.weapons_model import WeaponsModel
+from aircombat_bench.envs.weapons_model import WeaponsModel
 wm_test = WeaponsModel(CONFIG)
 threat = wm_test.wez_advantage_score(s_pred, s_prey)
 print(f"  [debug] tehdit skoru = {threat:.3f} (≥{EVASION_THREAT_THRESHOLD} gerekli)")

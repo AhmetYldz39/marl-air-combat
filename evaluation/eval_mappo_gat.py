@@ -20,13 +20,13 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 import torch
-from envs.dogfight_env import DogfightEnv, BLUE, RED
-from envs.aircraft_model import STATE_ALIVE, STATE_X, STATE_Y, STATE_H
-from envs.geometry_utils import distance_3d, bearing_angle, wrap_to_pi
-from agents.heuristic_agent import MultiHeuristicPolicy
-from utils.normalization import Normalizer
-from training.train_mappo import GATMAPPOActor, MAPPOActor
-from models.gat_comm import GATComm
+from aircombat_bench.envs.dogfight_env import DogfightEnv, BLUE, RED
+from aircombat_bench.envs.aircraft_model import STATE_ALIVE, STATE_X, STATE_Y, STATE_H
+from aircombat_bench.envs.geometry_utils import distance_3d, bearing_angle, wrap_to_pi
+from aircombat_bench.agents.heuristic_agent import MultiHeuristicPolicy
+from aircombat_bench.utils.normalization import Normalizer
+from aircombat_bench.algorithms.mappo import GATMAPPOActor, MAPPOActor
+from aircombat_bench.models.gat_comm import GATComm
 
 
 def wilson_ci(k: int, n: int, z: float = 1.96):

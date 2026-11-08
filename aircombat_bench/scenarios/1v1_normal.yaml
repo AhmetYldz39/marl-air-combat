@@ -1,0 +1,52 @@
+# =============================================================================
+# 1v1_normal — Phase 2 training scenario
+# Full-range 1v1 engagement: random spawn 6 000–12 000 m apart.
+# Represents a realistic BVR interception entry geometry.
+# =============================================================================
+
+schema_version: "1.0"
+name: "1v1_normal"
+description: "1v1 normal spawn (6 000–12 000 m) — Phase 2 training scenario"
+
+# Curriculum phase mapping inside DogfightEnv
+curriculum_phase: 3
+
+# Team configuration
+teams:
+  blue:
+    n_agents: 1
+    algorithm: "trainable"
+  red:
+    n_agents: 1
+    algorithm: "heuristic-v1"
+
+# Spawn parameters (implemented via set_curriculum_phase(3))
+spawn:
+  regime: "normal"
+  dist_min_m: 6000
+  dist_max_m: 12000
+  heading_jitter_deg: 45         # Blue heading ±45° toward Red
+
+# Episode parameters
+episode:
+  max_steps: 1000
+  dt_s: 0.05
+
+# Observation / action layout
+obs_dim: 50
+action_dim: 5
+
+# Benchmark status
+benchmark:
+  is_headline: false
+  note: >
+    Training scenario only.  Graduates to 2v2_normal once kill/ep >= 0.15
+    over a minimum of 300 episodes.
+
+# Notes
+notes: >
+  Corresponds to CurriculumManager Phase 2 in training/train_mappo.py.
+  At this range the agent must pursue, close to WEZ, and engage — purely
+  reactive strategies that work at WEZ-close range are insufficient.
+  Heading alignment (±45°) ensures agents start roughly facing each other
+  without eliminating realistic angular offsets.

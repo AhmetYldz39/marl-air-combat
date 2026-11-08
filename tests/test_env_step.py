@@ -25,9 +25,9 @@ import numpy as np
 import sys, os, yaml
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from envs.dogfight_env import DogfightEnv, BLUE, RED
-from envs.aircraft_model import ACTION_DIM, STATE_ALIVE, STATE_HP
-from utils.normalization  import OBS_EGO_DIM, OBS_TEAMMATE_DIM, OBS_ENEMY_DIM, OBS_ROLE_DIM, OBS_GAT_MSG_DIM
+from aircombat_bench.envs.dogfight_env import DogfightEnv, BLUE, RED
+from aircombat_bench.envs.aircraft_model import ACTION_DIM, STATE_ALIVE, STATE_HP
+from aircombat_bench.utils.normalization  import OBS_EGO_DIM, OBS_TEAMMATE_DIM, OBS_ENEMY_DIM, OBS_ROLE_DIM, OBS_GAT_MSG_DIM
 
 from pathlib import Path
 
@@ -86,12 +86,12 @@ print("\n── 1. Init ──────────────────�
 # ---------------------------------------------------------------------------
 env = make_env()
 
-check("agent_ids sayısı = 4",    len(env.agent_ids) == 4)
-check("blue_ids = ['blue_0','blue_1']", env.blue_ids == ["blue_0", "blue_1"])
-check("red_ids  = ['red_0', 'red_1']",  env.red_ids  == ["red_0",  "red_1"])
-check("obs_dim = 49 (2v2 Faz 0-1)",     env.obs_dim  == 49, f"{env.obs_dim}")
+check("agent_ids sayısı = 2",    len(env.agent_ids) == 2)
+check("blue_ids = ['blue_0']", env.blue_ids == ["blue_0"])
+check("red_ids = ['red_0']",  env.red_ids == ["red_0"])
+check("obs_dim = 50 (2v2 Faz 0-1)",     env.obs_dim == 50, f"{env.obs_dim}")
 check("action_dim = 5",                  env.action_dim == 5)
-check("n_agents = 4",                    env.n_agents == 4)
+check("n_agents = 2",                    env.n_agents == 2)
 
 
 # ---------------------------------------------------------------------------
@@ -99,10 +99,10 @@ print("\n── 2. reset() ─────────────────�
 # ---------------------------------------------------------------------------
 obs = env.reset()
 
-check("reset() 4 ajan döndürür",  len(obs) == 4)
+check("reset() 2 ajan döndürür",  len(obs) == 2)
 for aid in env.agent_ids:
     o = obs[aid]
-    check(f"{aid} obs boyutu=49",   len(o) == 49, f"{len(o)}")
+    check(f"{aid} obs boyutu=50",   len(o) == 50, f"{len(o)}")
     check(f"{aid} obs dtype=float32", o.dtype == np.float32)
     check(f"{aid} obs NaN yok",     not np.any(np.isnan(o)))
     check(f"{aid} obs Inf yok",     not np.any(np.isinf(o)))
@@ -125,7 +125,7 @@ check("step 1: __all__=False",  done["__all__"] == False)
 
 for aid in env.agent_ids:
     check(f"{aid} rew float",   isinstance(rew[aid], float))
-    check(f"{aid} obs boyutu",  len(obs3[aid]) == 49)
+    check(f"{aid} obs boyutu",  len(obs3[aid]) == 50)
     check(f"{aid} obs NaN yok", not np.any(np.isnan(obs3[aid])))
 
 
@@ -204,9 +204,9 @@ env8 = make_env()
 agg_dict = {aid: 0.7 for aid in env8.agent_ids}
 obs8 = env8.reset(aggression_dict=agg_dict)
 
-# Faz 2 ile obs boyutu 51 olmalı
+# Faz 2 ile obs boyutu 52 olmalı
 for aid in env8.agent_ids:
-    check(f"{aid} Faz 2 obs boyutu=51", len(obs8[aid]) == 51, f"{len(obs8[aid])}")
+    check(f"{aid} Faz 2 obs boyutu=52", len(obs8[aid]) == 52, f"{len(obs8[aid])}")
     # Son 2 eleman rol embedding
     role_emb = obs8[aid][-OBS_ROLE_DIM:]
     check(f"{aid} rol embedding[0]=0.7",
@@ -227,9 +227,9 @@ gat9 = {aid: [np.zeros(OBS_GAT_MSG_DIM, dtype=np.float32)]
 _, _, _, _ = env9.step(zero_actions(env9), gat_messages=gat9)
 obs9 = env9._build_obs_dict(gat_messages=gat9)
 
-expected_gat = 51 + OBS_GAT_MSG_DIM  # 51 + 16 = 67
+expected_gat = 52 + OBS_GAT_MSG_DIM  # 52 + 16 = 68
 for aid in env9.agent_ids:
-    check(f"{aid} Faz 3 obs boyutu=67",
+    check(f"{aid} Faz 3 obs boyutu=68",
           len(obs9[aid]) == expected_gat, f"{len(obs9[aid])}")
 
 
@@ -295,7 +295,7 @@ try:
     env12 = DogfightEnv.from_yaml(CONFIG_PATH)
     obs12 = env12.reset()
     check("from_yaml yüklendi",       True)
-    check("from_yaml obs boyutu=49",  len(obs12["blue_0"]) == 49,
+    check("from_yaml obs boyutu=50",  len(obs12["blue_0"]) == 50,
           f"{len(obs12['blue_0'])}")
 except Exception as e:
     check("from_yaml yüklendi", False, str(e))

@@ -1,0 +1,56 @@
+# =============================================================================
+# 1v1_dynamic — Phase 1.5 training scenario
+# Progressive range expansion: starts at 4 000 m, increases +1 000 m every
+# 100 episodes up to 16 000 m.  Bridges the gap between WEZ-close and
+# normal-spawn engagement distances.
+# =============================================================================
+
+schema_version: "1.0"
+name: "1v1_dynamic"
+description: "1v1 progressive distance (4 000→16 000 m) — Phase 1.5 training scenario"
+
+# Curriculum phase mapping inside DogfightEnv
+curriculum_phase: 2
+
+# Team configuration
+teams:
+  blue:
+    n_agents: 1
+    algorithm: "trainable"
+  red:
+    n_agents: 1
+    algorithm: "heuristic-v1"
+
+# Spawn parameters (implemented via set_curriculum_phase(2))
+spawn:
+  regime: "dynamic_dist"
+  dist_start_m: 4000             # initial engagement distance
+  dist_max_m: 16000              # ceiling after curriculum ramp-up
+  dist_step_m: 1000              # increment per step_episodes
+  step_episodes: 100             # how often distance is incremented
+  pullback_thresh_kill_per_ep: 0.10   # retreat distance if performance drops
+  heading_jitter_deg: 45
+
+# Episode parameters
+episode:
+  max_steps: 1000
+  dt_s: 0.05
+
+# Observation / action layout
+obs_dim: 50
+action_dim: 5
+
+# Benchmark status
+benchmark:
+  is_headline: false
+  note: >
+    Training scenario only.  Graduates to 1v1_normal once kill/ep >= 0.20
+    over a minimum of 1 200 episodes.
+
+# Notes
+notes: >
+  Corresponds to CurriculumManager Phase 1.5 in training/train_mappo.py.
+  The dynamic distance ramp forces the agent to learn long-range navigation
+  progressively rather than encountering the full 16 000 m gap at once.
+  Pull-back mechanism: if kill/ep drops below 0.10, the current distance is
+  reduced by 1 000 m (minimum 4 000 m) until performance recovers.

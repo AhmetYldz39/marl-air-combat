@@ -24,7 +24,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from envs.aircraft_model import (
+from aircombat_bench.envs.aircraft_model import (
     AircraftModel,
     STATE_X, STATE_Y, STATE_H, STATE_V, STATE_ALPHA, STATE_BETA,
     STATE_GAMMA, STATE_PHI, STATE_THETA, STATE_PSI,
@@ -32,7 +32,7 @@ from envs.aircraft_model import (
     STATE_HP, STATE_RADAR, STATE_ALIVE, STATE_DIM,
     ACTION_DA, ACTION_DE, ACTION_DR, ACTION_DT, ACTION_FIRE, ACTION_DIM
 )
-from envs.geometry_utils import deg2rad, rad2deg
+from aircombat_bench.envs.geometry_utils import deg2rad, rad2deg
 
 PASS = "✅ PASS"
 FAIL = "❌ FAIL"

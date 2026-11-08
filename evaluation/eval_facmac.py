@@ -19,15 +19,15 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 import torch
-from envs.dogfight_env import DogfightEnv, BLUE, RED
-from envs.aircraft_model import STATE_ALIVE, STATE_X, STATE_Y, STATE_H, STATE_PSI, STATE_AMMO
-from agents.heuristic_agent import MultiHeuristicPolicy
-from models.facmac_net import FACMACActor, FACMACActorOM
-from models.om_net import (
+from aircombat_bench.envs.dogfight_env import DogfightEnv, BLUE, RED
+from aircombat_bench.envs.aircraft_model import STATE_ALIVE, STATE_X, STATE_Y, STATE_H, STATE_PSI, STATE_AMMO
+from aircombat_bench.agents.heuristic_agent import MultiHeuristicPolicy
+from aircombat_bench.models.facmac_net import FACMACActor, FACMACActorOM
+from aircombat_bench.models.om_net import (
     CentralizedOpponentModel, CentralizedRoleAssigner,
     EnemyHistoryBuffer, build_team_state, INTENT_DEFENSIVE,
 )
-from envs.geometry_utils import antenna_train_angle, distance_3d
+from aircombat_bench.envs.geometry_utils import antenna_train_angle, distance_3d
 
 _WEZ_RANGE_MIN = 300.0
 _WEZ_RANGE_MAX = 8000.0

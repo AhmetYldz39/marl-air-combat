@@ -43,13 +43,13 @@ sys.path.insert(0, str(PROJECT_ROOT))
 import torch
 import torch.nn.functional as F
 
-from envs.dogfight_env import DogfightEnv, BLUE, RED
-from agents.heuristic_agent import MultiHeuristicPolicy
-from utils.normalization import Normalizer
-from envs.aircraft_model import (
+from aircombat_bench.envs.dogfight_env import DogfightEnv, BLUE, RED
+from aircombat_bench.agents.heuristic_agent import MultiHeuristicPolicy
+from aircombat_bench.utils.normalization import Normalizer
+from aircombat_bench.envs.aircraft_model import (
     STATE_X, STATE_Y, STATE_H, STATE_ALIVE, STATE_AMMO,
 )
-from envs.geometry_utils import distance_3d, bearing_angle, wrap_to_pi
+from aircombat_bench.envs.geometry_utils import distance_3d, bearing_angle, wrap_to_pi
 
 # ---------------------------------------------------------------------------
 # Sabitler
@@ -70,7 +70,7 @@ def _resolve_device() -> torch.device:
 def load_baseline_actor(ckpt_path: str, obs_dim: int, action_dim: int,
                         hidden: int, device: torch.device):
     """MAPPOActor (Faz-1, 50D) yükle."""
-    from training.train_mappo import MAPPOActor
+    from aircombat_bench.algorithms.mappo import MAPPOActor
     actor = MAPPOActor(obs_dim, action_dim, hidden=hidden).to(device)
     ckpt  = torch.load(ckpt_path, map_location=device, weights_only=False)
     actor.load_state_dict(ckpt["actor"])
@@ -84,7 +84,7 @@ def load_baseline_actor(ckpt_path: str, obs_dim: int, action_dim: int,
 def load_gat_actor(ckpt_path: str, old_obs_dim: int, new_obs_dim: int,
                    action_dim: int, hidden: int, device: torch.device):
     """GATMAPPOActor (Faz-2, 68D) yükle."""
-    from training.train_mappo import GATMAPPOActor
+    from aircombat_bench.algorithms.mappo import GATMAPPOActor
     actor = GATMAPPOActor(old_obs_dim, new_obs_dim, action_dim,
                           hidden=hidden).to(device)
     ckpt  = torch.load(ckpt_path, map_location=device, weights_only=False)
@@ -99,7 +99,7 @@ def load_gat_actor(ckpt_path: str, old_obs_dim: int, new_obs_dim: int,
 def load_gat_comm(ckpt_path: str, node_dim: int, edge_dim: int,
                   n_heads: int, msg_dim: int, device: torch.device):
     """GATComm modülü yükle."""
-    from models.gat_comm import GATComm
+    from aircombat_bench.models.gat_comm import GATComm
     comm = GATComm(node_dim=node_dim, edge_dim=edge_dim,
                    n_heads=n_heads, msg_dim=msg_dim).to(device)
     ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
@@ -187,7 +187,7 @@ def run_episodes(env: DogfightEnv, actor, opp_policy,
 
     collect_gat_analysis=True ise mesaj L2 norm'ları mesafeye göre biriktirilir.
     """
-    from training.train_mappo import MAPPOActor, GATMAPPOActor
+    from aircombat_bench.algorithms.mappo import MAPPOActor, GATMAPPOActor
 
     env.seed(seed)
 

@@ -1,0 +1,106 @@
+# =============================================================================
+# 2v2_normal — Headline benchmark task (v0.1)
+# Two Blue agents vs two Red heuristic opponents, normal spawn 4 000–12 000 m.
+# All six published baseline checkpoints are evaluated on this scenario.
+# =============================================================================
+
+schema_version: "1.0"
+name: "2v2_normal"
+description: "2v2 normal spawn (4 000–12 000 m) — headline benchmark task"
+
+# Curriculum phase mapping inside DogfightEnv
+curriculum_phase: 4
+
+# Team configuration
+teams:
+  blue:
+    n_agents: 2
+    algorithm: "trainable"        # cooperative RL policy (MAPPO / QMIX / FACMAC)
+  red:
+    n_agents: 2
+    algorithm: "heuristic-v1"    # fixed rule-based opponent — do not modify
+
+# Spawn parameters (implemented via set_curriculum_phase(4))
+spawn:
+  regime: "normal"
+  dist_min_m: 4000
+  dist_max_m: 12000
+  heading_jitter_deg: 45         # Blue heading ±45° toward Red centroid
+  wingman_offset_m: 1000         # lateral offset between teammates
+
+# Episode parameters
+episode:
+  max_steps: 1000                # 1000 × 0.05 s = 50 s simulated
+  dt_s: 0.05
+
+# Observation / action layout (fixed for all v0.1 scenarios)
+obs_dim: 50     # 17 ego + 9 teammate + 12×2 enemies; unused slots zero-padded
+action_dim: 5   # [aileron, elevator, rudder, throttle, fire]
+
+# Authoritative benchmark results (ENV_VERSION=1.0.0, opponent_version=heuristic-v1)
+# Source: docs/evals/v0.1/  (500 ep, seed=42, deterministic)
+# CI method: Wilson score interval (Wilson, 1927), z=1.96, two-tailed
+benchmark:
+  is_headline: true
+  eval_protocol:
+    n_episodes: 500
+    seed: 42
+    deterministic: true
+    opponent: "heuristic-v1"
+    env_version: "1.0.0"
+  baselines:
+    - checkpoint: "checkpoints/mappo_final.pt"
+      algorithm: "mappo"
+      win_pct: 46.4
+      win_ci95: [42.1, 50.8]
+      kill_per_ep: 1.056
+      draw_pct: 52.0
+    - checkpoint: "checkpoints/mappo_gat_ep37000.pt"
+      algorithm: "mappo_gat"
+      win_pct: 69.8
+      win_ci95: [65.6, 73.7]
+      kill_per_ep: 1.522
+      draw_pct: 28.4
+    - checkpoint: "checkpoints/mappo_gat_ep44000.pt"
+      algorithm: "mappo_gat_om"
+      win_pct: 70.8
+      win_ci95: [66.7, 74.6]
+      kill_per_ep: 1.554
+      draw_pct: 27.2
+    - checkpoint: "checkpoints/qmix_ep2000.pt"
+      algorithm: "qmix"
+      win_pct: 65.0
+      win_ci95: [60.7, 69.0]
+      kill_per_ep: 1.418
+      draw_pct: 33.0
+    - checkpoint: "checkpoints/facmac_base_ep2000.pt"
+      algorithm: "facmac"
+      win_pct: 82.0
+      win_ci95: [78.4, 85.1]
+      kill_per_ep: 1.730
+      draw_pct: 17.4
+    - checkpoint: "checkpoints/facmac_omr_ep27000.pt"
+      algorithm: "facmac_omr"
+      win_pct: 84.2
+      win_ci95: [80.7, 87.1]
+      kill_per_ep: 1.780
+      draw_pct: 15.2
+
+# Comparability rule
+comparability:
+  env_version: "1.0.0"
+  opponent_version: "heuristic-v1"
+  note: >
+    Numbers are comparable ONLY within the same (env_version, opponent_version)
+    pair.  A change to reward weights, spawn logic, dynamics, or the heuristic
+    opponent invalidates all figures in this table and requires a full re-run.
+
+# Notes
+notes: >
+  This is the canonical evaluation scenario for aircombat-bench v0.1.
+  All six baseline checkpoints are evaluated here.  Do not evaluate on a
+  different scenario and compare directly against these numbers.
+
+  Known-stale figures that must never reappear: 52.8, 69.6, 62.4, 70.2.
+  GAT contribution: +23.4 pp (69.8 − 46.4).
+  OM+Role vs GAT (+1.0 pp) is statistically indistinguishable at N=500.

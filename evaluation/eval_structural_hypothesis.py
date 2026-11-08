@@ -40,13 +40,13 @@ import torch
 import torch.nn.functional as F
 import torch.nn as nn
 
-from envs.dogfight_env import DogfightEnv, BLUE, RED
-from envs.aircraft_model import (
+from aircombat_bench.envs.dogfight_env import DogfightEnv, BLUE, RED
+from aircombat_bench.envs.aircraft_model import (
     STATE_ALIVE, STATE_X, STATE_Y, STATE_H, STATE_PSI, STATE_AMMO,
 )
-from envs.geometry_utils import distance_3d, bearing_angle, wrap_to_pi, antenna_train_angle
-from agents.heuristic_agent import MultiHeuristicPolicy
-from models.om_net import (
+from aircombat_bench.envs.geometry_utils import distance_3d, bearing_angle, wrap_to_pi, antenna_train_angle
+from aircombat_bench.agents.heuristic_agent import MultiHeuristicPolicy
+from aircombat_bench.models.om_net import (
     CentralizedOpponentModel, CentralizedRoleAssigner,
     EnemyHistoryBuffer, build_team_state,
 )
@@ -140,7 +140,7 @@ def run_condition(
 
     # ── Model yükle ────────────────────────────────────────────────────────
     if model_type == "facmac":
-        from models.facmac_net import FACMACActorOM
+        from aircombat_bench.models.facmac_net import FACMACActorOM
         fcfg    = config.get("facmac", {})
         hidden  = int(fcfg.get("hidden", 256))
         actor   = FACMACActorOM(base_obs_dim=_BASE_OBS_DIM, hidden=hidden).to(device)
@@ -157,8 +157,8 @@ def run_condition(
         gat_comm   = None
 
     elif model_type == "mappo":
-        from training.train_mappo import GATMAPPOActor, MAPPOActor
-        from models.gat_comm import GATComm
+        from aircombat_bench.algorithms.mappo import GATMAPPOActor, MAPPOActor
+        from aircombat_bench.models.gat_comm import GATComm
         hidden     = int(config["training"].get("hidden_dim", 256))
         action_dim = env.action_dim
 
@@ -320,7 +320,7 @@ def run_condition(
                         aid: np.append(ctrl_actions[aid], fire_dict[aid]) for aid in blue_ids
                     }
                 else:
-                    from training.train_mappo import MAPPOActor
+                    from aircombat_bench.algorithms.mappo import MAPPOActor
                     blue_actions = {}
                     for aid in blue_ids:
                         o   = obs_for_actor[aid][:obs_dim_eval]
@@ -426,7 +426,7 @@ def run_condition(
 # GAT kenar özellikleri
 # ---------------------------------------------------------------------------
 def _build_gat_edge_feats(blue_ids, red_ids, states, wez_range, map_size):
-    from envs.geometry_utils import distance_3d, bearing_angle, wrap_to_pi
+    from aircombat_bench.envs.geometry_utils import distance_3d, bearing_angle, wrap_to_pi
     N    = len(blue_ids)
     edge = np.zeros((N, N, 3), np.float32)
     for i, ai in enumerate(blue_ids):

@@ -1,0 +1,51 @@
+# =============================================================================
+# 1v1_close — Phase 1 training scenario
+# WEZ-close spawn: adversaries start 500–1500 m apart, already inside
+# weapon engagement range.  Used for rapid fire-control learning.
+# =============================================================================
+
+schema_version: "1.0"
+name: "1v1_close"
+description: "1v1 WEZ-close spawn (500–1500 m) — Phase 1 training scenario"
+
+# Curriculum phase mapping inside DogfightEnv
+curriculum_phase: 1
+
+# Team configuration
+teams:
+  blue:
+    n_agents: 1
+    algorithm: "trainable"        # RL policy
+  red:
+    n_agents: 1
+    algorithm: "heuristic-v1"    # fixed rule-based opponent
+
+# Spawn parameters (implemented via set_curriculum_phase(1))
+spawn:
+  regime: "wez_close"
+  dist_min_m: 500
+  dist_max_m: 1500
+  heading_jitter_deg: 45         # Blue heading ±45° toward Red
+
+# Episode parameters
+episode:
+  max_steps: 1000                # 1000 × 0.05 s = 50 s simulated
+  dt_s: 0.05
+
+# Observation / action layout (fixed for all v0.1 scenarios)
+obs_dim: 50                      # 17 ego + 9 teammate + 12×2 enemies
+action_dim: 5                    # [aileron, elevator, rudder, throttle, fire]
+
+# Benchmark status
+benchmark:
+  is_headline: false
+  note: >
+    Training scenario only.  Not used for the published baseline comparisons.
+    Graduates to 1v1_dynamic once kill/ep >= 0.30 and win >= 0.40 (100-ep window).
+
+# Notes
+notes: >
+  Corresponds to CurriculumManager Phase 1 in training/train_mappo.py.
+  Spawn heading alignment: both agents face each other within ±45° jitter.
+  Short engagement distance makes fire-control and WEZ exploitation the
+  dominant learning signal; navigation is trivial at this range.

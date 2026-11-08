@@ -30,16 +30,16 @@ sys.path.insert(0, str(ROOT))
 
 import torch
 
-from envs.dogfight_env import DogfightEnv, BLUE, RED
-from envs.aircraft_model import STATE_ALIVE, STATE_X, STATE_Y, STATE_H, STATE_PSI, STATE_AMMO
-from envs.geometry_utils import distance_3d, bearing_angle, wrap_to_pi, antenna_train_angle
-from models.gat_comm import GATComm
-from models.facmac_net import FACMACActorOM
-from models.om_net import (
+from aircombat_bench.envs.dogfight_env import DogfightEnv, BLUE, RED
+from aircombat_bench.envs.aircraft_model import STATE_ALIVE, STATE_X, STATE_Y, STATE_H, STATE_PSI, STATE_AMMO
+from aircombat_bench.envs.geometry_utils import distance_3d, bearing_angle, wrap_to_pi, antenna_train_angle
+from aircombat_bench.models.gat_comm import GATComm
+from aircombat_bench.models.facmac_net import FACMACActorOM
+from aircombat_bench.models.om_net import (
     CentralizedOpponentModel, CentralizedRoleAssigner,
     EnemyHistoryBuffer, build_team_state,
 )
-from training.train_mappo import GATMAPPOActor, MAPPOActor
+from aircombat_bench.algorithms.mappo import GATMAPPOActor, MAPPOActor
 
 # ── Sabitler ──────────────────────────────────────────────────────────────────
 _BASE       = 50

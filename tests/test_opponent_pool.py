@@ -72,9 +72,9 @@ print("\n── 1. Pool başlatma ve ring buffer yönetimi ───────
 if not HAS_TORCH:
     skip("Pool testleri", "PyTorch yok")
 else:
-    from agents.opponent_pool import OpponentPool
-    from agents.heuristic_agent import MultiHeuristicPolicy
-    from envs.dogfight_env import DogfightEnv
+    from aircombat_bench.agents.opponent_pool import OpponentPool
+    from aircombat_bench.agents.heuristic_agent import MultiHeuristicPolicy
+    from aircombat_bench.envs.dogfight_env import DogfightEnv
 
     env = DogfightEnv(TEST_CONFIG)
     team_map = {aid: ("blue" if "blue" in aid else "red")
@@ -130,7 +130,7 @@ print("\n── 3. reset() — geçerli checkpoint → actor yükleme ───�
 if not HAS_TORCH:
     skip("Checkpoint yükleme testi", "PyTorch yok")
 else:
-    from training.train_mappo import MAPPOActor
+    from aircombat_bench.algorithms.mappo import MAPPOActor
 
     with tempfile.TemporaryDirectory() as tmpdir:
         actor = MAPPOActor(OBS_DIM, ACTION_DIM, hidden=64)
@@ -261,7 +261,7 @@ print("\n── 7. Eğitim entegrasyonu — pool snapshot otomatik oluşturma �
 if not HAS_TORCH:
     skip("Entegrasyon testi", "PyTorch yok")
 else:
-    from training.train_mappo import MAPPOTrainer
+    from aircombat_bench.algorithms.mappo import MAPPOTrainer
 
     with tempfile.TemporaryDirectory() as tmpdir:
         cfg = yaml.safe_load(yaml.dump(TEST_CONFIG))

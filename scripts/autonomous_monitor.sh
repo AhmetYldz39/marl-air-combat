@@ -7,9 +7,10 @@
 #   3. Eğitimi sıfırdan yeniden başlatır
 #   4. İzlemeye devam eder
 
-PROJ="c:/Users/TRON-V3/OneDrive/Masaüstü/Ders_Dosyalari/Master_Thesis/marl_air_combat"
+# Set PROJ to the repo root, or override with: PROJ=/path/to/repo ./autonomous_monitor.sh
+PROJ="${PROJ:-$(cd "$(dirname "$0")/.." && pwd)}"
 LOG="$PROJ/logs/train_output.txt"
-PYTHON="$PROJ/venv/Scripts/python"
+PYTHON="${PYTHON:-python}"
 
 last_ep=0
 prev_rew=""

@@ -34,19 +34,19 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils.normalization import (
+from aircombat_bench.utils.normalization import (
     Normalizer,
     OBS_EGO_DIM, OBS_TEAMMATE_DIM, OBS_ENEMY_DIM,
     OBS_ROLE_DIM, OBS_GAT_MSG_DIM,
 )
-from envs.aircraft_model import (
+from aircombat_bench.envs.aircraft_model import (
     AircraftModel,
     STATE_P, STATE_Q, STATE_R,
     STATE_FUEL, STATE_AMMO, STATE_HP,
     STATE_ALIVE,
     ACTION_DA, ACTION_DE, ACTION_DR, ACTION_DT, ACTION_FIRE,
 )
-from envs.geometry_utils import deg2rad
+from aircombat_bench.envs.geometry_utils import deg2rad
 
 PASS = "✅ PASS"
 FAIL = "❌ FAIL"
@@ -388,18 +388,18 @@ check("aggression=0.0 embedding = [0,1]",
 # ---------------------------------------------------------------------------
 print("\n── 17. obs_dim yardımcısı ────────────────────────────────────────")
 # ---------------------------------------------------------------------------
-check("obs_dim 2v2 Faz 0-1 = 49",
-      norm.obs_dim(n_teammates=1, n_enemies=2) == 49)
-check("obs_dim 2v2 Faz 2   = 51",
-      norm.obs_dim(n_teammates=1, n_enemies=2, with_role=True) == 51)
-check("obs_dim 2v2 Faz 3   = 67",
-      norm.obs_dim(n_teammates=1, n_enemies=2, with_role=True, with_gat=True) == 67)
-check("obs_dim 3v3 Faz 0-1 = 70",
-      norm.obs_dim(n_teammates=2, n_enemies=3) == 70)
-check("obs_dim 3v3 Faz 2   = 72",
-      norm.obs_dim(n_teammates=2, n_enemies=3, with_role=True) == 72)
-check("obs_dim 3v3 Faz 3   = 104",
-      norm.obs_dim(n_teammates=2, n_enemies=3, with_role=True, with_gat=True) == 104)
+check("obs_dim 2v2 Faz 0-1 = 50",
+      norm.obs_dim(n_teammates=1, n_enemies=2) == 50)
+check("obs_dim 2v2 Faz 2   = 52",
+      norm.obs_dim(n_teammates=1, n_enemies=2, with_role=True) == 52)
+check("obs_dim 2v2 Faz 3   = 68",
+      norm.obs_dim(n_teammates=1, n_enemies=2, with_role=True, with_gat=True) == 68)
+check("obs_dim 3v3 Faz 0-1 = 71",
+      norm.obs_dim(n_teammates=2, n_enemies=3) == 71)
+check("obs_dim 3v3 Faz 2   = 73",
+      norm.obs_dim(n_teammates=2, n_enemies=3, with_role=True) == 73)
+check("obs_dim 3v3 Faz 3   = 105",
+      norm.obs_dim(n_teammates=2, n_enemies=3, with_role=True, with_gat=True) == 105)
 
 
 # ---------------------------------------------------------------------------

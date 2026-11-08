@@ -63,16 +63,16 @@ TEST_CONFIG["training"]["minibatch_size"]  = 8
 TEST_CONFIG["training"]["total_timesteps"] = 200
 TEST_CONFIG["training"]["hidden_dim"]      = 64   # küçük network
 
-OBS_DIM    = 49   # 2v2 Faz 0-1
+OBS_DIM    = 50   # 2v2 Faz 0-1
 ACTION_DIM = 5
 N_AGENTS   = 2    # blue takımı
-GLOBAL_DIM = OBS_DIM * N_AGENTS  # 98
+GLOBAL_DIM = OBS_DIM * N_AGENTS  # 100
 
 
 # ===========================================================================
 print("\n── 1. RolloutBuffer ─────────────────────────────────────────────")
 # ===========================================================================
-from training.rollout_buffer import RolloutBuffer
+from aircombat_bench.algorithms.rollout_buffer import RolloutBuffer
 
 N_STEPS = 16
 buf = RolloutBuffer(N_STEPS, N_AGENTS, OBS_DIM, ACTION_DIM, GLOBAL_DIM)
@@ -94,10 +94,10 @@ for t in range(N_STEPS):
             values, gobs, agent_ids)
 
 check("Buffer ptr = N_STEPS sonrası", buf._ptr == N_STEPS)
-check("obs shape  = (16, 2, 49)",  buf.obs.shape    == (N_STEPS, N_AGENTS, OBS_DIM))
+check("obs shape  = (16, 2, 50)",  buf.obs.shape    == (N_STEPS, N_AGENTS, OBS_DIM))
 check("act shape  = (16, 2, 5)",   buf.actions.shape == (N_STEPS, N_AGENTS, ACTION_DIM))
 check("rew shape  = (16, 2)",      buf.rewards.shape == (N_STEPS, N_AGENTS))
-check("gobs shape = (16, 98)",     buf.global_obs.shape == (N_STEPS, GLOBAL_DIM))
+check("gobs shape = (16, 100)",     buf.global_obs.shape == (N_STEPS, GLOBAL_DIM))
 
 # GAE hesabı
 last_values = np.zeros(N_AGENTS, dtype=np.float32)
@@ -121,7 +121,7 @@ print("\n── 2. MAPPOActor ────────────────�
 if not HAS_TORCH:
     skip("MAPPOActor testleri", "PyTorch yok")
 else:
-    from training.train_mappo import MAPPOActor
+    from aircombat_bench.algorithms.mappo import MAPPOActor
 
     actor = MAPPOActor(obs_dim=OBS_DIM, action_dim=ACTION_DIM, hidden=64)
 
@@ -177,7 +177,7 @@ print("\n── 3. MAPPOCritic ────────────────�
 if not HAS_TORCH:
     skip("MAPPOCritic testleri", "PyTorch yok")
 else:
-    from training.train_mappo import MAPPOCritic
+    from aircombat_bench.algorithms.mappo import MAPPOCritic
 
     critic = MAPPOCritic(global_obs_dim=GLOBAL_DIM, hidden=64)
 
@@ -202,7 +202,7 @@ print("\n── 4. MAPPOTrainer init ──────────────�
 if not HAS_TORCH:
     skip("MAPPOTrainer testleri", "PyTorch yok")
 else:
-    from training.train_mappo import MAPPOTrainer
+    from aircombat_bench.algorithms.mappo import MAPPOTrainer
     import tempfile
 
     # Log ve checkpoint dizinlerini temp'e yönlendir
@@ -211,15 +211,17 @@ else:
         cfg["logging"]["log_dir"]        = str(Path(tmpdir) / "logs")
         cfg["logging"]["checkpoint_dir"] = str(Path(tmpdir) / "ckpts")
 
-        trainer = MAPPOTrainer(cfg, device="cpu")
+        # mode="mappo" — temel yapı testi (GAT/OM yok, obs_dim=50)
+        # Trainer Faz-1'de başlar (1v1): n_agents=1, train_ids=["blue_0"]
+        trainer = MAPPOTrainer(cfg, device="cpu", mode="mappo")
 
-        check("trainer.obs_dim = 49",    trainer.obs_dim    == OBS_DIM)
+        check("trainer.obs_dim = 50",    trainer.obs_dim    == OBS_DIM)
         check("trainer.action_dim = 5",  trainer.action_dim == ACTION_DIM)
-        check("trainer.n_agents = 2",    trainer.n_agents   == N_AGENTS)
-        check("trainer.global_obs_dim = 98",
+        check("trainer.n_agents = 1",    trainer.n_agents   == 1)   # 1v1 başlangıç
+        check("trainer.global_obs_dim = 100",
               trainer.global_obs_dim == GLOBAL_DIM)
         check("trainer.train_ids = blue",
-              trainer.train_ids == ["blue_0", "blue_1"])
+              trainer.train_ids == ["blue_0"])
 
         # Actor/Critic cihaz kontrolü
         actor_dev = next(trainer.actor.parameters()).device
@@ -323,18 +325,21 @@ else:
         cfg["logging"]["log_dir"]        = str(Path(tmpdir) / "logs")
         cfg["logging"]["checkpoint_dir"] = str(Path(tmpdir) / "ckpts")
 
-        t3 = MAPPOTrainer(cfg, device="cpu")
+        # mode="mappo" kullan (obs_dim=50, global_obs=100) — GAT/OM olmadan temel testi
+        t3 = MAPPOTrainer(cfg, device="cpu", mode="mappo")
         t3.env.reset()
 
         obs_dict = t3.env._build_obs_dict()
         gobs = t3._build_global_obs(obs_dict)
 
-        check("Global obs shape = (98,)",   gobs.shape == (GLOBAL_DIM,))
+        check("Global obs shape = (100,)",   gobs.shape == (GLOBAL_DIM,))
         check("Global obs dtype float32",   gobs.dtype == np.float32)
         check("Global obs NaN yok",         not np.any(np.isnan(gobs)))
 
-        # blue_0 ve blue_1 obs'unun concat'ı olmalı
-        expected = np.concatenate([obs_dict["blue_0"], obs_dict["blue_1"]])
+        # Eğitilen ajanların obs concat'ı olmalı (1v1'de blue_1 yoksa sıfır pad)
+        _obs0 = obs_dict.get("blue_0", np.zeros(OBS_DIM, dtype=np.float32))
+        _obs1 = obs_dict.get("blue_1", np.zeros(OBS_DIM, dtype=np.float32))
+        expected = np.concatenate([_obs0, _obs1])
         check("Global obs = concat(blue_0, blue_1)",
               np.allclose(gobs, expected))
 

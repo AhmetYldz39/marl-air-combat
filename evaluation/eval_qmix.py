@@ -19,10 +19,10 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 import torch
-from envs.dogfight_env import DogfightEnv, BLUE, RED
-from envs.aircraft_model import STATE_ALIVE
-from agents.heuristic_agent import MultiHeuristicPolicy
-from models.qmix_net import AgentQNetwork, ActionMapper
+from aircombat_bench.envs.dogfight_env import DogfightEnv, BLUE, RED
+from aircombat_bench.envs.aircraft_model import STATE_ALIVE
+from aircombat_bench.agents.heuristic_agent import MultiHeuristicPolicy
+from aircombat_bench.models.qmix_net import AgentQNetwork, ActionMapper
 
 
 def wilson_ci(k: int, n: int, z: float = 1.96):

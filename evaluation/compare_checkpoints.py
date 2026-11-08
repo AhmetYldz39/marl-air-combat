@@ -21,10 +21,10 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from envs.dogfight_env import DogfightEnv, BLUE, RED
-from envs.aircraft_model import STATE_X, STATE_Y, STATE_H, STATE_ALIVE
-from envs.geometry_utils import distance_3d, bearing_angle, wrap_to_pi
-from agents.heuristic_agent import MultiHeuristicPolicy
+from aircombat_bench.envs.dogfight_env import DogfightEnv, BLUE, RED
+from aircombat_bench.envs.aircraft_model import STATE_X, STATE_Y, STATE_H, STATE_ALIVE
+from aircombat_bench.envs.geometry_utils import distance_3d, bearing_angle, wrap_to_pi
+from aircombat_bench.agents.heuristic_agent import MultiHeuristicPolicy
 
 DEVICE   = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 N_EP     = 500
@@ -57,7 +57,7 @@ def wilson_ci(wins, n, z=1.96):
 # ---------------------------------------------------------------------------
 
 def load_mappo(ckpt_path, config):
-    from training.train_mappo import MAPPOActor
+    from aircombat_bench.algorithms.mappo import MAPPOActor
     hidden = int(config["training"].get("hidden_dim", 256))
     actor  = MAPPOActor(50, 5, hidden=hidden).to(DEVICE)
     ckpt   = torch.load(ckpt_path, map_location=DEVICE, weights_only=False)
@@ -67,8 +67,8 @@ def load_mappo(ckpt_path, config):
 
 
 def load_gat(ckpt_path, config, has_om=True):
-    from training.train_mappo import GATMAPPOActor
-    from models.gat_comm import GATComm
+    from aircombat_bench.algorithms.mappo import GATMAPPOActor
+    from aircombat_bench.models.gat_comm import GATComm
     comm = config.get("communication", {})
     msg_dim = int(comm.get("msg_dim", 16))
 
@@ -106,7 +106,7 @@ def load_gat(ckpt_path, config, has_om=True):
     }
 
     if has_om and "opponent_model" in ckpt:
-        from models.opponent_model import OpponentModel
+        from aircombat_bench.models.opponent_model import OpponentModel
         opp_cfg = config.get("opponent_model", {})
         opp_m = OpponentModel(
             history_steps = int(opp_cfg.get("history_window", 20)),
@@ -235,7 +235,7 @@ def run_eval(label, ckpt_path, config, n_ep=N_EP, seed=SEED):
     team_map   = {aid: ("blue" if "blue" in aid else "red") for aid in env.agent_ids}
     opp_policy = MultiHeuristicPolicy(config, env.agent_ids, team_map)
 
-    from training.train_mappo import MAPPOActor
+    from aircombat_bench.algorithms.mappo import MAPPOActor
 
     wins = 0; losses = 0; draws = 0
     kills_total   = 0

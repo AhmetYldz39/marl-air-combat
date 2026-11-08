@@ -1,0 +1,153 @@
+{
+  "schema_version": "1.0",
+  "env_version": "1.0.0",
+  "opponent_version": "heuristic-v1",
+  "scenario": "2v2_normal",
+  "eval_protocol": {
+    "n_episodes": 500,
+    "seed": 42,
+    "deterministic": true,
+    "ci_method": "Wilson score, z=1.96, two-tailed"
+  },
+  "note": "Numbers are comparable only within the same (env_version, opponent_version) pair.",
+  "baselines": [
+    {
+      "id": "mappo",
+      "algorithm": "MAPPO",
+      "description": "MAPPO baseline — on-policy, centralised critic, no communication",
+      "checkpoint": "checkpoints/mappo_final.pt",
+      "sha256": "d6bc1d3be3f005fd4eeec5a91451fd8686a4aac1988856140366eeee340cb2ff",
+      "size_bytes": 2097152,
+      "training": {
+        "episodes": 22591,
+        "env_steps": 20000227,
+        "scenario": "curriculum_1v1_to_2v2"
+      },
+      "eval": {
+        "win_pct": 46.4,
+        "win_ci95": [42.1, 50.8],
+        "kill_per_ep": 1.056,
+        "draw_pct": 52.0,
+        "loss_pct": 1.6,
+        "eval_json": "docs/evals/v0.1/01_mappo_baseline_500ep.json"
+      },
+      "download_url": null,
+      "notes": "Baseline. No opponent model, no communication. Full 4-phase curriculum."
+    },
+    {
+      "id": "mappo_gat",
+      "algorithm": "MAPPO+GAT",
+      "description": "MAPPO with Graph Attention Network inter-agent communication (18D messages)",
+      "checkpoint": "checkpoints/mappo_gat_ep37000.pt",
+      "sha256": "e5d11384dd3e9c1ca71333ad7f719825c1ba725136d7c3dee06e9e1e7ffd1536",
+      "size_bytes": 2306867,
+      "training": {
+        "episodes": 37000,
+        "env_steps": 29333395,
+        "scenario": "curriculum_1v1_to_2v2"
+      },
+      "eval": {
+        "win_pct": 69.8,
+        "win_ci95": [65.6, 73.7],
+        "kill_per_ep": 1.522,
+        "draw_pct": 28.4,
+        "loss_pct": 1.8,
+        "eval_json": "docs/evals/v0.1/02_mappo_gat_500ep.json"
+      },
+      "download_url": null,
+      "notes": "+23.4 pp over MAPPO baseline. GAT adds 16D messages (4 heads × 4 dim) via edge features [distance, bearing, threat]."
+    },
+    {
+      "id": "mappo_gat_om",
+      "algorithm": "MAPPO+GAT+OM+Role",
+      "description": "MAPPO+GAT with opponent modelling (intent estimation) and centralised role assignment",
+      "checkpoint": "checkpoints/mappo_gat_ep44000.pt",
+      "sha256": "a01bf76d160f0f6265beb4280435ab6ba7b56e4a9bab6596dcd731dcf2eb666f",
+      "size_bytes": 3564544,
+      "training": {
+        "episodes": 44000,
+        "env_steps": 35694843,
+        "scenario": "curriculum_1v1_to_2v2"
+      },
+      "eval": {
+        "win_pct": 70.8,
+        "win_ci95": [66.7, 74.6],
+        "kill_per_ep": 1.554,
+        "draw_pct": 27.2,
+        "loss_pct": 2.0,
+        "eval_json": "docs/evals/v0.1/03_mappo_gat_om_role_500ep.json"
+      },
+      "download_url": null,
+      "notes": "+1.0 pp over MAPPO+GAT — statistically indistinguishable at N=500. Role collapse observed (blue_1 ~88% pursuit)."
+    },
+    {
+      "id": "qmix",
+      "algorithm": "QMIX",
+      "description": "QMIX with 162-action discretisation and hypernetwork mixing",
+      "checkpoint": "checkpoints/qmix_ep2000.pt",
+      "sha256": "65f2a6de7ab05946371fd1c057e9adec6d3d57db012374c537b2e837fb230a99",
+      "size_bytes": 1153433,
+      "training": {
+        "episodes": 2000,
+        "env_steps": 1110370,
+        "scenario": "2v2_normal"
+      },
+      "eval": {
+        "win_pct": 65.0,
+        "win_ci95": [60.7, 69.0],
+        "kill_per_ep": 1.418,
+        "draw_pct": 33.0,
+        "loss_pct": 2.0,
+        "eval_json": "docs/evals/v0.1/04_qmix_ep2000_500ep.json"
+      },
+      "download_url": null,
+      "notes": "~1/26 of MAPPO+GAT interaction cost; 5 pp below. Checkpoint provenance: later training session overwrote original (total_steps=1.11M vs original 844k). 65.0% + 1.11M steps is the only consistent pair."
+    },
+    {
+      "id": "facmac",
+      "algorithm": "FACMAC",
+      "description": "Pure FACMAC — off-policy, factored multi-agent centralized AC with QMIX mixer",
+      "checkpoint": "checkpoints/facmac_base_ep2000.pt",
+      "sha256": "a641461aa7bc73ee27cb9aa696148e7dec6355948651613a95044eb183b01f35",
+      "size_bytes": 4718592,
+      "training": {
+        "episodes": 2000,
+        "env_steps": 622635,
+        "scenario": "2v2_normal"
+      },
+      "eval": {
+        "win_pct": 82.0,
+        "win_ci95": [78.4, 85.1],
+        "kill_per_ep": 1.730,
+        "draw_pct": 17.4,
+        "loss_pct": 0.6,
+        "eval_json": "docs/evals/v0.1/05_facmac_base_500ep.json"
+      },
+      "download_url": null,
+      "notes": "~1/47 of MAPPO+GAT steps, +12.2 pp over it. Rule-based fire (not learned from actor output)."
+    },
+    {
+      "id": "facmac_omr",
+      "algorithm": "FACMAC+OM+REINFORCE",
+      "description": "FACMAC with opponent modelling and REINFORCE-trained centralised role assigner — best overall",
+      "checkpoint": "checkpoints/facmac_omr_ep27000.pt",
+      "sha256": "6a826b2efe01998e169b715140bf4accc9e46c8ae1d363eea20d1cb582921f84",
+      "size_bytes": 6186803,
+      "training": {
+        "episodes": 27000,
+        "env_steps": 7644269,
+        "scenario": "2v2_normal"
+      },
+      "eval": {
+        "win_pct": 84.2,
+        "win_ci95": [80.7, 87.1],
+        "kill_per_ep": 1.780,
+        "draw_pct": 15.2,
+        "loss_pct": 0.6,
+        "eval_json": "docs/evals/v0.1/06_facmac_omr_500ep.json"
+      },
+      "download_url": null,
+      "notes": "Best baseline. Role specialisation confirmed: blue_0 support+sniper (0.478+0.247), blue_1 pursuit+def (0.431+0.287). Kill imbalance 0.47 collapses to 0.06 on role zeroing."
+    }
+  ]
+}
