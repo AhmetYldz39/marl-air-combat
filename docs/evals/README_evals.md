@@ -254,17 +254,17 @@ hem de rol asimetrisinde (0.0895 vs 0.0945). OM+Role yığınının Pure FACMAC
 üzerindeki ölçülen +2.30 pp'lik kazancının tamamı, rol sinyalinin çıkarım
 anında mevcut olmasına atfedilebilir.
 
-*Bağlam:* 06 (7.6M adım) 05'ten (622k adım) ~12× daha uzun eğitilmiştir. Rol
-sıfırlandığında 06'nın tam olarak 05 düzeyine dönmesi, bu ek eğitimin rol
-sinyali olmadan ölçülebilir bir getiri bırakmadığı anlamına gelir.
+*Bağlam:* 06'nın toplam bütçesi (7,644,269 adım) 05'inkinin (622,635 adım)
+yaklaşık 12 katıdır, ama 06, 05'in devamı **değildir**. 06, ayrı bir FACMAC
+checkpoint'inden (`facmac_ep2000.pt`, 681,440 adım; bu adımlar toplamına dâhil)
+başlatıldı. 05 ise ayrı bir yeniden eğitimdir. Rol sıfırlandığında 06'nın 05
+düzeyinde ölçülmesi, iki bağımsız run'ın aynı düzeye vardığını gösterir; 05'e
+eklenmiş bir eğitimin getirisi olarak okunamaz.
 
-**Rol sinyali ne yapıyor** (T2.8.2, enstrümanlı n=2000 koşular): kalıcı bir
-**işbölümü** kuruyor — kill payı 40.62/59.38'den rol sıfırlanınca
-47.49/52.51'e çöküyor (fark +0.2490, CI95 [+0.1550, +0.3435]), yoğunlaşma ise
-değişmiyor. Episode bazında kimin skor yapacağını *dinamik atadığı* iddiası
-desteklenmiyor: pursuit boyutunun öngörü gücü ablasyondan sağ çıkıyor
-(57.27% → 55.69%), yani atayıcı büyük ölçüde geometriyi betimliyor. Tek temiz
-ablasyon imzası defensive boyutunda (57.49% → 50.58%, şans düzeyine iniyor).
+**Rol sinyali ne yapıyor** (`v1.0/06` ve `v1.0/08`): kalıcı bir **işbölümü**
+kuruyor. Kill payı 40.62/59.38'den rol sıfırlanınca 47.49/52.51'e çöküyor
+(asimetri farkı −0.2490, CI95 [−0.3320, −0.1645], yukarıdaki tablo); yoğunlaşma
+ise değişmiyor.
 
 > **İki "kill imbalance" tanımı karıştırılmamalıdır.** Yukarıdaki tablo
 > ajan-düzeyi asimetriyi `|mean(k₀) − mean(k₁)|` kullanır — yayımlanan 08/09
@@ -354,8 +354,12 @@ oranı için taşıyıcıdır" iddiası geri çekilmiştir.**
 | **ajana hizalanmış** | C2 (0.4370), C0 (0.3385) | **0.34 – 0.44** |
 | hizalanmamış | C4 (0.1260), C6@0.1 (0.1050), C1 (0.0895), C6@0.5 (0.0615), C5 (0.0550), C3 (0.0515), C6@0.01 (0.0215) | **0.02 – 0.13** |
 
-**Boşluk 0.21 ve bulgu budur**; paired bootstrap CI'larla bile kapanmıyor
-(C0 [0.2710, 0.4070] vs C4 [0.0570, 0.1955]).
+**Boşluk 0.21 ve bulgu budur**; bootstrap CI'larla bile kapanmıyor
+(C0 [0.2730, 0.4040] vs C4 [0.0570, 0.1950]).
+
+*Yöntem (2026-11):* asimetri CI'ları her koşulun kendi 2000 episode'u üzerinde
+bootstrap'tır (10 000 örnek, seed 42; `scripts/make_thesis_summary.py`,
+`asymmetry_ci95_bootstrap`); önceki değerler belgelenmemiş bir yöntemden geliyordu.
 
 **Yöneten değişken ayrıklık değil, hizalanma.** C4 ajanlara *farklı* vektörler
 verir (atayıcı çıktısı, takas edilmiş) ve yine de alt kümeye düşer. Tutarlı
@@ -380,7 +384,9 @@ farklı şeyleri ablasyona sokar ve yalnızca MAPPO hattındadır:
 | Run B, D, D2, D3 | `--argmax-role` | rol *örnekleme yöntemi* (Gumbel → argmax) |
 
 Pure FACMAC ile FACMAC+OM+R arasındaki fark bir eğitim-zamanı karşıtlığıdır
-ama **karıştırıcı**: 622k vs 7.6M adım ve farklı havuz zamanlaması.
+ama **karıştırıcı**: 622k vs 7.6M adım, farklı havuz zamanlaması ve farklı
+başlangıç checkpoint'i. 06, 05'ten değil, ayrı bir 681,440 adımlık
+`facmac_ep2000.pt`'den başlatıldı.
 
 → Rol mekanizmasız eğitim, gelecek çalışma olarak listelenmelidir.
 
