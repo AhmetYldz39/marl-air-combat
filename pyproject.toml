@@ -9,7 +9,7 @@ description = "Multi-agent reinforcement learning benchmark for 3-D air combat w
 readme = "README.md"
 license = { text = "MIT" }
 authors = [
-    { name = "Ahmet Yıldız", email = "ahmetstar150@gmail.com" },
+    { name = "Ahmet Yıldız", email = "ahmetyldz39@outlook.com" },
 ]
 keywords = ["reinforcement-learning", "multi-agent", "air-combat", "MARL", "simulation"]
 classifiers = [

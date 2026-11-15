@@ -9,7 +9,7 @@ repository-code: "https://github.com/AhmetYldz39/aircombat-bench"
 authors:
   - family-names: "Yıldız"
     given-names: "Ahmet"
-    email: "ahmetstar150@gmail.com"
+    email: "ahmetyldz39@outlook.com"
 abstract: >
   aircombat-bench is an open-source benchmark for multi-agent reinforcement
   learning in 3-D air combat. It provides a 6-DoF F-16 simulation (JSBSim
