@@ -3,7 +3,8 @@
 Tüm resmi değerlendirme sonuçları.  Sıra numaraları tezdeki model karşılaştırma
 tablosuyla eşleşiyor.
 
-Yeni (schema v1) dosyalar `v0.1/` altında; orijinal dosyalar bu dizinde.
+Kanonik set `v1.0/` altında (§0c). Schema v1'in ilk yeniden üretimi `v0.1/`
+altında; orijinal (yayım dönemi) dosyalar bu dizinde.
 
 ---
 
@@ -193,11 +194,13 @@ düzeltmeli). **Holm yalnızca bu aile içinde uygulanır**; üyelik
 
 | Karşılaştırma | Δ win | paired bootstrap CI95 | χ² | ham p | Holm p |
 |---|---|---|---|---|---|
-| MAPPO → MAPPO+GAT | +20.95 pp | [+18.85, +23.05] | 347.36 | 1.6e-77 | 7.9e-77 |
+| MAPPO → MAPPO+GAT | +20.95 pp | [+18.95, +22.95] | 347.36 | 1.6e-77 | 7.9e-77 |
 | MAPPO+GAT → +OM+Role | +2.65 pp | [+1.00, +4.35] | 9.10 | 0.00255 | **0.0051** |
 | QMIX → MAPPO+GAT | +4.70 pp | [+3.00, +6.40] | 29.22 | 6.5e-08 | 1.9e-07 |
 | FACMAC → FACMAC+OM+R | +2.30 pp | [+0.65, +4.00] | 6.89 | 0.00868 | **0.0087** |
 | MAPPO+GAT → FACMAC | +15.00 pp | [+13.10, +16.90] | 210.85 | 9.0e-48 | 3.6e-47 |
+
+*Düzeltme (2026-11):* ilk satırın CI'ı önceden [+18.85, +23.05] yazıyordu. Bu değer hiçbir `compare.py` sürümüyle, numpy sürümüyle (2.4.2, değişmedi) ya da bootstrap seed'iyle (0–1999) yeniden üretilemedi. Yazılan değer `compare.py`'nin (seed 42) çıktısıdır.
 
 **Beşi de Holm sonrası anlamlıdır.**
 
@@ -423,7 +426,9 @@ protokol, seeding şeması ve politika yolu değişmemişti. İlk kontrol edilec
 
 ---
 
-## 2. Çapraz Model Karşılaştırması (FACMAC vs MAPPO head-to-head)
+## 2. Çapraz Model Karşılaştırması (FACMAC vs MAPPO head-to-head) — ESKİ (500 ep, CUDA)
+
+Güncel değerler: §0c "Head-to-head (07)".
 
 | Dosya | Açıklama | Epizot |
 |---|---|---|
@@ -434,7 +439,9 @@ Format: `half_a_mappo_blue` (ilk 250) + `half_b_facmac_blue` (son 250) iç içe 
 
 ---
 
-## 3. Yapısal Hipotez Testi — Rol Sıfırlama Deneyi (200 ep, seed=42)
+## 3. Yapısal Hipotez Testi — Rol Sıfırlama Deneyi (200 ep, seed=42) — ESKİ (CUDA)
+
+Güncel değerler: §0c "Yapısal ablasyon (08/09)" (n=2000).
 
 | Dosya | Model | Koşul | kill_imbalance | Win% |
 |---|---|---|---|---|
@@ -471,10 +478,13 @@ kill_imbalance'daki asimetrik değişimdir.  Tez ve bildiride ifade şu olmalı:
 
 | Tez Bölümü | Dosyalar |
 |---|---|
-| Model karşılaştırma tablosu (§4.x) | `01` – `06` (veya `v0.1/` eşdeğerleri) |
-| FACMAC vs MAPPO cross-eval (§4.x) | `07` |
-| Rol mekanizma analizi — yapısal hipotez (§3.5.3 / §4.4) | `08`, `09` |
-| Intent / rol dağılım tablosu | `03`, `06` (intent_mean, role0/1_mean alanları) |
+| Model karşılaştırma tablosu (§4.x) | `v1.0/01` – `v1.0/06` |
+| FACMAC vs MAPPO cross-eval (§4.x) | `v1.0/07a` + `v1.0/07b` (iki-yönlü ortalama) |
+| Rol mekanizma analizi — yapısal hipotez (§3.5.3 / §4.4) | `v1.0/08`, `v1.0/09`; rol müdahale serisi `role_experiment/` |
+| Intent / rol dağılım tablosu | `v1.0/03`, `v1.0/06` (intent_mean, role0/1_mean — adım-düzeyi ortalama) |
+| Tüm sayıların özeti | `v1.0/thesis_summary.json` |
+
+Kök dizindeki `01`–`09` ve `v0.1/` yalnızca arşiv ve cihaz karşılaştırması içindir.
 
 ---
 
@@ -515,12 +525,14 @@ Yerine `one_kill_stall_rate` eklendi.
 
 ## QMIX Provenance Notu
 
-Orijinal Mayıs 2026 eval'i 70.2% vermişti. Ağustos 2026'da aynı checkpoint ve
-seed ile yeniden çalıştırıldığında **65.0%** elde edildi.  Fark, ortam
-güncellemelerinden kaynaklanıyor (reward ağırlıkları, OOB recovery, spawn).
+Orijinal Mayıs 2026 eval'i 70.2% vermişti. Ağustos 2026'da aynı ad ve seed ile
+yeniden çalıştırıldığında **65.0%** elde edildi (500 ep, CUDA). Ancak bu iki eval
+aynı dosyayı ölçmedi: 12 Mayıs eval'i 844,112 adımlı dosyayı ölçtü, o dosyanın
+üzerine 17 Mayıs'ta yazıldı (`train_qmix_curriculum_20260517_134600`, step
+1,110,370).
 
-Diskteki `qmix_ep2000.pt` (total_steps=1,110,370) farklı bir eğitim oturumunda
-üzerine yazılmış; Mayıs 2026 eval'inin 844k adımlı orijinal checkpoint'i artık
-mevcut değil.
+Diskteki ve bu depodaki `qmix_ep2000.pt` 1,110,370 adımlı dosyadır; 844k adımlı
+orijinal artık mevcut değil.
 
-**Tezde kullanılması gereken tutarlı çift:** 65.0% + 1.11M adım.
+**Tezde kullanılması gereken tutarlı çift:** 64.05% (kanonik `v1.0/04`, n=2000,
+CPU) + 1,110,370 adım.
