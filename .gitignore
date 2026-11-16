@@ -58,6 +58,7 @@ docs/*.rar
 
 # ── Internal working docs — not for public repo ───────────────────────────────
 docs/hypothesis/
+docs/thesis/
 findings/
 chapters/
 
