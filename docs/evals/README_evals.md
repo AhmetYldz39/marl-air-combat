@@ -63,7 +63,7 @@ gelecekteki self-play veya checkpoint-vs-checkpoint koşuları).
 yöntemin hepsi birebir aynı asimetriyle karşılaşır, dolayısıyla o
 karşılaştırmalar kendi içinde geçerlidir.
 
-**Ölçülen yan etkisi** (kanonik n=2000):
+**Head-to-head'de ölçülen taraf farkı** (kanonik n=2000):
 
 | Model | blue iken | red iken | fark |
 |---|---|---|---|
@@ -73,7 +73,15 @@ karşılaştırmalar kendi içinde geçerlidir.
 İki model de blue tarafından yaklaşık aynı miktarda kazanıyor (+3.50 ve
 +3.20 pp) — **iki-yönlü ortalamayı savunulabilir kılan budur.** Head-to-head
 sayıları tam da bu etkiyi telafi etmek için iki yanın ortalaması olarak
-raporlanır; tek yönlü bir sayı yanlıdır.
+raporlanır; tek yönlü bir sayı yanlıdır. Ortalama, nedeni ne olursa olsun
+taraf etkisini yok eder.
+
+Farkın nedeni ise ayrıştırılmadı. Kurtarma asimetrisi bir aday; ama iki model
+de yalnızca blue tarafından eğitildi
+([mappo.py:577](../../aircombat_bench/algorithms/mappo.py#L577),
+[facmac.py:789-791](../../aircombat_bench/algorithms/facmac.py#L789-L791)) ve
+red tarafında hiç oynamadı. İki etki bu ölçümle birbirinden ayrılamaz; fark
+yalnızca kurtarmaya atfedilmemelidir.
 
 `compare.combine_head_to_head()` aynalanmamış bir çift için `SideBiasError`
 fırlatır ve tek yönlü bir `compare()` çıktısı raporda açıkça yan-yanlı olarak
@@ -100,7 +108,26 @@ hepsinde `metrics.oob_rate = 0.0`. Yüksek OOB oranları yalnızca self-play
 Bulgu olduğu gibi: `01`–`06`'da kurtarma desteği **scripted red lehinedir**,
 blue lehine değil — red 5.8× daha sık kurtarma alır ve blue'da stall ile
 düşük hız koruması hiç yoktur. Harita kenarı dalı Faz-4 spawn'ında hiçbir
-tarafta tetiklenmez.
+tarafta tetiklenmez. Bu asimetrinin kazanma oranına etkisi **ölçülmedi**:
+kurtarılan koşulların hiçbiri ölümcül değildir (aşağıdaki paragraf), kurtarma
+bir ajanı ölümden kurtarmaz, yalnızca uçuş yolunu değiştirir. Raporlanan
+kazanma oranları bu asimetri bakımından muhafazakâr ya da iyimser olarak
+nitelenmez.
+
+**Ortamda tek ölüm yolu rakip isabetidir.** Bir ajanın `STATE_ALIVE` değeri
+yalnızca bir rakip isabeti HP'sini sıfıra indirdiğinde sıfırlanır
+([dogfight_env.py:322-333](../../aircombat_bench/envs/dogfight_env.py#L322-L333));
+ateş, aksiyonun ateş kanalının ≥ 0.5 olmasını gerektirir
+([weapons_model.py:231](../../aircombat_bench/envs/weapons_model.py#L231)).
+Zemin ölümcül değildir: irtifa `h_min`'e kırpılır ve uçuş yolu açısı negatif
+kalamaz ([aircraft_model.py:639-641](../../aircombat_bench/envs/aircraft_model.py#L639-L641)).
+Stall ve düşük hız ölümcül değildir: hız `[0,5·V_min, 1,2·V_max]` aralığına
+kırpılır ([aircraft_model.py:617](../../aircombat_bench/envs/aircraft_model.py#L617))
+ve `is_stalled()` ([aircraft_model.py:302](../../aircombat_bench/envs/aircraft_model.py#L302))
+ortamda hiçbir yerde çağrılmaz. OOB ölümcül değildir: `is_out_of_bounds()`
+([aircraft_model.py:307](../../aircombat_bench/envs/aircraft_model.py#L307)) de
+hiçbir yerde çağrılmaz. Çarpışma denetimi yoktur. `max_steps` dolduğunda sonuç
+beraberliktir ([dogfight_env.py:796](../../aircombat_bench/envs/dogfight_env.py#L796)).
 
 v0.2 için planlanan kırıcı değişiklik: [ENV_CHANGELOG.md](../../ENV_CHANGELOG.md).
 
