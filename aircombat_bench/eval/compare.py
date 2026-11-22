@@ -122,7 +122,9 @@ class SideBiasError(ValueError):
     Ortam yan-simetrik değildir: `_critical_recovery_blue` yalnızca blue
     tarafına uygulanır (`dogfight_env.py:308`).  Scripted red kendi
     kurtarmasına sahiptir; checkpoint sürülen red hiçbirini almaz.  Ölçülen
-    yan etkisi ~3.2–3.5 pp'dir — raporlanan farkların mertebesinde.
+    taraf farkı ~3.2–3.5 pp'dir — raporlanan farkların mertebesinde.  Nedeni
+    ayrıştırılmadı: kurtarma asimetrisi bir aday, ama iki model de yalnızca
+    blue tarafından eğitildi.
     """
 
 
@@ -466,7 +468,8 @@ def combine_head_to_head(a: dict, b: dict,
     değildir — ortam yan-simetrik olmadığı için (`SideBiasError` bkz.).
 
     Döndürülen sözlük hem birleşik oranları hem de her iki yanı ayrı ayrı
-    verir; yan etkisi gizlenmez, ölçülüp raporlanır.
+    verir; taraf farkı gizlenmez, ölçülüp raporlanır.  Farkın nedeni
+    ayrıştırılmadı (kurtarma asimetrisi ve yalnızca blue'dan eğitim).
     """
     for d, nm in ((a, name_a), (b, name_b)):
         if not _is_head_to_head(d):
@@ -526,8 +529,10 @@ def combine_head_to_head(a: dict, b: dict,
         "side_bias_note": (
             "Ortam yan-simetrik değildir (dogfight_env.py:308): OOB/zemin "
             "kurtarma yalnızca blue tarafına uygulanır ve checkpoint sürülen "
-            "red hiç kurtarma almaz.  İki-yönlü ortalama tam da bunu telafi "
-            "etmek için raporlanır; tek yönlü sayı yanlıdır."
+            "red hiç kurtarma almaz; ayrıca iki model de yalnızca blue "
+            "tarafından eğitildi.  Taraf farkının nedeni ayrıştırılmadı.  "
+            "İki-yönlü ortalama bu taraf farkını telafi etmek için "
+            "raporlanır; tek yönlü sayı yanlıdır."
         ),
     }
 
@@ -590,7 +595,8 @@ def format_report(r: Dict[str, Any]) -> str:
         L.append("  ⚠ YAN YANLI — TEK YÖNLÜ AGENT-VS-AGENT SONUCU")
         L.append("    Ortam yan-simetrik değil (dogfight_env.py:308): kurtarma")
         L.append("    yalnızca blue'ya uygulanır, checkpoint red hiç almaz.")
-        L.append("    Ölçülen yan etkisi ~3.2–3.5 pp.  Raporlanabilir sayı için")
+        L.append("    Ölçülen taraf farkı ~3.2–3.5 pp (nedeni ayrıştırılmadı: kurtarma")
+        L.append("    asimetrisi ve yalnızca blue'dan eğitim).  Raporlanabilir sayı için")
         L.append("    aynalanmış koşuyla combine_head_to_head() kullanın.")
     return "\n".join(L)
 

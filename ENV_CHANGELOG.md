@@ -40,12 +40,16 @@ Scripted red kendi kurtarmasına sahip (`HeuristicAgent._critical_recovery`),
 ama **checkpoint sürülen red hiçbir kurtarma almaz**. Ortam bu yüzden
 yan-simetrik değildir.
 
-**Ölçülen etki** (kanonik n=2000, `docs/evals/v1.0/07a`, `07b`):
+**Head-to-head'de ölçülen taraf farkı** (kanonik n=2000, `docs/evals/v1.0/07a`, `07b`):
 
-| Model | blue iken | red iken | yan etkisi |
+| Model | blue iken | red iken | taraf farkı |
 |---|---|---|---|
 | FACMAC+OM+R | 73.30% | 69.80% | +3.50 pp |
 | MAPPO+GAT | 16.55% | 13.35% | +3.20 pp |
+
+Farkın nedeni ayrıştırılmadı. Kurtarma asimetrisi bir aday; ama iki model de
+yalnızca blue tarafından eğitildi ve red tarafında hiç oynamadı. İki etki bu
+ölçümle birbirinden ayrılamaz; fark yalnızca kurtarmaya atfedilmemelidir.
 
 **Kapsam.** Yalnızca agent-vs-agent değerlendirmeleri (`07a`/`07b` ve
 gelecekteki self-play / checkpoint-vs-checkpoint koşuları). `01`–`06`

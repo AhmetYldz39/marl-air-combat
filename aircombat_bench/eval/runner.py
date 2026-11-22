@@ -1282,15 +1282,18 @@ def run_eval(
         # T2.7.3 — ortam yan-simetrik DEĞİL: _critical_recovery_blue yalnızca
         # blue_ids'e uygulanır (dogfight_env.py:308).  Scripted red kendi
         # kurtarmasına sahiptir, ama checkpoint sürülen red hiçbirini almaz.
-        # Bu yüzden tek yönlü bir agent-vs-agent sonucu YANLI'dır ve tek
-        # başına raporlanmamalıdır.
+        # Ayrıca iki model de yalnızca blue tarafından eğitildi; ölçülen taraf
+        # farkının nedeni ayrıştırılmadı.  Tek yönlü bir agent-vs-agent
+        # sonucu bu yüzden YANLI'dır ve tek başına raporlanmamalıdır.
         **({"side_bias": {
             "single_sided": True,
             "evaluated_side": "blue",
             "mirror_required": True,
             "reason": ("ortam yan-simetrik değil: OOB/zemin kurtarma yalnızca "
                        "blue tarafına uygulanır (dogfight_env.py:308); "
-                       "checkpoint rakip kurtarma almaz"),
+                       "checkpoint rakip kurtarma almaz.  Ayrıca modeller "
+                       "yalnızca blue tarafından eğitildi; taraf farkının "
+                       "nedeni ayrıştırılmadı"),
             "note": ("Bu dosya tek yönlü bir sonuçtur.  Raporlanabilir sayı, "
                      "aynalanmış koşuyla birlikte iki-yönlü ortalamadır — "
                      "aircombat_bench.eval.compare.combine_head_to_head()"),

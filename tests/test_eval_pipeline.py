@@ -371,11 +371,30 @@ class TestCrossPlatformNotes:
         not __import__("torch").cuda.is_available(),
         reason="CUDA mevcut değil"
     )
+    @pytest.mark.xfail(
+        strict=False,
+        reason=("Cihaz değişimi sürekli-kontrol modellerinde episode'ların "
+                "%10–15'inin sonucunu değiştirir; n=20'de ±0.02 tolerans "
+                "gerçekçi değil (docs/EVALUATION_METHODOLOGY.md §2)"),
+    )
     def test_cuda_results_match_cpu_within_tolerance(self, config):
-        """CUDA ve CPU sonuçları birbirine yakın olmalı (bit-exact garanti yok).
+        """CPU–CUDA karşılaştırması — beklenen başarısızlık (xfail, strict=False).
 
-        Bu test eğer CUDA mevcut ise CPU ile CUDA sonuçlarını karşılaştırır.
-        Beklenen: win_rate ±0.02 (olası CUDA floating-point farkı).
+        Ölçülmüş bulgu (docs/EVALUATION_METHODOLOGY.md §2, n=2000; kök neden
+        docs/EVAL_PROTOCOL_AUDIT.md): aynı checkpoint ve aynı tohumlarla cihaz
+        değişimi sürekli-kontrol modellerinde 2000 episode'un 200–299'unun
+        (%10–15) sonucunu değiştirir; QMIX'te yalnızca 2.  n=20'de tek bir
+        episode win_rate'i 0.05 oynatır, bu yüzden ±0.02 tolerans bu bulguyla
+        çelişir ve test geçmesi beklenmez.  Toplu oranlarda n=2000'de fark
+        anlamlı değildir (McNemar p ≥ 0.15).
+
+        Kanonik sayıların güvencesi bu test değil, CPU determinizm testleridir:
+        `test_cpu_device_produces_deterministic_results`,
+        `TestPipelineDeterminism` (metrics ve episode kayıtları bit-aynı).
+        Kanonik cihaz: CPU, tek thread.
+
+        Test gövdesi ölçüm olarak kalır: XFAIL beklenen durumdur; XPASS da
+        hata sayılmaz (strict=False).
         """
         available = _available_baselines()
         if not available:
