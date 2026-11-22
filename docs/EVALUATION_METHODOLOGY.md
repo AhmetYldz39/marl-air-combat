@@ -274,9 +274,10 @@ deneyleri (C0–C6). Bunlar bir performans iddiasını taşımaz; **mekanizma
 araştırmasıdır**. Ham p-değerleri ve CI'larla raporlanırlar ve doğrulayıcı
 aileyle rekabet eden ikinci bir düzeltilmiş aile oluşturulmaz.
 
-**Sonuçları betimleyicidir, doğrulayıcı değildir.** Seri ön-kayıtlı yorumlarla
-yürütülmüştür ([`PREREGISTRATION_T2.10.md`](PREREGISTRATION_T2.10.md)) ve
-ön-kayıtlı okumaların hiçbiri gerçekleşmemiştir — bu, sonucun kendisidir.
+**Sonuçları betimleyicidir, doğrulayıcı değildir.** Serinin yalnızca C5–C6
+koşulları ön-kayıtlıydı ([`PREREGISTRATION_T2.10.md`](PREREGISTRATION_T2.10.md))
+ve onların dağılım kayması okumaları gerçekleşti. C0–C4 için tahmin
+kaydedilmedi.
 
 **Serinin ana bulgusu iki kümeli bir yapıdır, bir aralık değil.** Rol
 asimetrisi sürekli değişmez; ajana hizalanmış girdilerde 0.34–0.44, diğer her
